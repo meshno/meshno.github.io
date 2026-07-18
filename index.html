@@ -67,13 +67,15 @@
     display: grid; grid-template-columns: minmax(280px, 440px) 1fr;
     gap: 28px; align-items: start;
   }
-  @media (max-width: 880px) { main { grid-template-columns: 1fr; } }
+  @media (max-width: 880px) { main { grid-template-columns: minmax(0, 1fr); } }
+  body { overflow-x: hidden; }
+  .panel, .card { min-width: 0; }
 
   .panel {
     background: linear-gradient(180deg, var(--bg-panel), var(--bg-panel-2));
     border: 1px solid var(--hairline); border-radius: var(--radius);
   }
-  .left-col { display: flex; flex-direction: column; gap: 18px; }
+  .left-col { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
   .map-panel { padding: 18px; }
   .map-caption {
     display: flex; justify-content: space-between; align-items: baseline;
@@ -104,7 +106,7 @@
   }
   @media (prefers-reduced-motion: reduce) { .city.selected .ripple { animation: none; opacity: 0; } }
 
-  .side { display: flex; flex-direction: column; gap: 18px; }
+  .side { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
   .card { padding: 22px 24px; }
   .card h2 {
     font-family: var(--display); font-size: 13px; text-transform: uppercase;
@@ -304,8 +306,8 @@
       <div class="row" style="margin-top:14px;">
         <label class="lbl">loop.detect</label>
         <div class="seg" id="loopSeg">
-          <button data-l="minimal">minimal</button>
-          <button data-l="moderate" class="active">moderate</button>
+          <button data-l="minimal" class="active">minimal</button>
+          <button data-l="moderate">moderate</button>
           <button data-l="strict">strict</button>
         </div>
       </div>
@@ -377,7 +379,7 @@
     profile: 'neighborhood',
     cr: '8',
     hash: '1',
-    loop: 'moderate',
+    loop: 'minimal',
     regionDefault: 'no',
     owner: '',
     guest: ''
@@ -408,9 +410,9 @@
     lines.push(['c', '# routing hygiene']);
     lines.push(['k', 'set path.hash.mode', state.hash]);
     lines.push(['k', 'set loop.detect', state.loop]);
-    lines.push(['c', '# adverts — no 0-hop, network-wide every 75h']);
-    lines.push(['k', 'set advert.interval', '0']);
-    lines.push(['k', 'set flood.advert.interval', '75']);
+    lines.push(['c', '# adverts']);
+    lines.push(['k', 'set advert.interval', '240']);
+    lines.push(['k', 'set flood.advert.interval', '24']);
     if (state.guest.trim()) lines.push(['k', 'set guest.password', state.guest.trim()]);
     if (state.owner.trim()) lines.push(['k', 'set owner.info', state.owner.trim()]);
     lines.push(['c', '# regions — every node relays eu / europe / no, city scopes down']);
