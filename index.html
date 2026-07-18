@@ -7,404 +7,368 @@
 <meta name="description" content="Generate MeshCore repeater configuration for Norwegian nodes: radio, regions, profiles.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a1220;
-    --bg-panel: #10192b;
-    --bg-panel-2: #16233a;
-    --map-fill: #14213a;
-    --map-stroke: #2b3f5f;
-    --ink: #e7edf4;
-    --muted: #839ab3;
-    --muted-2: #5b6f89;
-    --hairline: rgba(150,175,205,0.14);
-    --aurora: #5eead4;
-    --aurora-dim: rgba(94,234,212,0.35);
-    --amber: #ffb454;
-    --amber-dim: rgba(255,180,84,0.35);
-    --radius: 10px;
+    --bg:      #0a1220;
+    --inset:   #060c17;
+    --ink:     #e7edf4;
+    --muted:   #8fa3b8;
+    --dim:     #64788e;
+    --rule:    rgba(160,185,215,0.16);
+    --rule-2:  rgba(160,185,215,0.08);
+    --accent:  #5eead4;
+    --on-accent: #062621;
+    --sans: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
     --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-    --sans: 'IBM Plex Sans', -apple-system, sans-serif;
-    --display: 'Space Grotesk', var(--sans);
   }
   * { box-sizing: border-box; }
-  html, body {
-    margin: 0; background: var(--bg); color: var(--ink);
-    font-family: var(--sans); -webkit-font-smoothing: antialiased;
-  }
   body {
-    background-image:
-      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(94,234,212,0.06), transparent 60%),
-      radial-gradient(ellipse 700px 500px at 100% 20%, rgba(255,180,84,0.05), transparent 55%);
-    background-attachment: fixed;
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--sans); font-size: 14px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
   }
-  a { color: var(--aurora); }
-  ::selection { background: var(--aurora-dim); }
-  .skip-link { position: absolute; left: -999px; top: 0; background: var(--amber); color: #131a12; padding: 8px 14px; z-index: 100; }
-  .skip-link:focus { left: 12px; top: 12px; }
+  ::selection { background: var(--accent); color: var(--on-accent); }
+  a { color: var(--accent); }
 
-  header.top { max-width: 1180px; margin: 0 auto; padding: 40px 24px 8px; }
-  .eyebrow {
-    font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em;
-    text-transform: uppercase; color: var(--aurora);
-    display: flex; align-items: center; gap: 10px;
+  .skip-link {
+    position: absolute; left: -999px; top: 0; z-index: 10;
+    background: var(--accent); color: var(--on-accent);
+    padding: 10px 14px; font-family: var(--mono); font-size: 13px;
   }
-  .eyebrow::before {
-    content: ""; width: 7px; height: 7px; border-radius: 50%;
-    background: var(--aurora); box-shadow: 0 0 0 3px var(--aurora-dim);
+  .skip-link:focus { left: 10px; top: 10px; }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---- masthead ---- */
+  header {
+    border-bottom: 1px solid var(--rule); padding: 30px 0 20px; margin-bottom: 26px;
   }
-  h1 {
-    font-family: var(--display); font-weight: 600;
-    font-size: clamp(28px, 4vw, 42px); letter-spacing: -0.01em;
-    margin: 14px 0 10px; max-width: 24ch;
+  .kicker {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--dim); margin-bottom: 10px;
   }
-  .lede { color: var(--muted); max-width: 64ch; line-height: 1.55; font-size: 15.5px; margin: 0 0 6px; }
-  .lede code { font-family: var(--mono); font-size: 13px; }
+  h1 { font-size: 25px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 8px; }
+  .lede { color: var(--muted); max-width: 74ch; margin: 0; font-size: 14px; }
+  .lede code, code { font-family: var(--mono); font-size: 12.5px; color: var(--ink); }
 
   main {
-    max-width: 1180px; margin: 0 auto; padding: 20px 24px 80px;
-    display: grid; grid-template-columns: minmax(280px, 440px) 1fr;
-    gap: 28px; align-items: start;
+    display: grid; grid-template-columns: 380px minmax(0, 1fr);
+    gap: 40px; align-items: start; padding-bottom: 60px;
   }
-  @media (max-width: 880px) { main { grid-template-columns: minmax(0, 1fr); } }
-  body { overflow-x: hidden; }
-  .panel, .card { min-width: 0; }
 
-  .panel {
-    background: linear-gradient(180deg, var(--bg-panel), var(--bg-panel-2));
-    border: 1px solid var(--hairline); border-radius: var(--radius);
-  }
-  .left-col { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
-  .map-panel { padding: 18px; }
-  .map-caption {
-    display: flex; justify-content: space-between; align-items: baseline;
-    font-family: var(--mono); font-size: 11.5px; color: var(--muted-2);
-    letter-spacing: 0.04em; padding: 2px 6px 12px;
+  /* ---- map ---- */
+  .map-col { position: sticky; top: 24px; }
+  .map-head {
+    display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em;
+    color: var(--dim); padding-bottom: 8px; border-bottom: 1px solid var(--rule-2);
+    margin-bottom: 10px;
   }
   svg.map { display: block; width: 100%; height: auto; }
-  path.landmass { fill: var(--map-fill); stroke: var(--map-stroke); stroke-width: 1.1; stroke-linejoin: round; }
-
+  path.land { fill: #131e33; stroke: #26374f; stroke-width: 1; stroke-linejoin: round; }
   .city { cursor: pointer; outline: none; }
-  .city .dot { fill: var(--muted); transition: fill 0.2s, r 0.2s; }
-  .city .dot-halo { fill: transparent; }
-  .city .dot-label {
-    font-family: var(--mono); font-size: 11px; fill: var(--muted-2);
-    transition: fill 0.2s, font-weight 0.2s;
-  }
-  .city:hover .dot { fill: var(--aurora); }
-  .city:hover .dot-label { fill: var(--ink); }
-  .city:focus-visible .dot-halo { fill: none; stroke: var(--amber); stroke-width: 2; }
-  .city .ripple { fill: none; stroke: var(--aurora); stroke-width: 1.4; opacity: 0; }
-  .city.selected .dot { fill: var(--amber); r: 5.5; }
-  .city.selected .dot-label { fill: var(--ink); font-weight: 600; }
-  .city.selected .ripple { animation: ripple 2.6s ease-out infinite; stroke: var(--amber); }
-  .city.selected .ripple.r2 { animation-delay: 1.3s; }
-  @keyframes ripple {
-    0% { r: 4px; opacity: 0.65; stroke-width: 2; }
-    100% { r: 46px; opacity: 0; stroke-width: 0.4; }
-  }
-  @media (prefers-reduced-motion: reduce) { .city.selected .ripple { animation: none; opacity: 0; } }
+  .city .hit { fill: transparent; }
+  .city .dot { fill: var(--dim); }
+  .city .name { font-family: var(--mono); font-size: 13px; fill: var(--dim); }
+  .city:hover .dot, .city:focus-visible .dot { fill: var(--muted); }
+  .city:hover .name, .city:focus-visible .name { fill: var(--ink); }
+  .city:focus-visible .hit { stroke: var(--accent); stroke-width: 1.5; }
+  .city.on .dot { fill: var(--accent); }
+  .city.on .name { fill: var(--accent); }
+  .city.on .halo { fill: none; stroke: var(--accent); stroke-width: 1; opacity: 0.4; }
+  .halo { fill: none; stroke: none; }
 
-  .side { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
-  .card { padding: 22px 24px; }
-  .card h2 {
-    font-family: var(--display); font-size: 13px; text-transform: uppercase;
-    letter-spacing: 0.1em; color: var(--muted); margin: 0 0 14px; font-weight: 600;
-  }
-  .card h2 .hint {
-    text-transform: none; letter-spacing: 0; font-family: var(--sans);
-    font-weight: 400; font-size: 12.5px; color: var(--muted-2); margin-left: 8px;
+  /* ---- sections ---- */
+  section { border-top: 1px solid var(--rule); padding: 18px 0 22px; }
+  section:first-child { border-top: none; padding-top: 0; }
+  h2 {
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    letter-spacing: 0.13em; text-transform: uppercase; color: var(--dim);
+    margin: 0 0 16px;
   }
 
-  .selected-city {
-    font-family: var(--display); font-size: 24px; font-weight: 600;
-    margin-bottom: 12px; display: flex; align-items: center; gap: 10px;
+  /* label column left, control right */
+  .row {
+    display: grid; grid-template-columns: 150px minmax(0, 1fr);
+    gap: 6px 20px; align-items: start; margin-bottom: 16px;
   }
-  .selected-city .tag {
-    font-family: var(--mono); font-size: 12px; color: var(--bg);
-    background: var(--amber); padding: 3px 8px; border-radius: 5px; font-weight: 500;
+  .row:last-child { margin-bottom: 0; }
+  .row > .k {
+    font-family: var(--mono); font-size: 12px; color: var(--dim);
+    padding-top: 7px; line-height: 1.35;
   }
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-  .chip {
-    font-family: var(--mono); font-size: 12.5px; padding: 5px 10px; border-radius: 999px;
-    border: 1px solid var(--hairline); background: rgba(255,255,255,0.02); color: var(--muted);
-  }
-  .chip.city-chip { color: var(--amber); border-color: var(--amber-dim); }
-  .arrow { color: var(--muted-2); font-size: 12px; }
+  .row > .v { min-width: 0; }
+  .help { color: var(--muted); font-size: 13px; margin: 8px 0 0; max-width: 72ch; }
+  .help b { color: var(--ink); font-weight: 500; }
 
-  .seg {
-    display: inline-flex; background: rgba(255,255,255,0.03);
-    border: 1px solid var(--hairline); border-radius: 999px; padding: 3px; gap: 3px;
-    flex-wrap: wrap;
+  /* ---- station readout ---- */
+  .station { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .station .nm { font-size: 20px; font-weight: 600; }
+  .station .tag {
+    font-family: var(--mono); font-size: 12px; color: var(--accent);
+    border: 1px solid var(--accent); padding: 2px 8px;
   }
+  .scope {
+    display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+    font-family: var(--mono); font-size: 12px; margin-top: 10px;
+  }
+  .scope .s { border: 1px solid var(--rule); padding: 3px 8px; color: var(--muted); }
+  .scope .s.leaf { border-color: var(--accent); color: var(--accent); }
+  .scope .gt { color: var(--dim); }
+
+  /* ---- controls ---- */
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; }
   .seg button {
     font-family: var(--mono); font-size: 12.5px; color: var(--muted);
-    background: transparent; border: none; padding: 7px 13px;
-    border-radius: 999px; cursor: pointer; white-space: nowrap;
+    background: transparent; border: 1px solid var(--rule);
+    padding: 8px 12px; min-height: 36px; cursor: pointer; white-space: nowrap;
   }
-  .seg button.active { background: var(--aurora); color: #062621; font-weight: 600; }
-  .seg button:focus-visible { outline: 2px solid var(--amber); outline-offset: 1px; }
+  .seg button:hover { border-color: var(--muted); color: var(--ink); }
+  .seg button.on { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 500; }
+  .seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-  .profiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  @media (max-width: 560px) { .profiles { grid-template-columns: 1fr; } }
+  .profiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .profile {
-    text-align: left; border: 1px solid var(--hairline); border-radius: 8px;
-    background: rgba(255,255,255,0.02); padding: 13px 14px; cursor: pointer;
-    color: var(--ink); font-family: var(--sans); transition: border-color 0.15s, background 0.15s;
+    text-align: left; background: transparent; border: 1px solid var(--rule);
+    padding: 11px 13px; cursor: pointer; color: var(--ink); font-family: var(--sans);
   }
-  .profile:hover { border-color: var(--aurora-dim); }
-  .profile.active { border-color: var(--aurora); background: rgba(94,234,212,0.07); }
-  .profile:focus-visible { outline: 2px solid var(--amber); outline-offset: 1px; }
-  .profile .p-name {
-    font-family: var(--display); font-weight: 600; font-size: 14.5px;
-    display: flex; justify-content: space-between; align-items: baseline;
+  .profile:hover { border-color: var(--muted); }
+  .profile.on { border-color: var(--accent); }
+  .profile:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .p-n {
+    font-size: 13.5px; font-weight: 600; display: flex;
+    justify-content: space-between; align-items: baseline; gap: 8px;
   }
-  .profile .p-nb { font-family: var(--mono); font-size: 10.5px; color: var(--aurora); }
-  .profile .p-desc { font-size: 12.5px; color: var(--muted); line-height: 1.45; margin-top: 5px; }
+  .p-n span { font-family: var(--mono); font-size: 10.5px; font-weight: 400; color: var(--dim); }
+  .profile.on .p-n span { color: var(--accent); }
+  .p-d { font-size: 12.5px; color: var(--muted); margin-top: 4px; line-height: 1.45; }
 
-  .row { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: center; margin-bottom: 14px; }
-  .row:last-child { margin-bottom: 0; }
-  .row label.lbl {
-    font-family: var(--mono); font-size: 12px; color: var(--muted-2);
-    min-width: 130px; letter-spacing: 0.03em;
-  }
-  .field { display: flex; flex-direction: column; gap: 6px; flex: 1 1 240px; }
-  .field label { font-family: var(--mono); font-size: 12px; color: var(--muted-2); letter-spacing: 0.03em; }
   input[type="text"] {
     font-family: var(--mono); font-size: 13px; color: var(--ink);
-    background: #060c17; border: 1px solid var(--hairline); border-radius: 7px;
-    padding: 9px 12px; width: 100%;
+    background: var(--inset); border: 1px solid var(--rule); border-radius: 0;
+    padding: 9px 11px; width: 100%; min-height: 38px;
   }
-  input[type="text"]:focus { outline: none; border-color: var(--aurora); }
-  input[type="text"]::placeholder { color: var(--muted-2); }
+  input[type="text"]:focus { outline: none; border-color: var(--accent); }
+  input[type="text"]::placeholder { color: var(--dim); }
 
-  .cr-note, .micro-note { font-size: 12.5px; color: var(--muted-2); line-height: 1.55; margin-top: 10px; }
-  .cr-note b { color: var(--muted); font-weight: 600; }
-
-  .switch-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 6px 0; }
-  .switch-row .sw-text { font-size: 13.5px; color: var(--muted); line-height: 1.5; }
-  .switch-row .sw-text b { color: var(--ink); font-weight: 600; }
-
-  .cmd-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-  .copy-btn {
-    font-family: var(--mono); font-size: 12.5px; color: var(--bg);
-    background: var(--aurora); border: none; padding: 8px 14px; border-radius: 7px;
-    cursor: pointer; font-weight: 600; transition: transform 0.1s, background 0.15s;
+  /* ---- output: the deliverable ---- */
+  .out-head {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 12px; margin-bottom: 10px;
   }
-  .copy-btn:hover { background: #7ff2dc; }
-  .copy-btn:active { transform: scale(0.97); }
-  .copy-btn.copied { background: var(--amber); }
+  .out-head h2 { margin: 0; }
+  .copy {
+    font-family: var(--mono); font-size: 12.5px; color: var(--on-accent);
+    background: var(--accent); border: none; padding: 8px 14px;
+    min-height: 36px; cursor: pointer; font-weight: 500;
+  }
+  .copy:hover { background: #7ff2dc; }
+  .copy.done { background: var(--muted); }
+  .copy:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   pre.cmd {
-    font-family: var(--mono); font-size: 13px; line-height: 1.75;
-    background: #060c17; border: 1px solid var(--hairline); border-radius: 8px;
-    padding: 16px 18px; overflow-x: auto; margin: 0; color: #cdeee6;
+    font-family: var(--mono); font-size: 12.5px; line-height: 1.75;
+    background: var(--inset); border: 1px solid var(--rule);
+    padding: 14px 16px; overflow-x: auto; margin: 0; color: #cfe7e0;
   }
-  pre.cmd .c { color: var(--muted-2); }
-  pre.cmd .k { color: var(--amber); }
-  .note {
-    font-size: 13px; color: var(--muted); line-height: 1.6;
-    border-top: 1px solid var(--hairline); margin-top: 18px; padding-top: 14px;
-  }
-  .note b { color: var(--muted); }
-  .note code { font-family: var(--mono); font-size: 12px; }
+  pre.cmd .c { color: var(--dim); }
+  pre.cmd .k { color: var(--accent); }
 
   footer {
-    max-width: 1180px; margin: 0 auto; padding: 0 24px 50px;
-    color: var(--muted-2); font-size: 12.5px; font-family: var(--mono);
-    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+    border-top: 1px solid var(--rule); padding: 16px 0 40px;
+    font-family: var(--mono); font-size: 11.5px; color: var(--dim);
+    display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
   }
-  footer a { color: var(--muted-2); }
+  footer a { color: var(--muted); }
 
-  /* ---- mobile ---- */
+  /* ---- narrow ---- */
+  @media (max-width: 900px) {
+    main { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+    .map-col { position: static; }
+  }
   @media (max-width: 560px) {
-    header.top { padding: 28px 18px 8px; }
-    main { padding: 16px 18px 60px; gap: 16px; }
-    footer { padding: 0 18px 40px; }
-    .card { padding: 18px 16px; }
-    .map-panel { padding: 14px; }
-
-    /* caption was two side-by-side spans, each wrapping to a ragged 2 lines */
-    .map-caption {
-      flex-direction: column; align-items: flex-start;
-      gap: 3px; padding-bottom: 10px;
-    }
-
-    /* The pill-shaped container relies on its buttons fitting one row. On a
-       phone they wrap, leaving a big rounded blob with items floating in it.
-       Drop the container chrome and lay the buttons out as a 2-up grid, each
-       its own pill; an odd last item spans the full width. */
-    .seg {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
-      width: 100%; padding: 0; background: none; border: none;
-    }
+    .wrap { padding: 0 18px; }
+    header { padding: 22px 0 16px; margin-bottom: 20px; }
+    .row { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+    .row > .k { padding-top: 0; }
+    .seg { display: grid; grid-template-columns: 1fr 1fr; }
     .seg button:nth-child(odd):last-child { grid-column: 1 / -1; }
-    .seg button {
-      min-height: 44px; padding: 0 10px; border-radius: 8px;
-      border: 1px solid var(--hairline); background: rgba(255,255,255,0.03);
-    }
-    .seg button.active { border-color: var(--aurora); }
-
-    .copy-btn { min-height: 44px; padding: 0 18px; }
+    .seg button { min-height: 44px; }
+    .profiles { grid-template-columns: 1fr; }
     input[type="text"] { min-height: 44px; }
-    .skip-link { padding: 12px 16px; }
-    .row label.lbl { min-width: 100%; }
-  }
-  /* map markers can't reach 44px — the southern cities sit too close together
-     for non-overlapping hit areas — but the halo gives a little more room */
-  @media (pointer: coarse) {
-    .city .dot-halo { r: 13; }
+    .copy { min-height: 44px; }
   }
 </style>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to configurator</a>
 
-<header class="top">
-  <div class="eyebrow">MeshCore · Norway</div>
-  <h1>Node configurator for the Norwegian mesh</h1>
-  <p class="lede">Radio, timing profile, and region scope for a repeater in one paste-able block. Everything targets the <code>EU/UK Narrow</code> convention (869.618 MHz @ 62.5 kHz) already used across the Norwegian mesh.</p>
-</header>
+<div class="wrap">
+  <header>
+    <div class="kicker">MeshCore · Norway · EU868 869.618 MHz</div>
+    <h1>Repeater node configurator</h1>
+    <p class="lede">Radio, timing profile, and region scope for a repeater in one paste-able block. Everything targets the <code>EU/UK Narrow</code> convention (869.618 MHz @ 62.5 kHz) already used across the Norwegian mesh.</p>
+  </header>
 
-<main id="main">
-  <div class="left-col">
-    <div class="panel map-panel">
-      <div class="map-caption">
-        <span>Where does this node live?</span>
-        <span>EU868 · 869.618 MHz</span>
+  <main id="main">
+    <div class="map-col">
+      <div class="map-head">
+        <span>Node location</span>
+        <span id="posRead">—</span>
       </div>
-      <svg class="map" viewBox="0 0 460 560" role="img" aria-label="Map of Norway with selectable city markers">
-        <path class="landmass" d="M 355.3,16.0 L 352.4,17.8 L 352.2,18.8 L 350.9,17.8 L 349.3,17.7 L 348.0,20.9 L 348.2,22.9 L 349.6,23.9 L 349.0,24.9 L 348.7,26.5 L 347.9,27.3 L 345.0,24.5 L 343.1,24.5 L 342.2,25.8 L 341.2,24.0 L 336.9,22.5 L 337.2,24.2 L 336.6,25.7 L 335.0,26.2 L 335.4,27.1 L 337.3,28.3 L 336.3,28.9 L 334.2,27.5 L 332.1,27.2 L 329.5,30.0 L 329.2,31.0 L 332.4,33.2 L 335.3,34.0 L 336.0,35.3 L 334.1,34.6 L 332.4,35.7 L 331.4,38.0 L 330.8,36.5 L 328.8,34.5 L 323.5,32.9 L 319.5,36.2 L 317.4,36.5 L 317.7,35.6 L 321.2,32.2 L 321.1,31.2 L 320.5,30.1 L 319.0,29.4 L 317.7,27.7 L 315.9,30.0 L 314.5,29.9 L 314.3,28.8 L 311.8,29.4 L 312.4,31.2 L 310.3,32.6 L 309.5,31.7 L 306.9,32.7 L 305.7,34.4 L 302.5,33.9 L 298.9,35.6 L 298.9,36.7 L 297.2,36.6 L 295.9,35.7 L 294.5,36.4 L 295.0,38.3 L 295.9,39.8 L 298.5,40.0 L 299.0,40.6 L 297.9,41.6 L 297.2,43.4 L 297.9,44.2 L 309.9,42.9 L 309.8,43.7 L 307.8,46.1 L 301.8,48.0 L 300.9,50.4 L 293.9,48.5 L 291.8,46.3 L 290.6,48.1 L 288.2,48.3 L 288.4,46.9 L 287.3,46.3 L 286.3,46.9 L 286.1,48.6 L 285.2,50.0 L 285.3,51.4 L 282.7,52.9 L 283.0,54.3 L 284.2,55.7 L 284.8,58.4 L 284.7,59.4 L 283.7,59.4 L 282.7,60.3 L 280.1,58.4 L 277.5,53.4 L 276.4,52.6 L 273.4,52.6 L 272.0,53.4 L 270.6,55.0 L 269.7,57.3 L 269.6,58.4 L 270.4,60.1 L 271.6,60.9 L 273.9,61.2 L 273.5,63.5 L 273.7,64.9 L 271.3,65.7 L 269.5,62.5 L 268.0,62.5 L 266.2,63.5 L 265.2,64.8 L 264.8,66.3 L 263.0,68.6 L 261.5,69.5 L 260.7,69.3 L 260.3,67.8 L 260.6,66.7 L 262.2,63.8 L 264.4,61.9 L 263.4,61.0 L 264.9,59.1 L 266.4,58.7 L 266.7,57.9 L 265.2,56.8 L 265.5,56.3 L 265.4,55.0 L 263.4,54.4 L 260.9,51.9 L 258.2,50.4 L 255.2,52.1 L 255.9,53.5 L 258.0,55.6 L 258.7,57.1 L 258.1,57.3 L 255.5,55.2 L 252.8,55.8 L 252.9,52.7 L 251.9,51.0 L 251.2,50.5 L 248.9,52.6 L 248.6,54.1 L 245.7,53.4 L 244.1,54.6 L 243.0,56.2 L 242.9,58.4 L 240.0,59.6 L 239.2,61.8 L 239.1,64.1 L 237.8,69.1 L 236.2,70.6 L 235.6,69.7 L 234.1,69.4 L 232.9,70.1 L 232.3,71.9 L 233.5,72.5 L 233.3,73.4 L 232.1,74.5 L 228.8,76.5 L 227.9,77.6 L 226.3,76.7 L 223.6,76.8 L 222.6,79.2 L 220.3,78.9 L 220.6,80.9 L 219.2,80.6 L 219.1,82.2 L 218.3,83.6 L 214.8,84.3 L 213.6,85.6 L 213.8,87.5 L 214.5,89.9 L 212.8,92.6 L 213.0,93.7 L 211.6,96.5 L 212.2,98.5 L 213.9,99.6 L 219.7,99.8 L 222.1,101.3 L 221.2,102.2 L 217.3,102.7 L 211.9,108.8 L 210.7,107.8 L 211.7,106.9 L 212.3,104.7 L 212.4,103.1 L 212.8,101.7 L 212.2,100.8 L 210.4,101.0 L 209.2,97.3 L 208.2,97.0 L 203.3,100.1 L 203.4,102.9 L 202.2,103.4 L 200.0,104.0 L 200.2,102.5 L 198.8,100.8 L 196.6,100.3 L 198.4,99.5 L 198.7,98.1 L 201.2,95.4 L 202.3,93.0 L 202.5,91.2 L 203.2,89.4 L 202.6,87.1 L 201.2,87.3 L 196.8,89.9 L 196.3,93.4 L 194.0,94.4 L 192.4,96.1 L 190.2,100.5 L 189.2,101.1 L 186.8,98.7 L 185.5,98.5 L 184.4,98.9 L 180.6,102.9 L 180.0,104.6 L 178.7,105.4 L 176.2,105.8 L 175.9,107.2 L 174.9,107.6 L 173.4,111.3 L 173.2,113.3 L 172.2,114.8 L 172.2,115.8 L 175.7,115.8 L 176.8,116.4 L 178.3,118.8 L 179.5,119.7 L 179.2,120.5 L 173.7,122.6 L 173.6,123.8 L 172.4,124.8 L 168.1,124.2 L 163.3,125.1 L 158.5,128.9 L 158.1,130.0 L 158.4,130.8 L 156.6,131.1 L 156.0,133.2 L 153.9,132.8 L 152.4,133.4 L 152.5,134.8 L 150.0,138.7 L 147.7,143.9 L 148.3,145.0 L 149.8,144.7 L 150.8,143.4 L 152.8,142.3 L 156.8,138.0 L 163.2,135.5 L 166.0,133.8 L 166.7,132.3 L 170.2,131.0 L 170.1,132.5 L 171.1,132.7 L 178.1,129.8 L 177.4,130.9 L 177.7,132.3 L 178.4,132.6 L 180.0,132.3 L 183.3,128.9 L 184.3,130.1 L 187.9,127.4 L 188.8,125.4 L 190.7,125.8 L 191.0,127.5 L 193.3,127.7 L 195.3,127.6 L 195.2,126.3 L 195.8,125.0 L 197.2,124.2 L 199.1,124.5 L 200.0,125.1 L 200.2,126.0 L 201.9,126.1 L 201.3,127.1 L 199.8,126.9 L 198.8,127.9 L 198.3,129.2 L 196.6,130.5 L 192.2,130.9 L 190.1,132.0 L 186.4,136.0 L 176.6,143.5 L 176.2,145.2 L 176.3,148.5 L 179.0,149.6 L 177.7,150.0 L 178.5,150.8 L 184.0,152.3 L 183.8,153.1 L 180.3,155.1 L 177.8,157.6 L 174.7,163.2 L 172.2,164.2 L 171.6,165.2 L 171.9,166.4 L 172.8,166.8 L 174.6,166.4 L 175.0,166.8 L 170.2,168.7 L 169.9,169.7 L 168.1,169.1 L 166.6,169.8 L 163.3,171.8 L 163.0,172.8 L 160.9,173.5 L 160.7,174.4 L 161.1,175.1 L 165.3,174.1 L 165.7,174.4 L 165.5,175.7 L 163.0,176.5 L 162.4,177.3 L 159.1,177.3 L 158.1,177.9 L 157.0,179.3 L 158.2,181.0 L 155.4,181.1 L 154.6,182.0 L 153.3,182.3 L 151.6,186.1 L 150.5,186.8 L 149.2,189.4 L 147.7,188.9 L 144.4,189.7 L 144.5,190.8 L 143.9,192.0 L 143.9,193.5 L 146.1,195.0 L 147.2,198.9 L 146.5,199.2 L 143.4,197.6 L 138.9,199.3 L 139.6,201.1 L 143.3,203.7 L 147.0,202.8 L 147.0,203.6 L 143.5,205.8 L 139.9,206.9 L 137.9,209.7 L 137.6,211.2 L 137.5,214.3 L 137.7,215.0 L 137.6,215.8 L 131.6,218.6 L 131.9,219.9 L 134.6,219.9 L 134.9,220.8 L 134.8,222.2 L 134.3,223.5 L 130.2,225.3 L 130.1,226.3 L 130.9,227.7 L 130.2,228.7 L 129.9,230.1 L 130.3,230.9 L 131.4,230.8 L 131.9,229.8 L 134.2,231.0 L 134.9,230.8 L 136.1,228.5 L 137.1,228.4 L 137.2,229.3 L 137.6,229.8 L 138.4,229.3 L 138.9,228.0 L 138.9,227.0 L 137.9,224.7 L 137.9,223.2 L 139.1,223.5 L 140.6,224.9 L 139.9,226.0 L 139.9,228.6 L 138.9,231.0 L 137.3,230.7 L 136.6,231.4 L 136.6,232.4 L 136.4,233.1 L 134.8,235.0 L 135.2,236.2 L 133.9,238.0 L 133.9,238.9 L 135.0,239.7 L 136.2,239.8 L 136.0,240.7 L 134.9,242.0 L 133.9,245.7 L 132.6,247.3 L 131.6,246.2 L 127.5,248.2 L 126.2,249.6 L 126.1,250.8 L 128.4,251.1 L 126.5,252.8 L 125.1,253.4 L 123.5,253.7 L 122.5,250.9 L 119.4,250.5 L 118.4,251.4 L 116.0,251.7 L 113.6,253.0 L 112.7,254.2 L 112.2,255.8 L 112.3,257.5 L 111.9,258.5 L 111.9,260.7 L 112.2,261.6 L 113.1,262.1 L 114.6,260.5 L 116.0,260.8 L 115.2,261.9 L 115.5,262.6 L 117.5,262.1 L 119.8,260.4 L 120.7,260.5 L 120.4,261.8 L 122.0,263.0 L 122.4,263.9 L 120.2,265.0 L 119.7,266.1 L 118.8,266.6 L 116.9,266.4 L 116.0,266.9 L 115.6,268.2 L 114.6,268.3 L 113.4,269.5 L 113.8,270.6 L 113.6,271.8 L 110.7,273.6 L 110.0,275.3 L 107.6,277.2 L 106.4,279.2 L 106.4,281.1 L 104.9,281.4 L 103.2,283.1 L 102.9,284.8 L 101.3,286.1 L 100.6,288.0 L 100.7,291.8 L 99.1,291.9 L 98.0,294.0 L 97.9,295.4 L 96.7,297.0 L 96.1,298.7 L 95.8,302.3 L 95.3,303.2 L 95.1,302.2 L 94.1,301.6 L 93.0,302.0 L 92.2,303.2 L 92.2,305.3 L 91.1,305.6 L 90.3,304.8 L 90.8,303.0 L 90.3,302.0 L 88.2,301.7 L 86.6,302.6 L 85.1,302.0 L 86.6,299.9 L 86.2,299.4 L 86.4,298.8 L 86.3,297.3 L 82.9,294.6 L 79.2,294.5 L 77.6,295.9 L 79.7,298.4 L 79.5,300.3 L 75.1,302.0 L 75.0,302.9 L 78.1,304.1 L 76.8,304.5 L 75.7,306.7 L 76.3,307.3 L 74.3,310.0 L 72.2,309.1 L 71.4,307.8 L 70.2,308.3 L 70.4,309.2 L 70.0,309.9 L 69.4,309.5 L 68.0,310.7 L 67.3,312.6 L 67.4,315.0 L 66.9,316.2 L 67.7,318.8 L 70.7,318.5 L 70.8,319.5 L 67.9,321.4 L 67.8,322.4 L 64.4,323.3 L 60.6,326.7 L 53.8,329.7 L 51.9,331.8 L 52.1,333.3 L 49.5,335.0 L 48.9,334.3 L 47.6,334.5 L 44.6,337.7 L 45.5,338.3 L 41.7,339.8 L 41.4,341.5 L 40.9,341.9 L 41.4,343.3 L 39.4,344.2 L 38.9,345.4 L 39.4,346.2 L 39.3,347.0 L 38.3,347.1 L 38.0,347.9 L 37.9,348.8 L 39.4,348.9 L 40.0,350.3 L 39.9,351.3 L 39.2,349.9 L 38.7,349.8 L 37.1,350.1 L 35.2,351.9 L 33.6,351.7 L 34.3,350.7 L 34.2,350.5 L 32.4,350.3 L 33.0,351.9 L 30.9,352.2 L 31.3,352.6 L 30.6,353.6 L 30.8,354.2 L 31.9,354.3 L 31.9,354.9 L 31.3,355.7 L 29.6,355.8 L 29.3,356.2 L 29.4,356.9 L 28.3,357.4 L 28.9,359.4 L 29.8,360.1 L 29.2,360.7 L 29.3,361.4 L 28.4,361.3 L 28.7,360.0 L 27.1,359.0 L 26.8,358.0 L 26.1,357.7 L 25.7,358.4 L 24.5,358.7 L 24.7,359.6 L 24.1,359.6 L 25.2,361.0 L 24.8,361.1 L 24.8,362.4 L 26.6,362.5 L 27.5,363.6 L 27.4,364.8 L 26.5,365.2 L 25.0,364.6 L 24.1,365.3 L 22.7,364.8 L 22.7,366.0 L 23.7,366.8 L 23.6,367.4 L 20.2,371.3 L 20.1,371.8 L 21.3,372.9 L 19.8,373.8 L 19.7,374.4 L 20.0,374.8 L 19.7,375.2 L 20.1,376.6 L 22.8,375.2 L 22.9,375.8 L 22.1,376.1 L 22.5,377.0 L 22.5,378.0 L 21.8,378.0 L 21.6,376.8 L 20.4,377.3 L 20.2,378.4 L 19.4,379.4 L 19.4,380.7 L 19.7,381.4 L 18.6,382.1 L 18.6,382.9 L 19.2,383.4 L 23.0,382.6 L 25.3,383.7 L 26.6,385.3 L 26.5,386.4 L 21.4,387.9 L 20.9,388.5 L 21.2,389.6 L 20.2,390.7 L 20.2,391.8 L 18.5,391.5 L 16.0,393.1 L 16.9,393.8 L 19.4,393.8 L 20.7,394.9 L 21.6,393.2 L 22.0,394.0 L 21.8,394.6 L 22.3,395.3 L 22.1,396.1 L 19.2,395.1 L 18.5,395.6 L 19.0,396.9 L 20.5,397.3 L 20.5,397.8 L 17.9,399.1 L 18.0,399.5 L 17.5,400.1 L 17.8,400.6 L 17.1,401.9 L 17.1,403.1 L 17.6,405.0 L 19.2,406.2 L 18.4,408.8 L 19.8,410.0 L 19.0,411.0 L 21.7,417.9 L 22.0,420.1 L 21.3,420.2 L 21.1,418.4 L 19.9,415.8 L 18.8,414.5 L 18.1,415.0 L 18.4,415.4 L 18.1,415.8 L 18.8,417.4 L 18.5,418.3 L 19.1,418.4 L 19.0,419.8 L 20.3,422.5 L 20.0,423.0 L 20.2,423.7 L 21.6,424.5 L 20.9,424.8 L 20.7,425.6 L 21.6,427.7 L 21.1,429.5 L 21.8,430.9 L 21.9,431.6 L 21.6,432.1 L 23.0,434.5 L 22.6,435.2 L 23.1,436.5 L 23.0,437.3 L 24.3,438.8 L 23.3,439.4 L 22.9,441.5 L 23.6,442.8 L 26.1,444.3 L 23.8,445.7 L 23.5,446.7 L 24.0,447.3 L 23.7,448.8 L 24.8,452.5 L 24.4,453.0 L 24.4,454.2 L 24.9,454.5 L 24.4,455.6 L 24.7,456.2 L 24.4,456.7 L 25.4,459.8 L 24.3,460.4 L 26.5,461.6 L 26.6,462.8 L 26.4,464.8 L 26.0,464.8 L 24.5,462.8 L 23.9,463.1 L 25.9,467.5 L 25.4,470.6 L 25.6,471.4 L 25.6,474.5 L 26.0,475.3 L 27.1,475.6 L 27.9,475.2 L 28.5,474.2 L 30.4,474.5 L 31.5,472.2 L 32.8,470.7 L 32.5,470.2 L 32.7,469.9 L 33.7,470.6 L 34.5,469.9 L 34.9,468.5 L 37.4,467.6 L 39.5,468.2 L 39.4,468.8 L 37.5,469.5 L 35.7,469.3 L 35.4,471.2 L 35.8,472.9 L 35.1,473.7 L 34.2,473.6 L 34.5,474.1 L 33.8,474.3 L 33.9,474.7 L 35.3,474.5 L 35.2,475.4 L 34.1,475.4 L 33.1,474.6 L 31.9,475.8 L 32.2,477.2 L 33.3,477.9 L 32.2,479.3 L 32.1,481.1 L 32.5,481.4 L 32.1,482.4 L 32.0,483.7 L 32.7,484.8 L 31.8,485.8 L 32.0,486.4 L 31.7,487.1 L 31.8,488.2 L 30.9,489.8 L 31.8,492.1 L 31.8,493.2 L 33.7,497.4 L 35.4,498.4 L 35.9,500.0 L 36.8,500.7 L 36.9,502.1 L 37.2,502.4 L 38.0,502.2 L 38.2,502.9 L 39.1,503.1 L 39.8,504.2 L 43.8,506.4 L 44.0,507.3 L 46.8,508.8 L 47.4,510.1 L 49.1,511.2 L 48.7,513.2 L 48.0,513.9 L 49.4,515.8 L 54.3,516.9 L 54.8,518.3 L 55.6,518.4 L 56.1,519.3 L 56.6,519.2 L 57.4,517.7 L 58.8,519.3 L 58.8,517.9 L 59.1,517.7 L 59.9,517.9 L 60.6,519.0 L 63.0,518.8 L 63.0,519.7 L 64.0,520.2 L 65.6,519.4 L 66.3,517.9 L 68.3,518.0 L 68.5,517.0 L 69.0,516.6 L 72.0,516.0 L 72.4,515.3 L 71.8,514.3 L 71.7,513.5 L 72.5,514.3 L 72.8,515.4 L 73.7,515.0 L 74.3,513.9 L 74.5,514.3 L 75.4,514.0 L 77.8,510.2 L 78.9,509.2 L 79.8,509.2 L 80.3,507.5 L 81.0,507.1 L 81.4,505.8 L 82.5,505.5 L 82.5,505.1 L 81.9,505.1 L 82.3,504.4 L 86.2,500.3 L 86.7,498.7 L 90.8,493.1 L 91.2,492.3 L 91.1,491.5 L 92.4,490.7 L 95.1,487.2 L 96.8,486.2 L 98.3,484.0 L 98.7,483.2 L 98.4,482.7 L 98.4,482.1 L 98.9,481.9 L 99.1,480.6 L 100.1,480.8 L 101.2,482.5 L 102.0,482.4 L 102.1,482.2 L 102.0,481.8 L 104.1,481.4 L 104.6,480.4 L 106.0,480.4 L 108.3,478.9 L 109.5,476.6 L 110.0,478.5 L 110.9,478.6 L 111.3,477.5 L 110.9,476.9 L 111.6,476.8 L 111.7,476.2 L 111.2,475.9 L 111.7,474.8 L 111.5,473.4 L 112.3,474.4 L 112.5,473.6 L 113.3,473.8 L 112.7,472.1 L 111.9,471.6 L 112.0,471.0 L 111.7,470.5 L 112.1,468.2 L 111.1,466.2 L 111.6,464.6 L 111.6,463.5 L 110.6,462.9 L 109.7,463.1 L 107.6,459.4 L 107.8,459.2 L 108.8,460.8 L 110.0,459.9 L 110.7,460.7 L 111.8,460.6 L 113.8,458.5 L 114.3,460.7 L 113.7,460.6 L 113.6,461.1 L 113.9,461.5 L 113.5,461.9 L 113.3,463.4 L 112.8,463.8 L 113.1,464.5 L 114.0,464.1 L 114.1,467.4 L 114.6,468.9 L 115.6,468.8 L 115.1,470.0 L 115.3,472.3 L 115.7,472.4 L 115.6,472.9 L 116.2,473.6 L 116.5,474.5 L 117.7,473.7 L 117.9,475.0 L 117.1,475.3 L 116.6,476.4 L 116.7,477.0 L 118.6,479.1 L 119.6,479.5 L 119.6,480.4 L 121.0,480.6 L 122.1,477.2 L 125.1,476.0 L 126.9,480.4 L 127.0,484.4 L 128.2,484.8 L 130.1,483.2 L 131.0,479.3 L 132.1,476.8 L 131.9,475.7 L 132.1,472.7 L 132.8,471.2 L 132.7,467.6 L 130.8,458.5 L 130.8,456.9 L 131.9,455.9 L 133.4,455.7 L 133.7,454.0 L 134.6,453.9 L 134.6,451.7 L 134.1,449.4 L 133.1,448.1 L 135.3,446.0 L 138.2,446.5 L 141.2,443.5 L 143.4,439.5 L 144.4,434.9 L 143.7,430.2 L 145.4,426.9 L 145.4,422.3 L 144.1,419.5 L 143.8,417.6 L 142.0,414.4 L 141.0,408.4 L 139.2,403.6 L 142.9,402.3 L 145.3,402.6 L 146.7,402.1 L 147.0,398.5 L 148.7,396.1 L 149.7,390.6 L 144.9,382.6 L 142.4,382.8 L 138.0,376.7 L 140.5,356.2 L 140.3,354.9 L 136.4,342.9 L 137.9,337.7 L 136.8,331.8 L 139.2,328.2 L 135.3,317.9 L 138.9,310.5 L 139.0,309.8 L 138.1,305.6 L 140.3,303.1 L 141.0,300.5 L 146.6,291.1 L 150.4,287.9 L 155.1,286.5 L 167.6,289.6 L 170.3,283.1 L 169.8,272.7 L 169.2,271.7 L 166.0,270.9 L 162.3,268.0 L 163.0,265.7 L 173.0,247.6 L 173.9,242.7 L 175.9,240.1 L 175.9,232.2 L 176.4,225.7 L 177.8,221.1 L 177.1,218.1 L 176.2,208.9 L 184.4,208.1 L 191.7,203.2 L 190.0,195.6 L 193.8,191.0 L 197.0,186.0 L 200.5,179.2 L 206.2,174.2 L 206.5,168.2 L 201.3,159.4 L 202.4,156.2 L 206.6,155.7 L 208.9,151.3 L 211.9,141.1 L 218.9,136.1 L 220.6,133.4 L 226.9,136.5 L 230.6,139.1 L 234.5,130.5 L 233.7,122.6 L 234.2,117.5 L 238.6,115.8 L 242.1,118.6 L 247.9,118.2 L 262.9,124.3 L 267.8,119.2 L 263.3,116.7 L 265.3,115.4 L 267.6,112.5 L 269.6,107.4 L 269.3,102.8 L 265.2,98.1 L 273.2,97.6 L 275.8,95.3 L 281.3,98.4 L 282.2,95.8 L 281.2,95.1 L 280.1,92.2 L 280.7,90.9 L 284.8,88.0 L 290.4,89.3 L 299.3,101.6 L 299.4,103.1 L 301.9,106.6 L 302.4,110.6 L 305.0,109.6 L 309.2,111.7 L 313.3,111.7 L 315.3,114.0 L 319.7,111.6 L 323.4,111.1 L 324.4,109.1 L 325.0,106.6 L 326.5,106.0 L 328.3,106.5 L 329.8,108.2 L 331.1,108.0 L 331.1,109.1 L 332.9,110.5 L 338.6,112.0 L 341.2,113.8 L 342.3,116.6 L 343.1,116.8 L 343.5,114.8 L 344.8,114.6 L 346.5,113.5 L 346.5,111.1 L 347.2,107.4 L 348.4,106.6 L 348.6,105.8 L 352.5,103.5 L 353.8,104.2 L 354.7,103.9 L 357.1,99.5 L 356.7,98.5 L 356.5,94.6 L 355.8,92.1 L 356.0,90.3 L 356.5,89.3 L 356.5,87.8 L 357.9,85.8 L 358.2,84.7 L 357.7,83.8 L 358.1,82.3 L 358.6,81.8 L 358.4,81.1 L 358.9,79.9 L 358.1,78.9 L 359.4,78.2 L 360.3,76.8 L 359.8,75.0 L 359.2,74.4 L 364.2,70.2 L 364.7,68.8 L 367.2,66.9 L 367.5,66.0 L 367.3,65.5 L 368.0,65.0 L 368.2,64.1 L 371.7,63.2 L 372.2,63.9 L 374.5,63.3 L 374.5,64.0 L 375.0,64.4 L 376.1,64.1 L 377.3,65.2 L 381.7,63.5 L 381.3,62.7 L 383.8,61.1 L 385.3,60.9 L 385.9,59.4 L 386.7,59.0 L 388.7,59.4 L 392.2,58.3 L 392.6,61.3 L 395.5,64.8 L 398.4,66.3 L 398.2,67.5 L 399.4,68.7 L 411.1,73.4 L 411.7,75.5 L 414.4,81.7 L 412.5,84.8 L 406.3,91.3 L 406.2,93.3 L 405.8,95.6 L 406.6,97.0 L 409.7,99.3 L 412.8,95.7 L 412.7,95.1 L 414.1,90.8 L 413.5,90.4 L 413.6,88.6 L 415.3,87.5 L 418.0,87.8 L 420.0,86.2 L 420.4,85.1 L 422.8,83.7 L 424.0,84.3 L 425.5,84.0 L 426.7,82.2 L 427.2,80.0 L 427.8,79.5 L 427.8,77.6 L 427.2,75.4 L 426.4,75.5 L 426.5,74.8 L 427.4,74.5 L 428.5,74.9 L 431.3,77.0 L 433.3,79.3 L 438.0,79.7 L 440.1,78.6 L 440.4,75.8 L 440.0,74.4 L 440.3,74.0 L 439.2,72.6 L 439.4,72.1 L 438.2,69.7 L 434.7,68.4 L 431.9,68.2 L 430.0,66.1 L 419.4,64.7 L 420.7,63.4 L 420.2,62.3 L 417.9,61.3 L 408.2,58.8 L 406.8,57.6 L 406.8,56.8 L 421.2,59.9 L 426.6,59.9 L 430.0,59.1 L 429.8,57.9 L 431.7,56.8 L 431.5,55.3 L 432.8,54.9 L 434.2,53.2 L 440.4,52.4 L 442.5,51.4 L 442.5,48.9 L 444.0,47.7 L 444.0,46.8 L 441.6,45.9 L 440.9,44.7 L 439.1,44.4 L 437.4,45.0 L 436.9,43.4 L 435.6,42.2 L 435.6,40.4 L 429.7,40.6 L 431.2,38.7 L 430.4,37.5 L 428.9,36.6 L 428.9,35.7 L 426.5,34.4 L 424.2,34.5 L 422.4,36.6 L 422.1,33.9 L 420.6,33.6 L 418.3,34.2 L 415.0,33.4 L 415.9,32.4 L 414.5,31.4 L 414.0,30.0 L 409.2,27.5 L 405.3,28.0 L 401.4,32.0 L 399.9,37.8 L 398.2,41.3 L 393.8,41.7 L 395.5,40.6 L 398.6,36.7 L 398.3,34.4 L 397.4,33.7 L 395.7,33.9 L 396.0,33.0 L 398.9,30.9 L 401.1,28.5 L 402.1,26.0 L 401.9,24.1 L 398.1,22.7 L 397.5,20.2 L 396.3,19.6 L 392.3,19.6 L 391.1,20.6 L 389.6,20.1 L 388.9,18.3 L 386.5,18.2 L 384.5,19.7 L 383.9,22.3 L 382.1,21.7 L 380.2,21.9 L 378.6,24.1 L 377.9,26.5 L 379.3,27.9 L 382.4,28.5 L 382.7,29.3 L 379.3,31.1 L 378.3,32.5 L 378.0,34.4 L 375.5,39.5 L 375.2,41.4 L 372.2,42.3 L 371.6,45.0 L 370.4,43.2 L 371.8,36.8 L 371.6,35.1 L 373.2,31.5 L 373.5,29.4 L 372.8,28.8 L 372.8,26.5 L 372.2,24.6 L 370.9,24.4 L 366.5,27.4 L 361.0,34.1 L 359.9,38.1 L 355.1,42.3 L 351.1,47.8 L 348.1,48.7 L 348.4,47.9 L 349.8,47.5 L 350.7,46.4 L 349.6,45.6 L 349.6,44.5 L 351.0,42.2 L 349.4,42.2 L 348.9,41.6 L 349.0,40.6 L 354.1,35.0 L 359.1,32.7 L 356.6,32.7 L 358.4,31.3 L 358.8,30.2 L 360.0,28.8 L 359.5,27.6 L 357.7,26.6 L 362.0,25.4 L 365.1,22.5 L 364.4,20.9 L 363.1,20.8 L 361.3,21.7 L 360.4,21.1 L 361.6,20.3 L 361.9,19.3 L 361.2,18.3 L 359.9,17.8 L 358.4,18.3 L 358.4,17.3 L 355.3,16.0 Z M 331.3,19.9 L 329.0,20.5 L 327.9,20.1 L 328.0,20.7 L 327.6,20.8 L 327.4,21.9 L 328.3,22.4 L 326.4,22.9 L 327.2,23.2 L 325.8,23.9 L 327.2,24.6 L 326.5,25.7 L 327.5,25.9 L 327.2,26.1 L 328.6,27.1 L 331.6,26.3 L 332.3,25.8 L 332.3,25.1 L 330.1,24.4 L 332.3,23.9 L 329.6,23.4 L 329.9,23.0 L 329.7,22.4 L 331.1,21.5 L 331.0,21.2 L 331.7,20.6 L 331.0,20.2 L 331.3,19.9 Z M 94.6,283.0 L 90.1,285.0 L 89.2,285.9 L 88.9,288.6 L 88.5,289.6 L 86.9,290.5 L 86.7,291.8 L 87.7,292.4 L 90.4,290.8 L 91.5,288.2 L 93.3,285.4 L 93.8,286.3 L 94.3,285.7 L 93.3,284.6 L 95.0,283.3 L 94.6,283.0 Z M 140.5,188.8 L 139.4,189.5 L 137.9,189.8 L 138.0,191.0 L 137.4,191.9 L 137.4,191.2 L 136.7,191.1 L 135.9,191.7 L 136.3,193.1 L 135.5,193.5 L 135.7,194.3 L 135.4,195.1 L 134.5,195.9 L 135.3,197.0 L 134.9,197.6 L 135.2,197.8 L 137.6,195.8 L 138.8,193.3 L 139.2,194.0 L 140.1,193.6 L 140.5,192.8 L 140.4,192.3 L 138.2,192.7 L 139.6,192.3 L 140.4,190.9 L 140.7,189.9 L 140.5,188.8 Z M 171.2,163.2 L 169.4,163.8 L 169.0,163.3 L 167.8,163.5 L 167.9,164.6 L 166.7,164.9 L 166.1,165.9 L 166.5,166.4 L 166.4,167.8 L 167.9,167.6 L 168.1,166.7 L 169.0,166.0 L 169.0,165.1 L 169.4,164.5 L 170.6,164.8 L 171.3,163.9 L 171.2,163.2 Z M 137.1,155.4 L 134.9,156.5 L 135.7,157.2 L 133.8,158.0 L 133.3,158.9 L 133.3,160.4 L 134.8,160.7 L 134.2,160.3 L 134.3,159.4 L 134.6,158.9 L 134.8,159.3 L 135.3,157.6 L 136.3,158.1 L 138.9,156.3 L 139.6,156.2 L 137.1,155.4 Z M 169.7,158.2 L 168.2,158.3 L 168.1,159.3 L 166.0,158.9 L 164.7,160.7 L 165.7,161.5 L 168.0,161.0 L 169.0,160.3 L 169.7,158.9 L 169.7,158.2 Z M 174.0,158.7 L 171.3,160.5 L 170.5,161.5 L 171.5,162.2 L 172.9,162.0 L 174.0,161.6 L 175.1,160.0 L 174.0,158.7 Z M 340.2,19.3 L 339.6,19.7 L 340.4,20.6 L 338.9,20.2 L 337.9,21.3 L 341.1,22.8 L 341.8,21.8 L 341.2,21.3 L 342.1,21.0 L 342.2,20.8 L 341.7,20.6 L 342.5,19.9 L 340.2,19.3 Z M 145.9,183.5 L 145.2,183.7 L 144.9,184.8 L 145.1,185.3 L 144.4,186.2 L 143.8,184.1 L 143.3,183.9 L 142.6,184.7 L 142.9,186.7 L 145.4,187.2 L 146.3,185.5 L 146.3,184.5 L 145.9,184.4 L 145.9,183.5 Z"></path>
-      <g class="city" data-key="no-oslo" transform="translate(115.6,445.5)" tabindex="0" role="button" aria-label="Oslo"><circle class="ripple r1" r="0"></circle><circle class="ripple r2" r="0"></circle><circle class="dot-halo" r="11"></circle><circle class="dot" r="4"></circle><text class="dot-label" x="10" y="4" text-anchor="start">Oslo</text></g>
-      <g class="city" data-key="no-bergen" transform="translate(28.3,427.3)" tabindex="0" role="button" aria-label="Bergen"><circle class="ripple r1" r="0"></circle><circle class="ripple r2" r="0"></circle><circle class="dot-halo" r="11"></circle><circle class="dot" r="4"></circle><text class="dot-label" x="10" y="4" text-anchor="start">Bergen</text></g>
-      <g class="city" data-key="no-trondheim" transform="translate(109.9,311.7)" tabindex="0" role="button" aria-label="Trondheim"><circle class="ripple r1" r="0"></circle><circle class="ripple r2" r="0"></circle><circle class="dot-halo" r="11"></circle><circle class="dot" r="4"></circle><text class="dot-label" x="10" y="4" text-anchor="start">Trondheim</text></g>
-      <g class="city" data-key="no-stavanger" transform="translate(34.9,481.4)" tabindex="0" role="button" aria-label="Stavanger"><circle class="ripple r1" r="0"></circle><circle class="ripple r2" r="0"></circle><circle class="dot-halo" r="11"></circle><circle class="dot" r="4"></circle><text class="dot-label" x="10" y="-3" text-anchor="start">Stavanger</text></g>
-      <g class="city" data-key="no-drammen" transform="translate(106.8,452.0)" tabindex="0" role="button" aria-label="Drammen"><circle class="ripple r1" r="0"></circle><circle class="ripple r2" r="0"></circle><circle class="dot-halo" r="11"></circle><circle class="dot" r="4"></circle><text class="dot-label" x="-10" y="4" text-anchor="end">Drammen</text></g>
-      <g class="city" data-key="no-fredrikstad" transform="translate(118.5,472.0)" tabindex="0" role="button" aria-label="Fredrikstad"><circle class="ripple r1" r="0"></circle><circle class="ripple r2" r="0"></circle><circle class="dot-halo" r="11"></circle><circle class="dot" r="4"></circle><text class="dot-label" x="10" y="4" text-anchor="start">Fredrikstad</text></g>
-      <g class="city" data-key="no-kristiansand" transform="translate(71.3,512.7)" tabindex="0" role="button" aria-label="Kristiansand"><circle class="ripple r1" r="0"></circle><circle class="ripple r2" r="0"></circle><circle class="dot-halo" r="11"></circle><circle class="dot" r="4"></circle><text class="dot-label" x="10" y="4" text-anchor="start">Kristiansand</text></g>
-      <g class="city" data-key="no-sandnes" transform="translate(35.0,485.9)" tabindex="0" role="button" aria-label="Sandnes"><circle class="ripple r1" r="0"></circle><circle class="ripple r2" r="0"></circle><circle class="dot-halo" r="11"></circle><circle class="dot" r="4"></circle><text class="dot-label" x="10" y="11" text-anchor="start">Sandnes</text></g>
-      <g class="city" data-key="no-tromso" transform="translate(247.5,75.2)" tabindex="0" role="button" aria-label="Tromsø"><circle class="ripple r1" r="0"></circle><circle class="ripple r2" r="0"></circle><circle class="dot-halo" r="11"></circle><circle class="dot" r="4"></circle><text class="dot-label" x="10" y="4" text-anchor="start">Tromsø</text></g>
-      <g class="city" data-key="no-bodo" transform="translate(174.3,165.3)" tabindex="0" role="button" aria-label="Bodø"><circle class="ripple r1" r="0"></circle><circle class="ripple r2" r="0"></circle><circle class="dot-halo" r="11"></circle><circle class="dot" r="4"></circle><text class="dot-label" x="10" y="4" text-anchor="start">Bodø</text></g>
+      <svg class="map" viewBox="0 0 460 560" role="img" aria-label="Map of Norway with selectable node locations">
+        <path class="land" d="M 355.3,16.0 L 352.4,17.8 L 352.2,18.8 L 350.9,17.8 L 349.3,17.7 L 348.0,20.9 L 348.2,22.9 L 349.6,23.9 L 349.0,24.9 L 348.7,26.5 L 347.9,27.3 L 345.0,24.5 L 343.1,24.5 L 342.2,25.8 L 341.2,24.0 L 336.9,22.5 L 337.2,24.2 L 336.6,25.7 L 335.0,26.2 L 335.4,27.1 L 337.3,28.3 L 336.3,28.9 L 334.2,27.5 L 332.1,27.2 L 329.5,30.0 L 329.2,31.0 L 332.4,33.2 L 335.3,34.0 L 336.0,35.3 L 334.1,34.6 L 332.4,35.7 L 331.4,38.0 L 330.8,36.5 L 328.8,34.5 L 323.5,32.9 L 319.5,36.2 L 317.4,36.5 L 317.7,35.6 L 321.2,32.2 L 321.1,31.2 L 320.5,30.1 L 319.0,29.4 L 317.7,27.7 L 315.9,30.0 L 314.5,29.9 L 314.3,28.8 L 311.8,29.4 L 312.4,31.2 L 310.3,32.6 L 309.5,31.7 L 306.9,32.7 L 305.7,34.4 L 302.5,33.9 L 298.9,35.6 L 298.9,36.7 L 297.2,36.6 L 295.9,35.7 L 294.5,36.4 L 295.0,38.3 L 295.9,39.8 L 298.5,40.0 L 299.0,40.6 L 297.9,41.6 L 297.2,43.4 L 297.9,44.2 L 309.9,42.9 L 309.8,43.7 L 307.8,46.1 L 301.8,48.0 L 300.9,50.4 L 293.9,48.5 L 291.8,46.3 L 290.6,48.1 L 288.2,48.3 L 288.4,46.9 L 287.3,46.3 L 286.3,46.9 L 286.1,48.6 L 285.2,50.0 L 285.3,51.4 L 282.7,52.9 L 283.0,54.3 L 284.2,55.7 L 284.8,58.4 L 284.7,59.4 L 283.7,59.4 L 282.7,60.3 L 280.1,58.4 L 277.5,53.4 L 276.4,52.6 L 273.4,52.6 L 272.0,53.4 L 270.6,55.0 L 269.7,57.3 L 269.6,58.4 L 270.4,60.1 L 271.6,60.9 L 273.9,61.2 L 273.5,63.5 L 273.7,64.9 L 271.3,65.7 L 269.5,62.5 L 268.0,62.5 L 266.2,63.5 L 265.2,64.8 L 264.8,66.3 L 263.0,68.6 L 261.5,69.5 L 260.7,69.3 L 260.3,67.8 L 260.6,66.7 L 262.2,63.8 L 264.4,61.9 L 263.4,61.0 L 264.9,59.1 L 266.4,58.7 L 266.7,57.9 L 265.2,56.8 L 265.5,56.3 L 265.4,55.0 L 263.4,54.4 L 260.9,51.9 L 258.2,50.4 L 255.2,52.1 L 255.9,53.5 L 258.0,55.6 L 258.7,57.1 L 258.1,57.3 L 255.5,55.2 L 252.8,55.8 L 252.9,52.7 L 251.9,51.0 L 251.2,50.5 L 248.9,52.6 L 248.6,54.1 L 245.7,53.4 L 244.1,54.6 L 243.0,56.2 L 242.9,58.4 L 240.0,59.6 L 239.2,61.8 L 239.1,64.1 L 237.8,69.1 L 236.2,70.6 L 235.6,69.7 L 234.1,69.4 L 232.9,70.1 L 232.3,71.9 L 233.5,72.5 L 233.3,73.4 L 232.1,74.5 L 228.8,76.5 L 227.9,77.6 L 226.3,76.7 L 223.6,76.8 L 222.6,79.2 L 220.3,78.9 L 220.6,80.9 L 219.2,80.6 L 219.1,82.2 L 218.3,83.6 L 214.8,84.3 L 213.6,85.6 L 213.8,87.5 L 214.5,89.9 L 212.8,92.6 L 213.0,93.7 L 211.6,96.5 L 212.2,98.5 L 213.9,99.6 L 219.7,99.8 L 222.1,101.3 L 221.2,102.2 L 217.3,102.7 L 211.9,108.8 L 210.7,107.8 L 211.7,106.9 L 212.3,104.7 L 212.4,103.1 L 212.8,101.7 L 212.2,100.8 L 210.4,101.0 L 209.2,97.3 L 208.2,97.0 L 203.3,100.1 L 203.4,102.9 L 202.2,103.4 L 200.0,104.0 L 200.2,102.5 L 198.8,100.8 L 196.6,100.3 L 198.4,99.5 L 198.7,98.1 L 201.2,95.4 L 202.3,93.0 L 202.5,91.2 L 203.2,89.4 L 202.6,87.1 L 201.2,87.3 L 196.8,89.9 L 196.3,93.4 L 194.0,94.4 L 192.4,96.1 L 190.2,100.5 L 189.2,101.1 L 186.8,98.7 L 185.5,98.5 L 184.4,98.9 L 180.6,102.9 L 180.0,104.6 L 178.7,105.4 L 176.2,105.8 L 175.9,107.2 L 174.9,107.6 L 173.4,111.3 L 173.2,113.3 L 172.2,114.8 L 172.2,115.8 L 175.7,115.8 L 176.8,116.4 L 178.3,118.8 L 179.5,119.7 L 179.2,120.5 L 173.7,122.6 L 173.6,123.8 L 172.4,124.8 L 168.1,124.2 L 163.3,125.1 L 158.5,128.9 L 158.1,130.0 L 158.4,130.8 L 156.6,131.1 L 156.0,133.2 L 153.9,132.8 L 152.4,133.4 L 152.5,134.8 L 150.0,138.7 L 147.7,143.9 L 148.3,145.0 L 149.8,144.7 L 150.8,143.4 L 152.8,142.3 L 156.8,138.0 L 163.2,135.5 L 166.0,133.8 L 166.7,132.3 L 170.2,131.0 L 170.1,132.5 L 171.1,132.7 L 178.1,129.8 L 177.4,130.9 L 177.7,132.3 L 178.4,132.6 L 180.0,132.3 L 183.3,128.9 L 184.3,130.1 L 187.9,127.4 L 188.8,125.4 L 190.7,125.8 L 191.0,127.5 L 193.3,127.7 L 195.3,127.6 L 195.2,126.3 L 195.8,125.0 L 197.2,124.2 L 199.1,124.5 L 200.0,125.1 L 200.2,126.0 L 201.9,126.1 L 201.3,127.1 L 199.8,126.9 L 198.8,127.9 L 198.3,129.2 L 196.6,130.5 L 192.2,130.9 L 190.1,132.0 L 186.4,136.0 L 176.6,143.5 L 176.2,145.2 L 176.3,148.5 L 179.0,149.6 L 177.7,150.0 L 178.5,150.8 L 184.0,152.3 L 183.8,153.1 L 180.3,155.1 L 177.8,157.6 L 174.7,163.2 L 172.2,164.2 L 171.6,165.2 L 171.9,166.4 L 172.8,166.8 L 174.6,166.4 L 175.0,166.8 L 170.2,168.7 L 169.9,169.7 L 168.1,169.1 L 166.6,169.8 L 163.3,171.8 L 163.0,172.8 L 160.9,173.5 L 160.7,174.4 L 161.1,175.1 L 165.3,174.1 L 165.7,174.4 L 165.5,175.7 L 163.0,176.5 L 162.4,177.3 L 159.1,177.3 L 158.1,177.9 L 157.0,179.3 L 158.2,181.0 L 155.4,181.1 L 154.6,182.0 L 153.3,182.3 L 151.6,186.1 L 150.5,186.8 L 149.2,189.4 L 147.7,188.9 L 144.4,189.7 L 144.5,190.8 L 143.9,192.0 L 143.9,193.5 L 146.1,195.0 L 147.2,198.9 L 146.5,199.2 L 143.4,197.6 L 138.9,199.3 L 139.6,201.1 L 143.3,203.7 L 147.0,202.8 L 147.0,203.6 L 143.5,205.8 L 139.9,206.9 L 137.9,209.7 L 137.6,211.2 L 137.5,214.3 L 137.7,215.0 L 137.6,215.8 L 131.6,218.6 L 131.9,219.9 L 134.6,219.9 L 134.9,220.8 L 134.8,222.2 L 134.3,223.5 L 130.2,225.3 L 130.1,226.3 L 130.9,227.7 L 130.2,228.7 L 129.9,230.1 L 130.3,230.9 L 131.4,230.8 L 131.9,229.8 L 134.2,231.0 L 134.9,230.8 L 136.1,228.5 L 137.1,228.4 L 137.2,229.3 L 137.6,229.8 L 138.4,229.3 L 138.9,228.0 L 138.9,227.0 L 137.9,224.7 L 137.9,223.2 L 139.1,223.5 L 140.6,224.9 L 139.9,226.0 L 139.9,228.6 L 138.9,231.0 L 137.3,230.7 L 136.6,231.4 L 136.6,232.4 L 136.4,233.1 L 134.8,235.0 L 135.2,236.2 L 133.9,238.0 L 133.9,238.9 L 135.0,239.7 L 136.2,239.8 L 136.0,240.7 L 134.9,242.0 L 133.9,245.7 L 132.6,247.3 L 131.6,246.2 L 127.5,248.2 L 126.2,249.6 L 126.1,250.8 L 128.4,251.1 L 126.5,252.8 L 125.1,253.4 L 123.5,253.7 L 122.5,250.9 L 119.4,250.5 L 118.4,251.4 L 116.0,251.7 L 113.6,253.0 L 112.7,254.2 L 112.2,255.8 L 112.3,257.5 L 111.9,258.5 L 111.9,260.7 L 112.2,261.6 L 113.1,262.1 L 114.6,260.5 L 116.0,260.8 L 115.2,261.9 L 115.5,262.6 L 117.5,262.1 L 119.8,260.4 L 120.7,260.5 L 120.4,261.8 L 122.0,263.0 L 122.4,263.9 L 120.2,265.0 L 119.7,266.1 L 118.8,266.6 L 116.9,266.4 L 116.0,266.9 L 115.6,268.2 L 114.6,268.3 L 113.4,269.5 L 113.8,270.6 L 113.6,271.8 L 110.7,273.6 L 110.0,275.3 L 107.6,277.2 L 106.4,279.2 L 106.4,281.1 L 104.9,281.4 L 103.2,283.1 L 102.9,284.8 L 101.3,286.1 L 100.6,288.0 L 100.7,291.8 L 99.1,291.9 L 98.0,294.0 L 97.9,295.4 L 96.7,297.0 L 96.1,298.7 L 95.8,302.3 L 95.3,303.2 L 95.1,302.2 L 94.1,301.6 L 93.0,302.0 L 92.2,303.2 L 92.2,305.3 L 91.1,305.6 L 90.3,304.8 L 90.8,303.0 L 90.3,302.0 L 88.2,301.7 L 86.6,302.6 L 85.1,302.0 L 86.6,299.9 L 86.2,299.4 L 86.4,298.8 L 86.3,297.3 L 82.9,294.6 L 79.2,294.5 L 77.6,295.9 L 79.7,298.4 L 79.5,300.3 L 75.1,302.0 L 75.0,302.9 L 78.1,304.1 L 76.8,304.5 L 75.7,306.7 L 76.3,307.3 L 74.3,310.0 L 72.2,309.1 L 71.4,307.8 L 70.2,308.3 L 70.4,309.2 L 70.0,309.9 L 69.4,309.5 L 68.0,310.7 L 67.3,312.6 L 67.4,315.0 L 66.9,316.2 L 67.7,318.8 L 70.7,318.5 L 70.8,319.5 L 67.9,321.4 L 67.8,322.4 L 64.4,323.3 L 60.6,326.7 L 53.8,329.7 L 51.9,331.8 L 52.1,333.3 L 49.5,335.0 L 48.9,334.3 L 47.6,334.5 L 44.6,337.7 L 45.5,338.3 L 41.7,339.8 L 41.4,341.5 L 40.9,341.9 L 41.4,343.3 L 39.4,344.2 L 38.9,345.4 L 39.4,346.2 L 39.3,347.0 L 38.3,347.1 L 38.0,347.9 L 37.9,348.8 L 39.4,348.9 L 40.0,350.3 L 39.9,351.3 L 39.2,349.9 L 38.7,349.8 L 37.1,350.1 L 35.2,351.9 L 33.6,351.7 L 34.3,350.7 L 34.2,350.5 L 32.4,350.3 L 33.0,351.9 L 30.9,352.2 L 31.3,352.6 L 30.6,353.6 L 30.8,354.2 L 31.9,354.3 L 31.9,354.9 L 31.3,355.7 L 29.6,355.8 L 29.3,356.2 L 29.4,356.9 L 28.3,357.4 L 28.9,359.4 L 29.8,360.1 L 29.2,360.7 L 29.3,361.4 L 28.4,361.3 L 28.7,360.0 L 27.1,359.0 L 26.8,358.0 L 26.1,357.7 L 25.7,358.4 L 24.5,358.7 L 24.7,359.6 L 24.1,359.6 L 25.2,361.0 L 24.8,361.1 L 24.8,362.4 L 26.6,362.5 L 27.5,363.6 L 27.4,364.8 L 26.5,365.2 L 25.0,364.6 L 24.1,365.3 L 22.7,364.8 L 22.7,366.0 L 23.7,366.8 L 23.6,367.4 L 20.2,371.3 L 20.1,371.8 L 21.3,372.9 L 19.8,373.8 L 19.7,374.4 L 20.0,374.8 L 19.7,375.2 L 20.1,376.6 L 22.8,375.2 L 22.9,375.8 L 22.1,376.1 L 22.5,377.0 L 22.5,378.0 L 21.8,378.0 L 21.6,376.8 L 20.4,377.3 L 20.2,378.4 L 19.4,379.4 L 19.4,380.7 L 19.7,381.4 L 18.6,382.1 L 18.6,382.9 L 19.2,383.4 L 23.0,382.6 L 25.3,383.7 L 26.6,385.3 L 26.5,386.4 L 21.4,387.9 L 20.9,388.5 L 21.2,389.6 L 20.2,390.7 L 20.2,391.8 L 18.5,391.5 L 16.0,393.1 L 16.9,393.8 L 19.4,393.8 L 20.7,394.9 L 21.6,393.2 L 22.0,394.0 L 21.8,394.6 L 22.3,395.3 L 22.1,396.1 L 19.2,395.1 L 18.5,395.6 L 19.0,396.9 L 20.5,397.3 L 20.5,397.8 L 17.9,399.1 L 18.0,399.5 L 17.5,400.1 L 17.8,400.6 L 17.1,401.9 L 17.1,403.1 L 17.6,405.0 L 19.2,406.2 L 18.4,408.8 L 19.8,410.0 L 19.0,411.0 L 21.7,417.9 L 22.0,420.1 L 21.3,420.2 L 21.1,418.4 L 19.9,415.8 L 18.8,414.5 L 18.1,415.0 L 18.4,415.4 L 18.1,415.8 L 18.8,417.4 L 18.5,418.3 L 19.1,418.4 L 19.0,419.8 L 20.3,422.5 L 20.0,423.0 L 20.2,423.7 L 21.6,424.5 L 20.9,424.8 L 20.7,425.6 L 21.6,427.7 L 21.1,429.5 L 21.8,430.9 L 21.9,431.6 L 21.6,432.1 L 23.0,434.5 L 22.6,435.2 L 23.1,436.5 L 23.0,437.3 L 24.3,438.8 L 23.3,439.4 L 22.9,441.5 L 23.6,442.8 L 26.1,444.3 L 23.8,445.7 L 23.5,446.7 L 24.0,447.3 L 23.7,448.8 L 24.8,452.5 L 24.4,453.0 L 24.4,454.2 L 24.9,454.5 L 24.4,455.6 L 24.7,456.2 L 24.4,456.7 L 25.4,459.8 L 24.3,460.4 L 26.5,461.6 L 26.6,462.8 L 26.4,464.8 L 26.0,464.8 L 24.5,462.8 L 23.9,463.1 L 25.9,467.5 L 25.4,470.6 L 25.6,471.4 L 25.6,474.5 L 26.0,475.3 L 27.1,475.6 L 27.9,475.2 L 28.5,474.2 L 30.4,474.5 L 31.5,472.2 L 32.8,470.7 L 32.5,470.2 L 32.7,469.9 L 33.7,470.6 L 34.5,469.9 L 34.9,468.5 L 37.4,467.6 L 39.5,468.2 L 39.4,468.8 L 37.5,469.5 L 35.7,469.3 L 35.4,471.2 L 35.8,472.9 L 35.1,473.7 L 34.2,473.6 L 34.5,474.1 L 33.8,474.3 L 33.9,474.7 L 35.3,474.5 L 35.2,475.4 L 34.1,475.4 L 33.1,474.6 L 31.9,475.8 L 32.2,477.2 L 33.3,477.9 L 32.2,479.3 L 32.1,481.1 L 32.5,481.4 L 32.1,482.4 L 32.0,483.7 L 32.7,484.8 L 31.8,485.8 L 32.0,486.4 L 31.7,487.1 L 31.8,488.2 L 30.9,489.8 L 31.8,492.1 L 31.8,493.2 L 33.7,497.4 L 35.4,498.4 L 35.9,500.0 L 36.8,500.7 L 36.9,502.1 L 37.2,502.4 L 38.0,502.2 L 38.2,502.9 L 39.1,503.1 L 39.8,504.2 L 43.8,506.4 L 44.0,507.3 L 46.8,508.8 L 47.4,510.1 L 49.1,511.2 L 48.7,513.2 L 48.0,513.9 L 49.4,515.8 L 54.3,516.9 L 54.8,518.3 L 55.6,518.4 L 56.1,519.3 L 56.6,519.2 L 57.4,517.7 L 58.8,519.3 L 58.8,517.9 L 59.1,517.7 L 59.9,517.9 L 60.6,519.0 L 63.0,518.8 L 63.0,519.7 L 64.0,520.2 L 65.6,519.4 L 66.3,517.9 L 68.3,518.0 L 68.5,517.0 L 69.0,516.6 L 72.0,516.0 L 72.4,515.3 L 71.8,514.3 L 71.7,513.5 L 72.5,514.3 L 72.8,515.4 L 73.7,515.0 L 74.3,513.9 L 74.5,514.3 L 75.4,514.0 L 77.8,510.2 L 78.9,509.2 L 79.8,509.2 L 80.3,507.5 L 81.0,507.1 L 81.4,505.8 L 82.5,505.5 L 82.5,505.1 L 81.9,505.1 L 82.3,504.4 L 86.2,500.3 L 86.7,498.7 L 90.8,493.1 L 91.2,492.3 L 91.1,491.5 L 92.4,490.7 L 95.1,487.2 L 96.8,486.2 L 98.3,484.0 L 98.7,483.2 L 98.4,482.7 L 98.4,482.1 L 98.9,481.9 L 99.1,480.6 L 100.1,480.8 L 101.2,482.5 L 102.0,482.4 L 102.1,482.2 L 102.0,481.8 L 104.1,481.4 L 104.6,480.4 L 106.0,480.4 L 108.3,478.9 L 109.5,476.6 L 110.0,478.5 L 110.9,478.6 L 111.3,477.5 L 110.9,476.9 L 111.6,476.8 L 111.7,476.2 L 111.2,475.9 L 111.7,474.8 L 111.5,473.4 L 112.3,474.4 L 112.5,473.6 L 113.3,473.8 L 112.7,472.1 L 111.9,471.6 L 112.0,471.0 L 111.7,470.5 L 112.1,468.2 L 111.1,466.2 L 111.6,464.6 L 111.6,463.5 L 110.6,462.9 L 109.7,463.1 L 107.6,459.4 L 107.8,459.2 L 108.8,460.8 L 110.0,459.9 L 110.7,460.7 L 111.8,460.6 L 113.8,458.5 L 114.3,460.7 L 113.7,460.6 L 113.6,461.1 L 113.9,461.5 L 113.5,461.9 L 113.3,463.4 L 112.8,463.8 L 113.1,464.5 L 114.0,464.1 L 114.1,467.4 L 114.6,468.9 L 115.6,468.8 L 115.1,470.0 L 115.3,472.3 L 115.7,472.4 L 115.6,472.9 L 116.2,473.6 L 116.5,474.5 L 117.7,473.7 L 117.9,475.0 L 117.1,475.3 L 116.6,476.4 L 116.7,477.0 L 118.6,479.1 L 119.6,479.5 L 119.6,480.4 L 121.0,480.6 L 122.1,477.2 L 125.1,476.0 L 126.9,480.4 L 127.0,484.4 L 128.2,484.8 L 130.1,483.2 L 131.0,479.3 L 132.1,476.8 L 131.9,475.7 L 132.1,472.7 L 132.8,471.2 L 132.7,467.6 L 130.8,458.5 L 130.8,456.9 L 131.9,455.9 L 133.4,455.7 L 133.7,454.0 L 134.6,453.9 L 134.6,451.7 L 134.1,449.4 L 133.1,448.1 L 135.3,446.0 L 138.2,446.5 L 141.2,443.5 L 143.4,439.5 L 144.4,434.9 L 143.7,430.2 L 145.4,426.9 L 145.4,422.3 L 144.1,419.5 L 143.8,417.6 L 142.0,414.4 L 141.0,408.4 L 139.2,403.6 L 142.9,402.3 L 145.3,402.6 L 146.7,402.1 L 147.0,398.5 L 148.7,396.1 L 149.7,390.6 L 144.9,382.6 L 142.4,382.8 L 138.0,376.7 L 140.5,356.2 L 140.3,354.9 L 136.4,342.9 L 137.9,337.7 L 136.8,331.8 L 139.2,328.2 L 135.3,317.9 L 138.9,310.5 L 139.0,309.8 L 138.1,305.6 L 140.3,303.1 L 141.0,300.5 L 146.6,291.1 L 150.4,287.9 L 155.1,286.5 L 167.6,289.6 L 170.3,283.1 L 169.8,272.7 L 169.2,271.7 L 166.0,270.9 L 162.3,268.0 L 163.0,265.7 L 173.0,247.6 L 173.9,242.7 L 175.9,240.1 L 175.9,232.2 L 176.4,225.7 L 177.8,221.1 L 177.1,218.1 L 176.2,208.9 L 184.4,208.1 L 191.7,203.2 L 190.0,195.6 L 193.8,191.0 L 197.0,186.0 L 200.5,179.2 L 206.2,174.2 L 206.5,168.2 L 201.3,159.4 L 202.4,156.2 L 206.6,155.7 L 208.9,151.3 L 211.9,141.1 L 218.9,136.1 L 220.6,133.4 L 226.9,136.5 L 230.6,139.1 L 234.5,130.5 L 233.7,122.6 L 234.2,117.5 L 238.6,115.8 L 242.1,118.6 L 247.9,118.2 L 262.9,124.3 L 267.8,119.2 L 263.3,116.7 L 265.3,115.4 L 267.6,112.5 L 269.6,107.4 L 269.3,102.8 L 265.2,98.1 L 273.2,97.6 L 275.8,95.3 L 281.3,98.4 L 282.2,95.8 L 281.2,95.1 L 280.1,92.2 L 280.7,90.9 L 284.8,88.0 L 290.4,89.3 L 299.3,101.6 L 299.4,103.1 L 301.9,106.6 L 302.4,110.6 L 305.0,109.6 L 309.2,111.7 L 313.3,111.7 L 315.3,114.0 L 319.7,111.6 L 323.4,111.1 L 324.4,109.1 L 325.0,106.6 L 326.5,106.0 L 328.3,106.5 L 329.8,108.2 L 331.1,108.0 L 331.1,109.1 L 332.9,110.5 L 338.6,112.0 L 341.2,113.8 L 342.3,116.6 L 343.1,116.8 L 343.5,114.8 L 344.8,114.6 L 346.5,113.5 L 346.5,111.1 L 347.2,107.4 L 348.4,106.6 L 348.6,105.8 L 352.5,103.5 L 353.8,104.2 L 354.7,103.9 L 357.1,99.5 L 356.7,98.5 L 356.5,94.6 L 355.8,92.1 L 356.0,90.3 L 356.5,89.3 L 356.5,87.8 L 357.9,85.8 L 358.2,84.7 L 357.7,83.8 L 358.1,82.3 L 358.6,81.8 L 358.4,81.1 L 358.9,79.9 L 358.1,78.9 L 359.4,78.2 L 360.3,76.8 L 359.8,75.0 L 359.2,74.4 L 364.2,70.2 L 364.7,68.8 L 367.2,66.9 L 367.5,66.0 L 367.3,65.5 L 368.0,65.0 L 368.2,64.1 L 371.7,63.2 L 372.2,63.9 L 374.5,63.3 L 374.5,64.0 L 375.0,64.4 L 376.1,64.1 L 377.3,65.2 L 381.7,63.5 L 381.3,62.7 L 383.8,61.1 L 385.3,60.9 L 385.9,59.4 L 386.7,59.0 L 388.7,59.4 L 392.2,58.3 L 392.6,61.3 L 395.5,64.8 L 398.4,66.3 L 398.2,67.5 L 399.4,68.7 L 411.1,73.4 L 411.7,75.5 L 414.4,81.7 L 412.5,84.8 L 406.3,91.3 L 406.2,93.3 L 405.8,95.6 L 406.6,97.0 L 409.7,99.3 L 412.8,95.7 L 412.7,95.1 L 414.1,90.8 L 413.5,90.4 L 413.6,88.6 L 415.3,87.5 L 418.0,87.8 L 420.0,86.2 L 420.4,85.1 L 422.8,83.7 L 424.0,84.3 L 425.5,84.0 L 426.7,82.2 L 427.2,80.0 L 427.8,79.5 L 427.8,77.6 L 427.2,75.4 L 426.4,75.5 L 426.5,74.8 L 427.4,74.5 L 428.5,74.9 L 431.3,77.0 L 433.3,79.3 L 438.0,79.7 L 440.1,78.6 L 440.4,75.8 L 440.0,74.4 L 440.3,74.0 L 439.2,72.6 L 439.4,72.1 L 438.2,69.7 L 434.7,68.4 L 431.9,68.2 L 430.0,66.1 L 419.4,64.7 L 420.7,63.4 L 420.2,62.3 L 417.9,61.3 L 408.2,58.8 L 406.8,57.6 L 406.8,56.8 L 421.2,59.9 L 426.6,59.9 L 430.0,59.1 L 429.8,57.9 L 431.7,56.8 L 431.5,55.3 L 432.8,54.9 L 434.2,53.2 L 440.4,52.4 L 442.5,51.4 L 442.5,48.9 L 444.0,47.7 L 444.0,46.8 L 441.6,45.9 L 440.9,44.7 L 439.1,44.4 L 437.4,45.0 L 436.9,43.4 L 435.6,42.2 L 435.6,40.4 L 429.7,40.6 L 431.2,38.7 L 430.4,37.5 L 428.9,36.6 L 428.9,35.7 L 426.5,34.4 L 424.2,34.5 L 422.4,36.6 L 422.1,33.9 L 420.6,33.6 L 418.3,34.2 L 415.0,33.4 L 415.9,32.4 L 414.5,31.4 L 414.0,30.0 L 409.2,27.5 L 405.3,28.0 L 401.4,32.0 L 399.9,37.8 L 398.2,41.3 L 393.8,41.7 L 395.5,40.6 L 398.6,36.7 L 398.3,34.4 L 397.4,33.7 L 395.7,33.9 L 396.0,33.0 L 398.9,30.9 L 401.1,28.5 L 402.1,26.0 L 401.9,24.1 L 398.1,22.7 L 397.5,20.2 L 396.3,19.6 L 392.3,19.6 L 391.1,20.6 L 389.6,20.1 L 388.9,18.3 L 386.5,18.2 L 384.5,19.7 L 383.9,22.3 L 382.1,21.7 L 380.2,21.9 L 378.6,24.1 L 377.9,26.5 L 379.3,27.9 L 382.4,28.5 L 382.7,29.3 L 379.3,31.1 L 378.3,32.5 L 378.0,34.4 L 375.5,39.5 L 375.2,41.4 L 372.2,42.3 L 371.6,45.0 L 370.4,43.2 L 371.8,36.8 L 371.6,35.1 L 373.2,31.5 L 373.5,29.4 L 372.8,28.8 L 372.8,26.5 L 372.2,24.6 L 370.9,24.4 L 366.5,27.4 L 361.0,34.1 L 359.9,38.1 L 355.1,42.3 L 351.1,47.8 L 348.1,48.7 L 348.4,47.9 L 349.8,47.5 L 350.7,46.4 L 349.6,45.6 L 349.6,44.5 L 351.0,42.2 L 349.4,42.2 L 348.9,41.6 L 349.0,40.6 L 354.1,35.0 L 359.1,32.7 L 356.6,32.7 L 358.4,31.3 L 358.8,30.2 L 360.0,28.8 L 359.5,27.6 L 357.7,26.6 L 362.0,25.4 L 365.1,22.5 L 364.4,20.9 L 363.1,20.8 L 361.3,21.7 L 360.4,21.1 L 361.6,20.3 L 361.9,19.3 L 361.2,18.3 L 359.9,17.8 L 358.4,18.3 L 358.4,17.3 L 355.3,16.0 Z M 331.3,19.9 L 329.0,20.5 L 327.9,20.1 L 328.0,20.7 L 327.6,20.8 L 327.4,21.9 L 328.3,22.4 L 326.4,22.9 L 327.2,23.2 L 325.8,23.9 L 327.2,24.6 L 326.5,25.7 L 327.5,25.9 L 327.2,26.1 L 328.6,27.1 L 331.6,26.3 L 332.3,25.8 L 332.3,25.1 L 330.1,24.4 L 332.3,23.9 L 329.6,23.4 L 329.9,23.0 L 329.7,22.4 L 331.1,21.5 L 331.0,21.2 L 331.7,20.6 L 331.0,20.2 L 331.3,19.9 Z M 94.6,283.0 L 90.1,285.0 L 89.2,285.9 L 88.9,288.6 L 88.5,289.6 L 86.9,290.5 L 86.7,291.8 L 87.7,292.4 L 90.4,290.8 L 91.5,288.2 L 93.3,285.4 L 93.8,286.3 L 94.3,285.7 L 93.3,284.6 L 95.0,283.3 L 94.6,283.0 Z M 140.5,188.8 L 139.4,189.5 L 137.9,189.8 L 138.0,191.0 L 137.4,191.9 L 137.4,191.2 L 136.7,191.1 L 135.9,191.7 L 136.3,193.1 L 135.5,193.5 L 135.7,194.3 L 135.4,195.1 L 134.5,195.9 L 135.3,197.0 L 134.9,197.6 L 135.2,197.8 L 137.6,195.8 L 138.8,193.3 L 139.2,194.0 L 140.1,193.6 L 140.5,192.8 L 140.4,192.3 L 138.2,192.7 L 139.6,192.3 L 140.4,190.9 L 140.7,189.9 L 140.5,188.8 Z M 171.2,163.2 L 169.4,163.8 L 169.0,163.3 L 167.8,163.5 L 167.9,164.6 L 166.7,164.9 L 166.1,165.9 L 166.5,166.4 L 166.4,167.8 L 167.9,167.6 L 168.1,166.7 L 169.0,166.0 L 169.0,165.1 L 169.4,164.5 L 170.6,164.8 L 171.3,163.9 L 171.2,163.2 Z M 137.1,155.4 L 134.9,156.5 L 135.7,157.2 L 133.8,158.0 L 133.3,158.9 L 133.3,160.4 L 134.8,160.7 L 134.2,160.3 L 134.3,159.4 L 134.6,158.9 L 134.8,159.3 L 135.3,157.6 L 136.3,158.1 L 138.9,156.3 L 139.6,156.2 L 137.1,155.4 Z M 169.7,158.2 L 168.2,158.3 L 168.1,159.3 L 166.0,158.9 L 164.7,160.7 L 165.7,161.5 L 168.0,161.0 L 169.0,160.3 L 169.7,158.9 L 169.7,158.2 Z M 174.0,158.7 L 171.3,160.5 L 170.5,161.5 L 171.5,162.2 L 172.9,162.0 L 174.0,161.6 L 175.1,160.0 L 174.0,158.7 Z M 340.2,19.3 L 339.6,19.7 L 340.4,20.6 L 338.9,20.2 L 337.9,21.3 L 341.1,22.8 L 341.8,21.8 L 341.2,21.3 L 342.1,21.0 L 342.2,20.8 L 341.7,20.6 L 342.5,19.9 L 340.2,19.3 Z M 145.9,183.5 L 145.2,183.7 L 144.9,184.8 L 145.1,185.3 L 144.4,186.2 L 143.8,184.1 L 143.3,183.9 L 142.6,184.7 L 142.9,186.7 L 145.4,187.2 L 146.3,185.5 L 146.3,184.5 L 145.9,184.4 L 145.9,183.5 Z"></path>
+      <g class="city" data-key="no-oslo" transform="translate(115.6,445.5)" tabindex="0" role="button" aria-label="Oslo"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="10" y="4" text-anchor="start">Oslo</text></g>
+      <g class="city" data-key="no-bergen" transform="translate(28.3,427.3)" tabindex="0" role="button" aria-label="Bergen"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="10" y="4" text-anchor="start">Bergen</text></g>
+      <g class="city" data-key="no-trondheim" transform="translate(109.9,311.7)" tabindex="0" role="button" aria-label="Trondheim"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="10" y="4" text-anchor="start">Trondheim</text></g>
+      <g class="city" data-key="no-stavanger" transform="translate(34.9,481.4)" tabindex="0" role="button" aria-label="Stavanger"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="10" y="-3" text-anchor="start">Stavanger</text></g>
+      <g class="city" data-key="no-drammen" transform="translate(106.8,452.0)" tabindex="0" role="button" aria-label="Drammen"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="-10" y="4" text-anchor="end">Drammen</text></g>
+      <g class="city" data-key="no-fredrikstad" transform="translate(118.5,472.0)" tabindex="0" role="button" aria-label="Fredrikstad"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="10" y="4" text-anchor="start">Fredrikstad</text></g>
+      <g class="city" data-key="no-kristiansand" transform="translate(71.3,512.7)" tabindex="0" role="button" aria-label="Kristiansand"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="10" y="4" text-anchor="start">Kristiansand</text></g>
+      <g class="city" data-key="no-sandnes" transform="translate(35.0,485.9)" tabindex="0" role="button" aria-label="Sandnes"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="10" y="11" text-anchor="start">Sandnes</text></g>
+      <g class="city" data-key="no-tromso" transform="translate(247.5,75.2)" tabindex="0" role="button" aria-label="Tromsø"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="10" y="4" text-anchor="start">Tromsø</text></g>
+      <g class="city" data-key="no-bodo" transform="translate(174.3,165.3)" tabindex="0" role="button" aria-label="Bodø"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="10" y="4" text-anchor="start">Bodø</text></g>
       </svg>
     </div>
-  </div>
 
-  <div class="side">
-    <div class="panel card">
-      <h2>Selected node</h2>
-      <div class="selected-city">
-        <span id="cityName">Oslo</span>
-        <span class="tag" id="cityTag">no-oslo</span>
-      </div>
-      <div class="chips" id="chips"></div>
+    <div class="col">
+      <section>
+        <h2>Selected node</h2>
+        <div class="station">
+          <span class="nm" id="cityName">Oslo</span>
+          <span class="tag" id="cityTag">no-oslo</span>
+        </div>
+        <div class="scope" id="scope"></div>
+        <p class="help">Every node carries all four tags. Region membership is not inherited from position in the tree, so each level the node should relay has to be listed on the node itself.</p>
+      </section>
+
+      <section>
+        <h2>Node profile</h2>
+        <div class="row">
+          <div class="k">txdelay<br>rxdelay</div>
+          <div class="v">
+            <div class="profiles" id="profiles">
+              <button class="profile" data-p="hilltop">
+                <span class="p-n">Hilltop <span>20+ neighbors</span></span>
+                <span class="p-d">Clear view over a wide area. Backbone infrastructure — mast, ridge, high-rise rooftop.</span>
+              </button>
+              <button class="profile on" data-p="neighborhood">
+                <span class="p-n">Neighborhood <span>5–10</span></span>
+                <span class="p-d">Typical install covering its own district. Ordinary rooftop in a city or suburb.</span>
+              </button>
+              <button class="profile" data-p="local">
+                <span class="p-n">Local <span>1–3</span></span>
+                <span class="p-d">Sees only a few neighbors. Indoors, ground level, or a low roof.</span>
+              </button>
+              <button class="profile" data-p="mobile">
+                <span class="p-n">Mobile <span>variable</span></span>
+                <span class="p-d">Moves through the mesh — car, bike, hiking. Always yields to fixed infrastructure.</span>
+              </button>
+            </div>
+            <p class="help">A hilltop node briefly waits before re-transmitting; if it hears another repeater relay the same packet with better SNR, it drops its copy instead of duplicating local traffic on airtime that's better spent on long-haul packets.</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Radio</h2>
+        <div class="row">
+          <div class="k">coding rate</div>
+          <div class="v">
+            <div class="seg" id="crSeg">
+              <button data-cr="5">5 · +25%</button>
+              <button data-cr="6">6 · +50%</button>
+              <button data-cr="7">7 · +75%</button>
+              <button data-cr="8" class="on">8 · +100%</button>
+            </div>
+            <p class="help">CR is the one radio parameter that may differ between nodes — receivers decode any CR. Higher = more redundancy, better survival through noise, but slower and more channel load. <b>Well-connected repeater: consider 5.</b> Frequency, bandwidth, and SF must match the mesh and are fixed here.</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="k">path.hash.mode</div>
+          <div class="v">
+            <div class="seg" id="hashSeg">
+              <button data-h="0">1-byte · 64 hops</button>
+              <button data-h="1" class="on">2-byte · 32 hops</button>
+              <button data-h="2">3-byte · 21 hops</button>
+            </div>
+            <p class="help">1-byte hashes collide quickly as repeater count grows; 2-byte (65 536 values) makes collisions practically impossible at this mesh's scale and makes network debugging far easier. 3-byte only matters at millions of nodes.</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="k">loop.detect</div>
+          <div class="v">
+            <div class="seg" id="loopSeg">
+              <button data-l="minimal" class="on">minimal</button>
+              <button data-l="moderate">moderate</button>
+              <button data-l="strict">strict</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Identity</h2>
+        <div class="row">
+          <div class="k">owner.info</div>
+          <div class="v">
+            <input type="text" id="ownerInfo" placeholder="LA1ABC / 6dBi omni @9m / solar+batt / roof" maxlength="90" aria-label="owner.info — contact, antenna, power, mount">
+            <p class="help">Contact, antenna, power, mount. Visible to anyone who queries the node — no personal info.</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="k">guest.password</div>
+          <div class="v">
+            <input type="text" id="guestPw" placeholder="hello" maxlength="30" aria-label="guest.password">
+            <p class="help">Lets members query node status.</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Regions</h2>
+        <div class="row">
+          <div class="k">firmware</div>
+          <div class="v">
+            <div class="seg" id="fwSeg">
+              <button data-f="new" class="on">1.16.0+</button>
+              <button data-f="old">1.12.0 – 1.15.0</button>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="k">region default</div>
+          <div class="v">
+            <div class="seg" id="defSeg">
+              <button data-d="no">no</button>
+              <button data-d="city">city</button>
+              <button data-d="none" class="on">off</button>
+            </div>
+            <p class="help">Default scope tags all self-originated traffic (adverts, DMs without a known path) so it can travel through repeaters that cap unscoped flood. <b>off</b> leaves that traffic untagged — fine while few repeaters filter, but it won't cross one that caps unscoped flood. Country-level <b>no</b> keeps a DM between two people anywhere in Norway routing; scope down to the city only if you're sure all your traffic is local. Needs firmware 1.15+.</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="out-head">
+          <h2>Repeater CLI — full config</h2>
+          <button class="copy" id="copyBtn">Copy</button>
+        </div>
+        <pre class="cmd" id="cmdOut"></pre>
+        <p class="help">Run over USB/serial, or via the companion app's admin CLI. <code>set dutycycle 10</code> is the legal EU maximum on this sub-band — the EU/UK Narrow preset ships with 50, so it must be set explicitly. <b>Norway is EEA/EFTA, not EU</b> — nesting <code>no</code> under <code>eu</code> follows the existing convention, not geopolitics. Reboot after radio changes.</p>
+      </section>
     </div>
+  </main>
 
-    <div class="panel card">
-      <h2>Node profile <span class="hint">sets txdelay / rxdelay so wide-coverage nodes win contention</span></h2>
-      <div class="profiles" id="profiles">
-        <button class="profile" data-p="hilltop">
-          <span class="p-name">Hilltop <span class="p-nb">20+ neighbors</span></span>
-          <span class="p-desc">Clear view over a wide area. Backbone infrastructure — mast, ridge, high-rise rooftop.</span>
-        </button>
-        <button class="profile active" data-p="neighborhood">
-          <span class="p-name">Neighborhood <span class="p-nb">5–10 neighbors</span></span>
-          <span class="p-desc">Typical install covering its own district. Ordinary rooftop in a city or suburb.</span>
-        </button>
-        <button class="profile" data-p="local">
-          <span class="p-name">Local <span class="p-nb">1–3 neighbors</span></span>
-          <span class="p-desc">Sees only a few neighbors. Indoors, ground level, or a low roof.</span>
-        </button>
-        <button class="profile" data-p="mobile">
-          <span class="p-name">Mobile <span class="p-nb">variable</span></span>
-          <span class="p-desc">Moves through the mesh — car, bike, hiking. Always yields to fixed infrastructure.</span>
-        </button>
-      </div>
-      <p class="micro-note">A hilltop node briefly waits before re-transmitting; if it hears another repeater relay the same packet with better SNR, it drops its copy instead of duplicating local traffic on airtime that's better spent on long-haul packets.</p>
-    </div>
-
-    <div class="panel card">
-      <h2>Radio</h2>
-      <div class="row">
-        <label class="lbl">Coding rate (CR)</label>
-        <div class="seg" id="crSeg">
-          <button data-cr="5">5 · +25%</button>
-          <button data-cr="6">6 · +50%</button>
-          <button data-cr="7">7 · +75%</button>
-          <button data-cr="8" class="active">8 · +100%</button>
-        </div>
-      </div>
-      <p class="cr-note">CR is the one radio parameter that may differ between nodes — receivers decode any CR. Higher = more redundancy, better survival through noise, but slower and more channel load. <b>Well-connected repeater: consider 5.</b> Default 8 is the conservative choice for marginal links. Frequency, bandwidth, and SF must match the mesh and are fixed here.</p>
-      <div class="row" style="margin-top:14px;">
-        <label class="lbl">path.hash.mode</label>
-        <div class="seg" id="hashSeg">
-          <button data-h="0">1-byte · 64 hops</button>
-          <button data-h="1" class="active">2-byte · 32 hops</button>
-          <button data-h="2">3-byte · 21 hops</button>
-        </div>
-      </div>
-      <p class="cr-note">1-byte hashes collide quickly as repeater count grows; 2-byte (65 536 values) makes collisions practically impossible at this mesh's scale and makes network debugging far easier. 3-byte only matters at millions of nodes.</p>
-      <div class="row" style="margin-top:14px;">
-        <label class="lbl">loop.detect</label>
-        <div class="seg" id="loopSeg">
-          <button data-l="minimal" class="active">minimal</button>
-          <button data-l="moderate">moderate</button>
-          <button data-l="strict">strict</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel card">
-      <h2>Identity <span class="hint">visible to anyone who queries the node — no personal info</span></h2>
-      <div class="row">
-        <div class="field">
-          <label for="ownerInfo">owner.info — contact + antenna + power + mount</label>
-          <input type="text" id="ownerInfo" placeholder="LA1ABC / 6dBi omni @9m / solar+batt / roof" maxlength="90">
-        </div>
-        <div class="field">
-          <label for="guestPw">guest.password — lets members query status</label>
-          <input type="text" id="guestPw" placeholder="hello" maxlength="30">
-        </div>
-      </div>
-    </div>
-
-    <div class="panel card">
-      <h2>Regions</h2>
-      <div class="row">
-        <label class="lbl">Firmware</label>
-        <div class="seg" role="tablist" aria-label="Firmware version">
-          <button class="active" id="fw16" role="tab" aria-selected="true">1.16.0+</button>
-          <button id="fwOld" role="tab" aria-selected="false">1.12.0 – 1.15.0</button>
-        </div>
-      </div>
-      <div class="row">
-        <label class="lbl">region default</label>
-        <div class="seg" id="defSeg">
-          <button data-d="no">no</button>
-          <button data-d="city">city</button>
-          <button data-d="none" class="active">off</button>
-        </div>
-      </div>
-      <p class="cr-note">Default scope tags all self-originated traffic (adverts, DMs without a known path) so it can travel through repeaters that cap unscoped flood. <b>off</b> leaves that traffic untagged — fine while few repeaters filter, but it won't cross one that caps unscoped flood. Country-level <b>no</b> keeps a DM between two people anywhere in Norway routing; scope down to the city only if you're sure all your traffic is local. Needs firmware 1.15+.</p>
-    </div>
-
-    <div class="panel card">
-      <div class="cmd-head">
-        <h2 style="margin:0;">Repeater CLI — full config</h2>
-        <button class="copy-btn" id="copyBtn">Copy</button>
-      </div>
-      <pre class="cmd" id="cmdOut"></pre>
-      <p class="note">Run over USB/serial, or via the companion app's admin CLI. <code>set dutycycle 10</code> is the legal EU maximum on this sub-band — the EU/UK Narrow preset ships with 50, so it must be set explicitly. <b>Norway is EEA/EFTA, not EU</b> — nesting <code>no</code> under <code>eu</code> follows the existing convention, not geopolitics. Reboot after radio changes.</p>
-    </div>
-  </div>
-</main>
-
-<footer>
-  <span>Unofficial community tool · not affiliated with the MeshCore project</span>
-  <span>Verify against <a href="https://docs.meshcore.io/cli_commands/" target="_blank" rel="noopener">docs.meshcore.io</a> before deploying</span>
-</footer>
+  <footer>
+    <span>Unofficial community tool · not affiliated with the MeshCore project</span>
+    <span>Verify against <a href="https://docs.meshcore.io/cli_commands/" target="_blank" rel="noopener">docs.meshcore.io</a> before deploying</span>
+  </footer>
+</div>
 
 <script>
   const CITIES = {"no-oslo": "Oslo", "no-bergen": "Bergen", "no-trondheim": "Trondheim", "no-stavanger": "Stavanger", "no-drammen": "Drammen", "no-fredrikstad": "Fredrikstad", "no-kristiansand": "Kristiansand", "no-sandnes": "Sandnes", "no-tromso": "Tromsø", "no-bodo": "Bodø"};
+  const POS = {"no-oslo": "59.91°N 10.75°E", "no-bergen": "60.39°N 5.32°E", "no-trondheim": "63.43°N 10.39°E", "no-stavanger": "58.97°N 5.73°E", "no-drammen": "59.74°N 10.20°E", "no-fredrikstad": "59.22°N 10.93°E", "no-kristiansand": "58.15°N 8.00°E", "no-sandnes": "58.85°N 5.74°E", "no-tromso": "69.65°N 18.96°E", "no-bodo": "67.28°N 14.40°E"};
 
   const PROFILES = {
     hilltop:      { tx: '2.0', dtx: '2.0', rx: '3', label: 'hilltop / backbone' },
@@ -414,121 +378,102 @@
   };
 
   const state = {
-    city: 'no-oslo',
-    fw: 'new',
-    profile: 'neighborhood',
-    cr: '8',
-    hash: '1',
-    loop: 'minimal',
-    regionDefault: 'none',
-    owner: '',
-    guest: ''
+    city: 'no-oslo', fw: 'new', profile: 'neighborhood',
+    cr: '8', hash: '1', loop: 'minimal', regionDefault: 'none',
+    owner: '', guest: ''
   };
 
   const $ = id => document.getElementById(id);
 
   function seg(el, attr, cb) {
-    el.querySelectorAll('button').forEach(b => {
-      b.addEventListener('click', () => {
-        el.querySelectorAll('button').forEach(x => x.classList.remove('active'));
-        b.classList.add('active');
-        cb(b.dataset[attr]);
-      });
-    });
+    el.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      el.querySelectorAll('button').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+      cb(b.dataset[attr]);
+    }));
   }
 
   function buildLines() {
     const p = PROFILES[state.profile];
-    const lines = [];
-    lines.push(['c', '# radio — EU/UK Narrow, CR per node']);
-    lines.push(['k', 'set radio', `869.618,62.5,8,${state.cr}`]);
-    lines.push(['k', 'set dutycycle', '10']);
-    lines.push(['c', `# timing profile — ${p.label}`]);
-    lines.push(['k', 'set txdelay', p.tx]);
-    lines.push(['k', 'set direct.txdelay', p.dtx]);
-    lines.push(['k', 'set rxdelay', p.rx]);
-    lines.push(['c', '# routing hygiene']);
-    lines.push(['k', 'set path.hash.mode', state.hash]);
-    lines.push(['k', 'set loop.detect', state.loop]);
-    lines.push(['c', '# adverts']);
-    lines.push(['k', 'set advert.interval', '240']);
-    lines.push(['k', 'set flood.advert.interval', '24']);
-    if (state.guest.trim()) lines.push(['k', 'set guest.password', state.guest.trim()]);
-    if (state.owner.trim()) lines.push(['k', 'set owner.info', state.owner.trim()]);
-    lines.push(['c', '# regions — every node relays eu / europe / no, city scopes down']);
+    const L = [];
+    L.push(['c', '# radio — EU/UK Narrow, CR per node']);
+    L.push(['k', 'set radio', `869.618,62.5,8,${state.cr}`]);
+    L.push(['k', 'set dutycycle', '10']);
+    L.push(['c', `# timing profile — ${p.label}`]);
+    L.push(['k', 'set txdelay', p.tx]);
+    L.push(['k', 'set direct.txdelay', p.dtx]);
+    L.push(['k', 'set rxdelay', p.rx]);
+    L.push(['c', '# routing hygiene']);
+    L.push(['k', 'set path.hash.mode', state.hash]);
+    L.push(['k', 'set loop.detect', state.loop]);
+    L.push(['c', '# adverts']);
+    L.push(['k', 'set advert.interval', '240']);
+    L.push(['k', 'set flood.advert.interval', '24']);
+    if (state.guest.trim()) L.push(['k', 'set guest.password', state.guest.trim()]);
+    if (state.owner.trim()) L.push(['k', 'set owner.info', state.owner.trim()]);
+    L.push(['c', '# regions — every node relays eu / europe / no, city scopes down']);
     if (state.fw === 'new') {
-      lines.push(['k', 'region def', `eu|* europe|eu no ${state.city}`]);
+      L.push(['k', 'region def', `eu|* europe|eu no ${state.city}`]);
     } else {
-      lines.push(['k', 'region put', 'eu']);
-      lines.push(['k', 'region allowf', 'eu']);
-      lines.push(['k', 'region put', 'europe']);
-      lines.push(['k', 'region allowf', 'europe']);
-      lines.push(['k', 'region put', 'no eu']);
-      lines.push(['k', 'region allowf', 'no']);
-      lines.push(['k', 'region put', `${state.city} no`]);
-      lines.push(['k', 'region allowf', state.city]);
+      L.push(['k', 'region put', 'eu']);
+      L.push(['k', 'region allowf', 'eu']);
+      L.push(['k', 'region put', 'europe']);
+      L.push(['k', 'region allowf', 'europe']);
+      L.push(['k', 'region put', 'no eu']);
+      L.push(['k', 'region allowf', 'no']);
+      L.push(['k', 'region put', `${state.city} no`]);
+      L.push(['k', 'region allowf', state.city]);
     }
-    if (state.regionDefault === 'no') lines.push(['k', 'region default', 'no']);
-    if (state.regionDefault === 'city') lines.push(['k', 'region default', state.city]);
-    lines.push(['k', 'region save', '']);
-    return lines;
+    if (state.regionDefault === 'no') L.push(['k', 'region default', 'no']);
+    if (state.regionDefault === 'city') L.push(['k', 'region default', state.city]);
+    L.push(['k', 'region save', '']);
+    return L;
   }
 
-  function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
   function render() {
-    const label = CITIES[state.city];
-    $('cityName').textContent = label;
+    $('cityName').textContent = CITIES[state.city];
     $('cityTag').textContent = state.city;
-    $('chips').innerHTML = `
-      <span class="chip">eu</span><span class="arrow">›</span>
-      <span class="chip">europe</span><span class="arrow">›</span>
-      <span class="chip">no</span><span class="arrow">›</span>
-      <span class="chip city-chip">${state.city}</span>
-    `;
+    $('posRead').textContent = POS[state.city] || '—';
+    $('scope').innerHTML = `
+      <span class="s">eu</span><span class="gt">›</span>
+      <span class="s">europe</span><span class="gt">›</span>
+      <span class="s">no</span><span class="gt">›</span>
+      <span class="s leaf">${state.city}</span>`;
 
-    const lines = buildLines();
-    $('cmdOut').innerHTML = lines.map(([t, cmd, arg]) => {
-      if (t === 'c') return `<span class="c">${esc(cmd)}</span>`;
-      return `<span class="k">${esc(cmd)}</span>${arg ? ' ' + esc(arg) : ''}`;
-    }).join('\n');
+    $('cmdOut').innerHTML = buildLines().map(([t, cmd, arg]) =>
+      t === 'c' ? `<span class="c">${esc(cmd)}</span>`
+                : `<span class="k">${esc(cmd)}</span>${arg ? ' ' + esc(arg) : ''}`
+    ).join('\n');
 
-    document.querySelectorAll('.city').forEach(el => {
-      el.classList.toggle('selected', el.dataset.key === state.city);
-    });
-    document.querySelectorAll('#profiles .profile').forEach(el => {
-      el.classList.toggle('active', el.dataset.p === state.profile);
-    });
-    $('fw16').classList.toggle('active', state.fw === 'new');
-    $('fw16').setAttribute('aria-selected', state.fw === 'new');
-    $('fwOld').classList.toggle('active', state.fw === 'old');
-    $('fwOld').setAttribute('aria-selected', state.fw === 'old');
+    document.querySelectorAll('.city').forEach(el =>
+      el.classList.toggle('on', el.dataset.key === state.city));
+    document.querySelectorAll('#profiles .profile').forEach(el =>
+      el.classList.toggle('on', el.dataset.p === state.profile));
   }
 
-  function plainText() {
-    return buildLines()
-      .filter(([t]) => t === 'k')
-      .map(([t, cmd, arg]) => arg ? `${cmd} ${arg}` : cmd)
-      .join('\n');
-  }
+  const plainText = () => buildLines().filter(([t]) => t === 'k')
+    .map(([, cmd, arg]) => arg ? `${cmd} ${arg}` : cmd).join('\n');
 
   document.querySelectorAll('.city').forEach(el => {
-    el.addEventListener('click', () => { state.city = el.dataset.key; render(); });
+    const pick = () => { state.city = el.dataset.key; render(); };
+    el.addEventListener('click', pick);
     el.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); state.city = el.dataset.key; render(); }
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); }
     });
   });
-  document.querySelectorAll('#profiles .profile').forEach(el => {
-    el.addEventListener('click', () => { state.profile = el.dataset.p; render(); });
-  });
-  seg($('crSeg'), 'cr', v => { state.cr = v; render(); });
-  seg($('hashSeg'), 'h', v => { state.hash = v; render(); });
-  seg($('loopSeg'), 'l', v => { state.loop = v; render(); });
-  seg($('defSeg'), 'd', v => { state.regionDefault = v; render(); });
-  $('fw16').addEventListener('click', () => { state.fw = 'new'; render(); });
-  $('fwOld').addEventListener('click', () => { state.fw = 'old'; render(); });
+  document.querySelectorAll('#profiles .profile').forEach(el =>
+    el.addEventListener('click', () => { state.profile = el.dataset.p; render(); }));
+
+  seg($('crSeg'),   'cr', v => { state.cr = v; render(); });
+  seg($('hashSeg'), 'h',  v => { state.hash = v; render(); });
+  seg($('loopSeg'), 'l',  v => { state.loop = v; render(); });
+  seg($('defSeg'),  'd',  v => { state.regionDefault = v; render(); });
+  seg($('fwSeg'),   'f',  v => { state.fw = v; render(); });
+
   $('ownerInfo').addEventListener('input', e => { state.owner = e.target.value; render(); });
-  $('guestPw').addEventListener('input', e => { state.guest = e.target.value; render(); });
+  $('guestPw').addEventListener('input',  e => { state.guest = e.target.value; render(); });
 
   $('copyBtn').addEventListener('click', async () => {
     const text = plainText();
@@ -539,8 +484,8 @@
       ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
     }
     const b = $('copyBtn');
-    b.textContent = 'Copied'; b.classList.add('copied');
-    setTimeout(() => { b.textContent = 'Copy'; b.classList.remove('copied'); }, 1400);
+    b.textContent = 'Copied'; b.classList.add('done');
+    setTimeout(() => { b.textContent = 'Copy'; b.classList.remove('done'); }, 1400);
   });
 
   render();
