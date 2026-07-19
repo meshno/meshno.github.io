@@ -145,6 +145,18 @@
   .theme .seg button { font-size: 12px; padding: 4px 9px; min-height: 26px; }
   .lede { color: var(--muted); max-width: 70ch; margin: 0; font-size: 15px; line-height: 1.55; }
   .lede code, code { font-family: var(--mono); font-size: 12.5px; color: var(--ink); }
+  /* same emphasis treatment .help and .explain use: ink, not heavier weight */
+  .lede b { color: var(--ink); font-weight: 500; }
+
+  /* the two facts under the lede — mirrors the .row label/value grid the
+     controls use, so the masthead speaks the same language as the page */
+  .facts { margin: 14px 0 0; display: flex; flex-direction: column; gap: 7px; }
+  .facts > div { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 3px 14px; }
+  .facts dt {
+    font-family: var(--mono); font-size: 12.5px; color: var(--dim);
+    letter-spacing: 0.04em; line-height: 1.5;
+  }
+  .facts dd { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; max-width: 64ch; }
 
   main {
     display: grid; grid-template-columns: 380px minmax(0, 1fr);
@@ -504,6 +516,8 @@
     header { padding: 22px 0 16px; margin-bottom: 20px; }
     .row { grid-template-columns: minmax(0, 1fr); gap: 8px; }
     .row > .k { padding-top: 0; }
+    /* same single-column treatment the control rows get */
+    .facts > div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
     .seg { display: grid; grid-template-columns: 1fr 1fr; }
     .seg button:nth-child(odd):last-child { grid-column: 1 / -1; }
     .seg button { min-height: 44px; }
@@ -559,7 +573,20 @@
              lede says Norwegian, so the eyebrow is left to carry the band -->
         <div class="kicker">MeshCore · EU868 869.618 MHz</div>
         <h1>MeshNO repeater node configurator</h1>
-        <p class="lede">A configurator for setting up Norwegian MeshCore nodes. Follows conventions similar to those used by Sweden and Denmark.</p>
+        <p class="lede">A configurator for setting up Norwegian MeshCore nodes, following conventions similar to those used by Sweden and Denmark.</p>
+        <!-- radio and regions are spec, not prose: as a sentence they ran the
+             lede to nine lines on a phone and were unscannable. Same mono
+             label / value vocabulary as the control rows further down. -->
+        <dl class="facts">
+          <div>
+            <dt>radio</dt>
+            <dd>869.618&nbsp;MHz · 62.5&nbsp;kHz · EU868, 10% duty cycle — the <code>EU/UK Narrow</code> preset already running across the mesh.</dd>
+          </div>
+          <div>
+            <dt>regions</dt>
+            <dd>Each node is tagged <code>eu</code> / <code>no</code> / fylke / kommune / city, scoping which floods it relays so local traffic stays local.</dd>
+          </div>
+        </dl>
       </div>
       <div class="theme">
         <div class="seg" id="themeSeg" role="group" aria-label="Colour theme">
