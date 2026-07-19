@@ -1050,8 +1050,8 @@
           <p >Setting a region tells the repeater which floods to pass on. <b>It does not limit who you can reach</b> — every node carries <code>eu</code> and <code>no</code>, so wide-scope traffic still crosses the whole mesh. The narrower tags stop a local city chat channel from being relayed across all of Norway.</p>
           <p><b>A kommunenummer is not a postcode.</b> Both are four digits in Norway, which makes them easy to mix up, but they are unrelated systems. A <b>kommunenummer</b> is the official code Kartverket and SSB use for each of Norway's 357 municipalities — Oslo is <code>0301</code>, Bergen is <code>4601</code>. A <b>postnummer</b> identifies a postal delivery area, and a single kommune contains many of them. Never derive one from the other.</p>
           <p><b>The first two digits are the fylke.</b> <code>4601</code> is kommune 01 in fylke <code>46</code> (Vestland); <code>0301</code> is in fylke <code>03</code> (Oslo). That is what makes the region tags useful: a node tagged <code>no-4601</code> is inside <code>no-46</code> by construction, so you can scope a flood to one kommune or widen it to the whole fylke without any lookup table, and the two can never contradict each other.</p>
-          <p><b>A city tag does not mean the node is in the city.</b> It means the node is within 50&nbsp;km of it — close enough to carry that city's traffic. A repeater on a ridge outside town is often exactly what makes routing <em>inside</em> the town work, so it should carry the city tag even though its address is somewhere else. It is also why a node can carry more than one: sitting between two cities, it relays for both.</p>
-          <p>Fylke, kommune and city sit side by side under <code>no</code> — they are independent overlays, not a nesting, since a city's 50&nbsp;km radius crosses fylke borders. Region membership is not inherited from position in the tree, so every tag the node should relay is listed explicitly.</p>
+          <p><b>A city tag does not mean the node is in the city.</b> It means the node is within 25&nbsp;km of it — close enough to carry that city's traffic. A repeater on a ridge outside town is often exactly what makes routing <em>inside</em> the town work, so it should carry the city tag even though its address is somewhere else. It is also why a node can carry more than one: sitting between two cities, it relays for both.</p>
+          <p>Landsdel, fylke, kommune and city sit side by side under <code>no</code> — they are independent overlays, not a nesting, since a city's 25&nbsp;km radius crosses fylke borders. Region membership is not inherited from position in the tree, so every tag the node should relay is listed explicitly.</p>
           <p>All these codes come from the map — place the node and they follow. They are the current numbers, in use since the county reform of January 2024.</p>
         </details>
 
@@ -1201,6 +1201,16 @@
           </div>
         </div>
         <div class="row">
+          <div class="k">border regions</div>
+          <div class="v">
+            <div class="seg" id="kbSeg">
+              <button data-kb="off" class="on">off</button>
+              <button data-kb="on">add</button>
+            </div>
+            <p class="help">A node near a border relays for both sides, so it carries its neighbours' regions too — a node in Asker is 4.9&nbsp;km from Buskerud and gets <code>no-33</code>. Landsdel (50&nbsp;km) and fylke (25&nbsp;km) are always included. Neighbouring <b>kommuner</b> (10&nbsp;km) are off by default: at this mesh size a kommune region has almost no members to filter, and its tags are the longest.</p>
+          </div>
+        </div>
+        <div class="row">
           <div class="k">region default</div>
           <div class="v">
             <div class="seg" id="defSeg">
@@ -1277,7 +1287,10 @@
   // against anything official — see the note in build.py.
   const LANDSDEL = {"03": "ost", "31": "ost", "32": "ost", "33": "ost", "34": "ost", "39": "ost", "40": "ost", "42": "sor", "11": "vest", "46": "vest", "50": "midt", "15": "midt", "18": "nord", "55": "nord", "56": "nord"};
   const LANDSDEL_NAMES = {"ost": "Østlandet", "sor": "Sørlandet", "vest": "Vestlandet", "midt": "Midt-Norge", "nord": "Nord-Norge"};
-  const METRO_KM = 50;
+  // 25 km, tightened from 50 on 2026-07-19. At 50 the city tag reached well
+  // past any plausible cluster; 25 km is about what one town's mesh actually
+  // spans, and it keeps the region def line short now that border tags share it.
+  const METRO_KM = 25;
 
   // Orthographic projection centred on Norway — the sphere seen from infinity.
   // Replaced the old equirectangular x cos(65) transform, which was accurate
@@ -1342,6 +1355,11 @@
   const state = {
     x: null, y: null,          // node position in map units
     fylke: null, kommune: null, kommuneName: null, metro: [],
+    // neighbouring regions within BORDER_KM; the primary fields above always
+    // stay the CONTAINING region, because the node name and region default
+    // are built from them
+    border: { landsdel: [], fylke: [], kommune: [] },
+    borderKomm: false,        // opt-in: add neighbouring kommuner too
     drilled: null,             // fylke the map is currently zoomed into
     fw: 'new', profile: 'neighborhood',
     cr: '8', hash: '1', loop: 'minimal', regionDefault: 'none',
@@ -1430,6 +1448,69 @@
   // one map unit at the projection centre
   const UNIT_KM = 2.72276;
 
+  // How close to a neighbouring region a node has to be before it also relays
+  // for it. A node in Asker is 4.9 km from Buskerud and plainly serves it, even
+  // though it stands in Akershus.
+  //
+  // This is the point at which a region tag stops meaning "is in" and starts
+  // meaning "relays for" — the same move the city tags already made. Kommune is
+  // opt-in (state.borderKomm): at ~100 nodes kommune scoping filters almost
+  // nothing, and its tags are the longest, so leaving it on by default spent
+  // the whole `region def` line budget for no gain.
+  const BORDER_KM = { landsdel: 50, fylke: 25, kommune: 10 };
+
+  // Distance from a point to a segment, squared, in map units.
+  function segDist2(px, py, ax, ay, bx, by) {
+    const dx = bx - ax, dy = by - ay, L = dx * dx + dy * dy;
+    const t = L === 0 ? 0 : Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / L));
+    const ex = ax + t * dx - px, ey = ay + t * dy - py;
+    return ex * ex + ey * ey;
+  }
+
+  // Distance from a point to a kommune's nearest EDGE, in km; 0 if inside.
+  // Edge distance, not vertex distance: a point can sit close to the middle of
+  // a long span and far from both its endpoints, which would under-report the
+  // neighbour and silently drop the tag.
+  function areaDistKm(x, y, a) {
+    const b = a.bb;
+    // cheap reject on the bounding box before touching any geometry
+    const bx = Math.max(b[0] - x, 0, x - b[2]), by = Math.max(b[1] - y, 0, y - b[3]);
+    const floor = Math.hypot(bx, by) * UNIT_KM;
+    if (floor > BORDER_KM.landsdel) return floor;
+    let n = 0;
+    for (const r of a.rings) if (pointInRing(x, y, r)) n++;
+    if (n % 2) return 0;
+    let best = Infinity;
+    for (const r of a.rings)
+      for (let i = 0, j = r.length - 1; i < r.length; j = i++)
+        best = Math.min(best, segDist2(x, y, r[j][0], r[j][1], r[i][0], r[i][1]));
+    return Math.sqrt(best) * UNIT_KM;
+  }
+
+  // Neighbouring regions this node is close enough to relay for. One distance
+  // pass over the kommuner gives all three levels — a fylke is as far away as
+  // its nearest kommune, a landsdel as its nearest fylke — so the levels can
+  // never contradict each other.
+  function borderAt(x, y, homeKomm) {
+    const homeFy = homeKomm.slice(0, 2), homeLd = LANDSDEL[homeFy];
+    const fy = new Map(), ld = new Map(), km = [];
+    for (const a of KOMMUNER) {
+      const d = areaDistKm(x, y, a);
+      if (d > BORDER_KM.landsdel) continue;
+      const f = a.nr.slice(0, 2), l = LANDSDEL[f];
+      if (f !== homeFy && (!fy.has(f) || d < fy.get(f))) fy.set(f, d);
+      if (l !== homeLd && (!ld.has(l) || d < ld.get(l))) ld.set(l, d);
+      if (a.nr !== homeKomm && d <= BORDER_KM.kommune) km.push({ nr: a.nr, name: a.name, d });
+    }
+    const pick = (m, lim) => [...m].filter(([, d]) => d <= lim)
+      .sort((a, b) => a[1] - b[1]).map(([k, d]) => ({ nr: k, d }));
+    return {
+      landsdel: pick(ld, BORDER_KM.landsdel),
+      fylke: pick(fy, BORDER_KM.fylke),
+      kommune: km.sort((a, b) => a.d - b.d)
+    };
+  }
+
   // every anchor within range, nearest first — a node between two cities
   // genuinely relays for both, so it carries both tags
   function metroAt(x, y) {
@@ -1448,6 +1529,7 @@
     state.kommune = k.nr;
     state.kommuneName = k.name;
     state.metro = metroAt(x, y);
+    state.border = borderAt(x, y, k.nr);
     const entered = drill && state.fylke !== state.drilled;
     if (entered) state.drilled = state.fylke;
     render();
@@ -1459,8 +1541,14 @@
   // independent overlays, so all four sit directly under `no` rather than
   // nesting. Ordered broadest first, which is also how the tree reads.
   function tags() {
-    return ['no-' + LANDSDEL[state.fylke], 'no-' + state.fylke, 'no-' + state.kommune,
-            ...state.metro.map(m => m.key)];
+    const b = state.border;
+    return [
+      'no-' + LANDSDEL[state.fylke], ...b.landsdel.map(x => 'no-' + x.nr),
+      'no-' + state.fylke,            ...b.fylke.map(x => 'no-' + x.nr),
+      'no-' + state.kommune,
+      ...(state.borderKomm ? b.kommune.map(x => 'no-' + x.nr) : []),
+      ...state.metro.map(m => m.key)
+    ];
   }
 
   function buildLines() {
@@ -1504,15 +1592,23 @@
     L.push(['c', '# allowf * is the default, restated in case this node had it denied']);
     L.push(['k', 'region allowf', '*']);
     const t = tags();
-    if (state.fw === 'new') {
+    const chain = t.map((x, i) => (i === t.length - 1 ? x : `${x}|no`)).join(' ');
+    const defLine = `region def eu|* europe|eu no ${chain}`;
+    // The CLI takes at most 160 characters per serial line. Border tags can push
+    // past that, so rather than emit a line the node will truncate, fall back to
+    // the `region put` form — one region per line, no length limit, and it
+    // builds the identical tree. It is the same block the old-firmware branch
+    // below emits, so this is tested code, not a second implementation.
+    const overflow = state.fw === 'new' && defLine.length > 160;
+    if (state.fw === 'new' && !overflow) {
       // `x|no` creates x at the cursor then pops back to no, so each tag is
       // a sibling. The last needs no jump.
-      const chain = t.map((x, i) => (i === t.length - 1 ? x : `${x}|no`)).join(' ');
-      const line = `region def eu|* europe|eu no ${chain}`;
-      // the CLI takes at most 160 characters per serial line
-      if (line.length > 160) L.push(['c', `# NOTE: next line is ${line.length} chars, over the 160 limit`]);
       L.push(['k', 'region def', `eu|* europe|eu no ${chain}`]);
     } else {
+      if (overflow)
+        L.push(['c', `# region def would be ${defLine.length} chars, over the 160-char`]);
+      if (overflow)
+        L.push(['c', '# serial limit — using region put instead, same tree']);
       // region put already creates each region flood-allowed, so no allowf
       L.push(['k', 'region put', 'eu']);
       L.push(['k', 'region put', 'europe']);
@@ -1520,6 +1616,8 @@
       for (const x of t) L.push(['k', 'region put', `${x} no`]);
     }
     if (state.regionDefault === 'no') L.push(['k', 'region default', 'no']);
+    // always the CONTAINING region — defaulting to a neighbour you merely
+    // relay for would scope your own traffic to somewhere you are not
     if (state.regionDefault === 'landsdel')
       L.push(['k', 'region default', 'no-' + LANDSDEL[state.fylke]]);
     if (state.regionDefault === 'fylke') L.push(['k', 'region default', 'no-' + state.fylke]);
@@ -1629,6 +1727,14 @@
     const ann = {};
     ann['no-' + LANDSDEL[state.fylke]] =
       `landsdel — ${esc(LANDSDEL_NAMES[LANDSDEL[state.fylke]])}`;
+    // Border rows borrow the city tags' phrasing on purpose: "within N km of X"
+    // already reads as "relays for", which is exactly what these mean.
+    for (const x of state.border.landsdel)
+      ann['no-' + x.nr] = `within ${Math.round(x.d)} km of ${esc(LANDSDEL_NAMES[x.nr])}`;
+    for (const x of state.border.fylke)
+      ann['no-' + x.nr] = `within ${Math.round(x.d)} km of ${esc(FYLKE_NAMES[x.nr])}`;
+    if (state.borderKomm) for (const x of state.border.kommune)
+      ann['no-' + x.nr] = `within ${Math.round(x.d)} km of ${esc(x.name)}`;
     ann['no-' + state.fylke] =
       `<b>fylkesnummer</b> for ${esc(FYLKE_NAMES[state.fylke])}`;
     ann['no-' + state.kommune] =
@@ -1766,6 +1872,7 @@
     state.drilled = null;
     state.kommune = null; state.kommuneName = ''; state.fylke = null;
     state.metro = [];
+    state.border = { landsdel: [], fylke: [], kommune: [] };
     view.z = 1; view.cx = VBX + W / 2; view.cy = VBY + H / 2;
     render();
   });
@@ -1868,6 +1975,7 @@
   seg($('defSeg'),  'd',  v => { state.regionDefault = v; render(); });
   seg($('fwSeg'),   'f',  v => { state.fw = v; render(); });
   seg($('locSeg'),  'loc', v => { state.location = v === 'on'; render(); });
+  seg($('kbSeg'),   'kb', v => { state.borderKomm = v === 'on'; render(); });
 
   // ---- theme ----
   // Deliberately outside `state`: this is how the page looks, not how the node
