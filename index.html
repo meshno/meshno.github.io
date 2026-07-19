@@ -244,6 +244,9 @@
   .profile {
     text-align: left; background: transparent; border: 1px solid var(--rule);
     padding: 11px 13px; cursor: pointer; color: var(--ink); font-family: var(--sans);
+    /* title top, description takes the slack, bar and values pinned to the
+       bottom so they line up across cards of differing text length */
+    display: flex; flex-direction: column; align-items: stretch;
   }
   .profile:hover { border-color: var(--muted); }
   .profile.on { border-color: var(--accent); background: rgba(94,234,212,0.05); }
@@ -254,11 +257,11 @@
   }
   .p-n span { font-family: var(--mono); font-size: 10.5px; font-weight: 400; color: var(--dim); }
   .profile.on .p-n span { color: var(--accent); }
-  .p-d { font-size: 12.5px; color: var(--muted); margin-top: 4px; line-height: 1.45; }
+  .p-d { font-size: 12.5px; color: var(--muted); margin-top: 4px; line-height: 1.45; flex: 1; }
 
   /* the back-off window, drawn as the slots the firmware actually uses:
      txdelay x 5, truncated. Makes "wider window" literal. */
-  .p-slots { display: flex; gap: 2px; margin-top: 9px; }
+  .p-slots { display: flex; gap: 2px; margin-top: 12px; }
   .p-slots i {
     flex: 1; height: 5px; border-radius: 1px;
     background: var(--rule-2); border: 1px solid var(--rule-2);
