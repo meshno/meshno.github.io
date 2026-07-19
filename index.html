@@ -959,12 +959,15 @@
     ];
   }
 
+  // txdelay and direct.txdelay are capped at 2 by the firmware. The ladder
+  // is scaled to fit that ceiling with mobile at the top, since a mobile node
+  // should yield to everything; local and neighbourhood are unchanged so
+  // nodes already running them do not shift.
+  //   local < neighbourhood < hilltop < mobile
   const PROFILES = {
-    hilltop:      { tx: '2.0', dtx: '2.0', rx: '3', label: 'hilltop / backbone' },
+    hilltop:      { tx: '1.4', dtx: '1.2', rx: '3', label: 'hilltop / backbone' },
     neighborhood: { tx: '0.8', dtx: '0.4', rx: '3', label: 'neighborhood rooftop' },
     local:        { tx: '0.3', dtx: '0.1', rx: '3', label: 'local / low elevation' },
-    // txdelay and direct.txdelay are capped at 2 by the firmware; mobile was
-    // 3.0/2.5, which is out of range. Clamped to the maximum yield.
     mobile:       { tx: '2.0', dtx: '2.0', rx: '3', label: 'mobile node' }
   };
 
