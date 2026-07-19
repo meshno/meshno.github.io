@@ -460,7 +460,7 @@
      reading the labels. Identical on desktop and mobile: nothing reflows,
      nothing is spread apart. */
   .kms {
-    display: grid; grid-template-columns: max-content 5.4em max-content;
+    display: grid; grid-template-columns: max-content 5.4em max-content max-content;
     gap: 7px 10px; align-items: center; width: max-content;
   }
   .kms label {
@@ -481,6 +481,15 @@
   .kms i {
     font-style: normal; font-family: var(--mono); font-size: 12.5px; color: var(--dim);
   }
+  /* a shortcut for typing 0, so it stays quiet — an outline, not a chip.
+     The label names what pressing it does, so it swaps enable/disable. */
+  .kms button {
+    font-family: var(--mono); font-size: 12px; color: var(--muted);
+    background: transparent; border: 1px solid var(--rule);
+    padding: 4px 9px; min-height: 30px; cursor: pointer; white-space: nowrap;
+  }
+  .kms button:hover { border-color: var(--muted); color: var(--ink); }
+  .kms button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
   input[type="text"] {
     font-family: var(--mono); font-size: 13.5px; color: var(--ink);
@@ -571,8 +580,8 @@
     /* it is an input now, so it needs a real tap target */
     #posRead { width: 100%; font-size: 13px; min-height: 44px; text-align: left;
                border-color: var(--rule-2); padding: 0 8px; }
-    /* the ladder needs no reflow on a phone, only a real tap target */
-    .kms input { min-height: 44px; }
+    /* the ladder needs no reflow on a phone, only real tap targets */
+    .kms input, .kms button { min-height: 44px; }
     .map-head { align-items: stretch; }
     .zoomctl button { min-width: 40px; min-height: 40px; }
     /* expanders are the main way to reach the explanations on a phone */
@@ -1236,21 +1245,11 @@
           <div class="k">border distance</div>
           <div class="v">
             <div class="kms">
-              <label for="kmLd">landsdel</label><input type="number" id="kmLd" inputmode="numeric" min="0" max="300" step="5" value="50"><i>km</i>
-              <label for="kmFy">fylke</label><input type="number" id="kmFy" inputmode="numeric" min="0" max="300" step="5" value="25"><i>km</i>
-              <label for="kmKo">kommune</label><input type="number" id="kmKo" inputmode="numeric" min="0" max="300" step="5" value="10" disabled><i>km</i>
+              <label for="kmLd">landsdel</label><input type="number" id="kmLd" inputmode="numeric" min="0" max="300" step="5" value="50"><i>km</i><button type="button" data-lvl="landsdel">disable</button>
+              <label for="kmFy">fylke</label><input type="number" id="kmFy" inputmode="numeric" min="0" max="300" step="5" value="25"><i>km</i><button type="button" data-lvl="fylke">disable</button>
+              <label for="kmKo">kommune</label><input type="number" id="kmKo" inputmode="numeric" min="0" max="300" step="5" value="0"><i>km</i><button type="button" data-lvl="kommune">enable</button>
             </div>
-            <p class="help">How close the node has to be to a neighbouring region before it relays for it. <b>0 turns that level off.</b> Wider reaches further but tags more of the country; the defaults suit a typical fixed repeater.</p>
-          </div>
-        </div>
-        <div class="row">
-          <div class="k">border kommuner</div>
-          <div class="v">
-            <div class="seg" id="kbSeg">
-              <button data-kb="off" class="on">off</button>
-              <button data-kb="on">add</button>
-            </div>
-            <p class="help">Adds the kommunenummer of every kommune within 10&nbsp;km, alongside the one the node stands in — a node in Asker also picks up Bærum and Lier. <b>Neighbouring fylke and landsdel are added either way</b>, whatever this is set to. Off by default.</p>
+            <p class="help">How close the node has to be to a neighbouring region before it relays for it. <b>0 turns that level off</b>, which is where kommune starts. Wider reaches further but tags more of the country.</p>
           </div>
         </div>
         <div class="row">
@@ -1395,9 +1394,10 @@
     local:        { tx: '0.4', dtx: '0.2', rx: '3', label: 'local / low elevation' }
   };
 
-  // Starting values only — state.borderKm holds the live ones, which the
-  // operator can change. A mesh in flat farmland reaches differently from one
-  // in fjord country, so the right radius is local knowledge, not a constant.
+  // What the enable button restores, and where landsdel/fylke start. The live
+  // radii are state.borderKm — a mesh in flat farmland reaches differently
+  // from one in fjord country, so the right radius is local knowledge.
+  // A level is off when its radius is 0; there is no separate on/off flag.
   const BORDER_KM = { landsdel: 50, fylke: 25, kommune: 10 };
   const BORDER_MAX = 300;   // clamp: beyond this the pass slows and every
                             // node ends up tagged for most of the country
@@ -1409,8 +1409,9 @@
     // stay the CONTAINING region, because the node name and region default
     // are built from them
     border: { landsdel: [], fylke: [], kommune: [] },
-    borderKomm: false,        // opt-in: add neighbouring kommuner too
-    borderKm: { ...BORDER_KM },
+    // kommune starts at 0 — off. At this mesh size a kommune region has
+    // almost no members to filter, and its tags are the longest on the line.
+    borderKm: { ...BORDER_KM, kommune: 0 },
     drilled: null,             // fylke the map is currently zoomed into
     fw: 'new', profile: 'neighborhood',
     cr: '8', hash: '1', loop: 'minimal', regionDefault: 'none',
@@ -1504,16 +1505,15 @@
   // though it stands in Akershus.
   //
   // This is the point at which a region tag stops meaning "is in" and starts
-  // meaning "relays for" — the same move the city tags already made. Kommune is
-  // opt-in (state.borderKomm): at ~100 nodes kommune scoping filters almost
+  // meaning "relays for" — the same move the city tags already made. Kommune
+  // starts at 0, i.e. off: at ~100 nodes kommune scoping filters almost
   // nothing, and its tags are the longest, so leaving it on by default spent
   // the whole `region def` line budget for no gain.
   // The bounding-box reject and the pass below have to use the LARGEST live
   // threshold, not the landsdel one — nothing stops an operator setting the
   // kommune radius wider than the landsdel radius.
   const borderReach = () =>
-    Math.max(state.borderKm.landsdel, state.borderKm.fylke,
-             state.borderKm.kommune * (state.borderKomm ? 1 : 0));
+    Math.max(state.borderKm.landsdel, state.borderKm.fylke, state.borderKm.kommune);
 
   // Distance from a point to a segment, squared, in map units.
   function segDist2(px, py, ax, ay, bx, by) {
@@ -1603,7 +1603,7 @@
       'no-' + LANDSDEL[state.fylke], ...b.landsdel.map(x => 'no-' + x.nr),
       'no-' + state.fylke,            ...b.fylke.map(x => 'no-' + x.nr),
       'no-' + state.kommune,
-      ...(state.borderKomm ? b.kommune.map(x => 'no-' + x.nr) : []),
+      ...b.kommune.map(x => 'no-' + x.nr),
       ...state.metro.map(m => m.key)
     ];
   }
@@ -1790,7 +1790,7 @@
       ann['no-' + x.nr] = `within ${Math.round(x.d)} km of ${esc(LANDSDEL_NAMES[x.nr])}`;
     for (const x of state.border.fylke)
       ann['no-' + x.nr] = `within ${Math.round(x.d)} km of ${esc(FYLKE_NAMES[x.nr])}`;
-    if (state.borderKomm) for (const x of state.border.kommune)
+    for (const x of state.border.kommune)
       ann['no-' + x.nr] = `within ${Math.round(x.d)} km of ${esc(x.name)}`;
     ann['no-' + state.fylke] =
       `<b>fylkesnummer</b> for ${esc(FYLKE_NAMES[state.fylke])}`;
@@ -2032,14 +2032,6 @@
   seg($('defSeg'),  'd',  v => { state.regionDefault = v; render(); });
   seg($('fwSeg'),   'f',  v => { state.fw = v; render(); });
   seg($('locSeg'),  'loc', v => { state.location = v === 'on'; render(); });
-  seg($('kbSeg'),   'kb', v => {
-    state.borderKomm = v === 'on';
-    // the kommune radius is dimmed rather than hidden when the level is off,
-    // so it stays visible along with what unlocks it
-    $('kmKo').disabled = !state.borderKomm;
-    replace();
-  });
-
   // Border radii. Clamped on the way in: a blank or junk field falls back to
   // the starting value rather than silently becoming NaN and dropping a level.
   for (const [id, key] of [['kmLd', 'landsdel'], ['kmFy', 'fylke'], ['kmKo', 'kommune']]) {
@@ -2047,12 +2039,32 @@
       const raw = parseFloat($(id).value);
       state.borderKm[key] = Number.isFinite(raw)
         ? Math.min(BORDER_MAX, Math.max(0, raw)) : BORDER_KM[key];
+      syncBorderBtns();
       replace();
     });
     // normalise what is shown only once the field is left, so it does not
     // fight someone mid-type
     $(id).addEventListener('blur', () => { $(id).value = state.borderKm[key]; });
   }
+
+  // Each level is enabled by giving it a radius and disabled by zeroing it,
+  // so the button is a shortcut for typing, not a second source of truth.
+  // The label names what pressing it does, not what the state is.
+  const kmInput = { landsdel: 'kmLd', fylke: 'kmFy', kommune: 'kmKo' };
+  function syncBorderBtns() {
+    for (const b of document.querySelectorAll('.kms button[data-lvl]'))
+      b.textContent = state.borderKm[b.dataset.lvl] > 0 ? 'disable' : 'enable';
+  }
+  for (const b of document.querySelectorAll('.kms button[data-lvl]')) {
+    b.addEventListener('click', () => {
+      const key = b.dataset.lvl;
+      state.borderKm[key] = state.borderKm[key] > 0 ? 0 : BORDER_KM[key];
+      $(kmInput[key]).value = state.borderKm[key];
+      syncBorderBtns();
+      replace();
+    });
+  }
+  syncBorderBtns();
 
   // recompute the border set for the node already on the map, then redraw
   function replace() {
