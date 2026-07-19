@@ -65,12 +65,16 @@
        be a brighter, more chromatic teal than --accent: the accent tinted at
        low alpha over pale land comes out a muddy sage, not a selection */
     --wash-2:  rgba(0,150,136,0.28);
-    /* relay coverage, fading outward from the node: bordered kommune, then
-       bordered fylke, then bordered landsdel. Low enough that a whole
-       landsdel lighting up reads as a tint, not as a second selection. */
-    --nb-1:    rgba(0,150,136,0.17);
-    --nb-2:    rgba(0,150,136,0.095);
-    --nb-3:    rgba(0,150,136,0.045);
+    /* Relay coverage, fading outward. GREEN, not the teal accent: on light the
+       land is near-white and the water is pale blue only dE 9.9 away, so a
+       teal tint walks the land straight into the water colour — nb-2 landed
+       6.7 from it and read as sea. Green leaves that path. It also separates
+       roles: the accent marks what you selected, this marks what you also
+       cover. Alphas are solved per theme for equal perceptual steps
+       (dE 20 / 12.5 / 7.5 off the land), not shared numbers. */
+    --nb-1:    rgba(20,149,98,0.287);
+    --nb-2:    rgba(20,149,98,0.18);
+    --nb-3:    rgba(20,149,98,0.108);
     --slot:    rgba(10,108,98,0.34);
     --slot-b:  rgba(10,108,98,0.50);
     /* the floating map furniture reads as glass over whatever is beneath */
@@ -104,9 +108,11 @@
     --on-accent: #062621;
     --wash:    rgba(94,234,212,0.08);
     --wash-2:  rgba(94,234,212,0.20);
-    --nb-1:    rgba(94,234,212,0.16);
-    --nb-2:    rgba(94,234,212,0.085);
-    --nb-3:    rgba(94,234,212,0.04);
+    /* dark needs its own alphas: the same numbers that read on paper vanish
+       on near-black, where land and water are only dE 7.8 apart to begin with */
+    --nb-1:    rgba(110,231,183,0.182);
+    --nb-2:    rgba(110,231,183,0.11);
+    --nb-3:    rgba(110,231,183,0.065);
     --slot:    rgba(94,234,212,0.30);
     --slot-b:  rgba(94,234,212,0.45);
     --glass:   rgba(10,18,32,0.80);
