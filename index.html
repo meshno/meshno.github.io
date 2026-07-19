@@ -206,6 +206,15 @@
   }
   /* region tree — drawn as a tree because it is one; a left-to-right chain
      would imply europe sits above no, which it does not */
+  /* the kommunenummer is four digits, exactly like a postnummer — say so
+     where the number is shown, not only inside the collapsed explainer */
+  .kommnote {
+    font-size: 12.5px; color: var(--muted); margin: 7px 0 0;
+    font-family: var(--mono);
+  }
+  .kommnote b { color: var(--ink); font-weight: 500; }
+  .kommnote .no { color: var(--amber, #ffb454); }
+
   .scope {
     display: flex; flex-direction: column;
     font-family: var(--mono); font-size: 12.5px; line-height: 1.65;
@@ -761,6 +770,7 @@
           <span class="nm" id="kommName">Oslo</span>
           <span class="tag" id="kommTag">no-0301</span>
         </div>
+        <p class="kommnote" id="kommNote"></p>
         <p class="help" id="nearest"></p>
         <div class="scope" id="scope"></div>
 
@@ -772,7 +782,7 @@
           <p>All these codes come from the map — place the node and they follow. They are the current numbers, in use since the county reform of January 2024.</p>
         </details>
 
-        <p class="help">Fylke, kommune and city sit side by side under <code>no</code> — they are independent overlays, not a nesting, since a city's 100&nbsp;km radius crosses fylke borders. Region membership is not inherited from position in the tree, so every tag the node should relay is listed explicitly.</p>
+        <p class="help">Fylke, kommune and city sit side by side under <code>no</code> — they are independent overlays, not a nesting, since a city's 50&nbsp;km radius crosses fylke borders. Region membership is not inherited from position in the tree, so every tag the node should relay is listed explicitly.</p>
       </section>
 
       <section>
@@ -1154,6 +1164,10 @@
     // exactly what will be written to the node
     const ll = unproject(state.x, state.y);
     $('posRead').textContent = `${ll[0].toFixed(5)}°N ${ll[1].toFixed(5)}°E`;
+
+    $('kommNote').innerHTML =
+      `<b>${state.kommune}</b> is ${esc(state.kommuneName)}'s kommunenummer — `
+      + `<span class="no">not a postcode</span>.`;
 
     $('nearest').textContent = state.metro.length
       ? `${FYLKE_NAMES[state.fylke]} · within ${METRO_KM} km of `
