@@ -182,6 +182,26 @@
 
   /* ---- sections ---- */
   section { border-top: 1px solid var(--rule); padding: 22px 0 26px; }
+  .needs-node { position: relative; }
+
+  /* until a node is placed, the panel describing it is frosted over */
+  .veil { display: none; }
+  body.unplaced .veil {
+    display: flex; position: absolute; inset: 0 -8px; z-index: 3;
+    align-items: center; justify-content: center;
+    background: rgba(10,18,32,0.55); backdrop-filter: blur(4px);
+  }
+  body.unplaced .veil span {
+    font-size: 14px; color: var(--muted); text-align: center;
+    border: 1px solid var(--rule); padding: 9px 16px;
+    background: rgba(10,18,32,0.8);
+  }
+  .copy:disabled { opacity: 0.4; cursor: not-allowed; }
+  .copy:disabled:hover { background: transparent; }
+
+  /* the left column carries the map and the node it describes; keep both in
+     view, but let it scroll if the viewport is too short for the pair */
+  .map-col { max-height: calc(100vh - 48px); overflow-y: auto; }
   section:first-child { border-top: none; padding-top: 0; }
   h2 {
     font-family: var(--sans); font-size: 17px; font-weight: 600;
@@ -410,7 +430,7 @@
       <h2>Region</h2>
       <div class="map-head">
         <label for="posRead">Position</label>
-        <input type="text" id="posRead" spellcheck="false" autocomplete="off"
+        <input type="text" id="posRead" spellcheck="false" autocomplete="off" placeholder="not placed"
                aria-label="Position, decimal degrees — edit to move the node">
       </div>
       <div class="mapbox">
@@ -831,10 +851,8 @@
       </div>
       <p class="map-note">Click anywhere to place your node.</p>
       <p class="help" id="coordNote"></p>
-    </div>
-
-    <div class="col">
-      <section>
+      <section class="needs-node">
+        <div class="veil" aria-hidden="true"><span>Click the map to place your node</span></div>
         <h2>Selected node</h2>
         <div class="station">
           <span class="nm" id="kommName">Oslo</span>
@@ -853,6 +871,49 @@
           <p>All these codes come from the map — place the node and they follow. They are the current numbers, in use since the county reform of January 2024.</p>
         </details>
 
+      </section>
+    </div>
+
+    <div class="col">
+      <section>
+        <h2>Identity</h2>
+        <div class="row">
+          <div class="k">name</div>
+          <div class="v">
+            <input type="text" id="nodeDesc" placeholder="e.g. Årvollåsen" maxlength="40" aria-label="Node name — the part after the kommune number">
+            <p class="namepv"><span id="namePreview">NO-0301</span> <span class="bytes" id="nameBytes"></span></p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="k">lat / lon</div>
+          <div class="v">
+            <div class="seg" id="locSeg">
+              <button data-loc="on">publish</button>
+              <button data-loc="off" class="on">omit</button>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="k">owner.info</div>
+          <div class="v">
+            <input type="text" id="ownerInfo" placeholder="e.g. LA1ABC / 6dBi omni @9m / solar+batt / roof" maxlength="90" aria-label="owner.info — contact, antenna, power, mount">
+          </div>
+        </div>
+        <div class="row">
+          <div class="k">guest.password</div>
+          <div class="v">
+            <input type="text" id="guestPw" placeholder="leave blank for none" maxlength="30" aria-label="guest.password">
+          </div>
+        </div>
+        <details class="explain">
+          <summary>About the name and location</summary>
+          <p id="locNote"></p>
+          <p>Convention: <code>NO-&lt;kommunenummer&gt;-&lt;place&gt;</code>, so a node on Årvollåsen in Oslo is <code>NO-0301-Årvollåsen</code>. The number comes from where you placed it on the map. <b>Max 24 bytes if the node has a location set, 32 if not</b> — Norwegian letters cost two bytes each, so <code>å</code> and <code>ø</code> count double. Takes effect after a reboot.</p>
+          <p></p>
+          <p>Sent as two commands, <code>set lat</code> and <code>set lon</code> — MeshCore has no combined location command. <b>Off by default,</b> because a map click is only accurate to a hundred metres or so and a wrong published position is worse than none. Turn it on once you have typed a real GPS reading above. Publishing is normal for a repeater and puts it on mesh maps, but it is public, and <b>it drops the name limit from 32 bytes to 24</b>.</p>
+          <p>Contact, antenna, power, mount. Visible to anyone who queries the node — no personal info.</p>
+          <p>Lets members query node status.</p>
+        </details>
       </section>
 
       <section>
@@ -938,46 +999,6 @@
         </details>
       </section>
 
-      <section>
-        <h2>Identity</h2>
-        <div class="row">
-          <div class="k">name</div>
-          <div class="v">
-            <input type="text" id="nodeDesc" placeholder="e.g. Årvollåsen" maxlength="40" aria-label="Node name — the part after the kommune number">
-            <p class="namepv"><span id="namePreview">NO-0301</span> <span class="bytes" id="nameBytes"></span></p>
-          </div>
-        </div>
-        <div class="row">
-          <div class="k">lat / lon</div>
-          <div class="v">
-            <div class="seg" id="locSeg">
-              <button data-loc="on">publish</button>
-              <button data-loc="off" class="on">omit</button>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="k">owner.info</div>
-          <div class="v">
-            <input type="text" id="ownerInfo" placeholder="e.g. LA1ABC / 6dBi omni @9m / solar+batt / roof" maxlength="90" aria-label="owner.info — contact, antenna, power, mount">
-          </div>
-        </div>
-        <div class="row">
-          <div class="k">guest.password</div>
-          <div class="v">
-            <input type="text" id="guestPw" placeholder="leave blank for none" maxlength="30" aria-label="guest.password">
-          </div>
-        </div>
-        <details class="explain">
-          <summary>About the name and location</summary>
-          <p id="locNote"></p>
-          <p>Convention: <code>NO-&lt;kommunenummer&gt;-&lt;place&gt;</code>, so a node on Årvollåsen in Oslo is <code>NO-0301-Årvollåsen</code>. The number comes from where you placed it on the map. <b>Max 24 bytes if the node has a location set, 32 if not</b> — Norwegian letters cost two bytes each, so <code>å</code> and <code>ø</code> count double. Takes effect after a reboot.</p>
-          <p></p>
-          <p>Sent as two commands, <code>set lat</code> and <code>set lon</code> — MeshCore has no combined location command. <b>Off by default,</b> because a map click is only accurate to a hundred metres or so and a wrong published position is worse than none. Turn it on once you have typed a real GPS reading above. Publishing is normal for a repeater and puts it on mesh maps, but it is public, and <b>it drops the name limit from 32 bytes to 24</b>.</p>
-          <p>Contact, antenna, power, mount. Visible to anyone who queries the node — no personal info.</p>
-          <p>Lets members query node status.</p>
-        </details>
-      </section>
 
       <section>
         <h2>Regions</h2>
@@ -1304,6 +1325,28 @@
   const byteLen = s => new TextEncoder().encode(s).length;
 
   function render() {
+    // Nothing is selected until the user selects it: no invented default, and
+    // no half-valid config sitting there waiting to be pasted.
+    const placed = !!state.kommune;
+    document.body.classList.toggle('unplaced', !placed);
+    $('copyBtn').disabled = !placed;
+    if (!placed) {
+      $('posRead').value = '';
+      $('cmdOut').innerHTML =
+        '<span class="c"># place your node on the map to generate its config</span>';
+      $('pin').setAttribute('hidden', '');
+      // the name is built from the kommune, so it cannot be previewed yet
+      $('namePreview').textContent = 'NO-…';
+      $('namePreview').classList.add('unset');
+      $('nameBytes').textContent = '· place the node first';
+      $('nameBytes').className = 'bytes';
+      $('locNote').textContent = '';
+      document.querySelectorAll('#profiles .profile').forEach(el =>
+        el.classList.toggle('on', el.dataset.p === state.profile));
+      applyView();
+      return;
+    }
+
     const fy = 'no-' + state.fylke, km = 'no-' + state.kommune;
     $('kommName').textContent = state.kommuneName;
     $('kommTag').textContent = km;
@@ -1605,10 +1648,7 @@
     setTimeout(() => { b.textContent = 'Copy'; b.classList.remove('done'); }, 1400);
   });
 
-  // Start on Oslo, zoomed out — a region is always selected so the config is
-  // always complete. The first click is what drills in.
-  const oslo = CITY_PTS.find(c => c.key === 'no-oslo');
-  place(oslo.x, oslo.y, false);
+  render();
 </script>
 </body>
 </html>
