@@ -453,6 +453,35 @@
   .profile.on .p-v { color: var(--muted); }
   .profile.on .p-v b { color: var(--accent); }
 
+  /* The three radii are the region hierarchy — landsdel wraps fylke wraps
+     kommune — so they are laid out as a ladder in that order, widest first.
+     A fixed input column with the numbers right-aligned makes 50 / 25 / 10
+     stack as a column of digits, so the descending reach is visible without
+     reading the labels. Identical on desktop and mobile: nothing reflows,
+     nothing is spread apart. */
+  .kms {
+    display: grid; grid-template-columns: max-content 5.4em max-content;
+    gap: 7px 10px; align-items: center; width: max-content;
+  }
+  .kms label {
+    font-family: var(--mono); font-size: 12.5px; color: var(--muted);
+  }
+  .kms input {
+    font-family: var(--mono); font-size: 13.5px; color: var(--ink);
+    background: var(--inset); border: 1px solid var(--rule); border-radius: 0;
+    padding: 6px 9px; width: 100%; min-height: 34px; text-align: right;
+  }
+  /* the native spinners are the reason the three boxes rendered at different
+     widths, and they carry no information the arrows keys do not */
+  .kms input::-webkit-outer-spin-button,
+  .kms input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .kms input { -moz-appearance: textfield; appearance: textfield; }
+  .kms input:focus { outline: none; border-color: var(--accent); }
+  .kms input:disabled { opacity: 0.45; cursor: not-allowed; }
+  .kms i {
+    font-style: normal; font-family: var(--mono); font-size: 12.5px; color: var(--dim);
+  }
+
   input[type="text"] {
     font-family: var(--mono); font-size: 13.5px; color: var(--ink);
     background: var(--inset); border: 1px solid var(--rule); border-radius: 0;
@@ -542,6 +571,8 @@
     /* it is an input now, so it needs a real tap target */
     #posRead { width: 100%; font-size: 13px; min-height: 44px; text-align: left;
                border-color: var(--rule-2); padding: 0 8px; }
+    /* the ladder needs no reflow on a phone, only a real tap target */
+    .kms input { min-height: 44px; }
     .map-head { align-items: stretch; }
     .zoomctl button { min-width: 40px; min-height: 40px; }
     /* expanders are the main way to reach the explanations on a phone */
@@ -1202,6 +1233,17 @@
           </div>
         </div>
         <div class="row">
+          <div class="k">border distance</div>
+          <div class="v">
+            <div class="kms">
+              <label for="kmLd">landsdel</label><input type="number" id="kmLd" inputmode="numeric" min="0" max="300" step="5" value="50"><i>km</i>
+              <label for="kmFy">fylke</label><input type="number" id="kmFy" inputmode="numeric" min="0" max="300" step="5" value="25"><i>km</i>
+              <label for="kmKo">kommune</label><input type="number" id="kmKo" inputmode="numeric" min="0" max="300" step="5" value="10" disabled><i>km</i>
+            </div>
+            <p class="help">How close the node has to be to a neighbouring region before it relays for it. <b>0 turns that level off.</b> Wider reaches further but tags more of the country; the defaults suit a typical fixed repeater.</p>
+          </div>
+        </div>
+        <div class="row">
           <div class="k">border kommuner</div>
           <div class="v">
             <div class="seg" id="kbSeg">
@@ -1353,6 +1395,13 @@
     local:        { tx: '0.4', dtx: '0.2', rx: '3', label: 'local / low elevation' }
   };
 
+  // Starting values only — state.borderKm holds the live ones, which the
+  // operator can change. A mesh in flat farmland reaches differently from one
+  // in fjord country, so the right radius is local knowledge, not a constant.
+  const BORDER_KM = { landsdel: 50, fylke: 25, kommune: 10 };
+  const BORDER_MAX = 300;   // clamp: beyond this the pass slows and every
+                            // node ends up tagged for most of the country
+
   const state = {
     x: null, y: null,          // node position in map units
     fylke: null, kommune: null, kommuneName: null, metro: [],
@@ -1361,6 +1410,7 @@
     // are built from them
     border: { landsdel: [], fylke: [], kommune: [] },
     borderKomm: false,        // opt-in: add neighbouring kommuner too
+    borderKm: { ...BORDER_KM },
     drilled: null,             // fylke the map is currently zoomed into
     fw: 'new', profile: 'neighborhood',
     cr: '8', hash: '1', loop: 'minimal', regionDefault: 'none',
@@ -1458,7 +1508,12 @@
   // opt-in (state.borderKomm): at ~100 nodes kommune scoping filters almost
   // nothing, and its tags are the longest, so leaving it on by default spent
   // the whole `region def` line budget for no gain.
-  const BORDER_KM = { landsdel: 50, fylke: 25, kommune: 10 };
+  // The bounding-box reject and the pass below have to use the LARGEST live
+  // threshold, not the landsdel one — nothing stops an operator setting the
+  // kommune radius wider than the landsdel radius.
+  const borderReach = () =>
+    Math.max(state.borderKm.landsdel, state.borderKm.fylke,
+             state.borderKm.kommune * (state.borderKomm ? 1 : 0));
 
   // Distance from a point to a segment, squared, in map units.
   function segDist2(px, py, ax, ay, bx, by) {
@@ -1472,12 +1527,12 @@
   // Edge distance, not vertex distance: a point can sit close to the middle of
   // a long span and far from both its endpoints, which would under-report the
   // neighbour and silently drop the tag.
-  function areaDistKm(x, y, a) {
+  function areaDistKm(x, y, a, reach) {
     const b = a.bb;
     // cheap reject on the bounding box before touching any geometry
     const bx = Math.max(b[0] - x, 0, x - b[2]), by = Math.max(b[1] - y, 0, y - b[3]);
     const floor = Math.hypot(bx, by) * UNIT_KM;
-    if (floor > BORDER_KM.landsdel) return floor;
+    if (floor > reach) return floor;
     let n = 0;
     for (const r of a.rings) if (pointInRing(x, y, r)) n++;
     if (n % 2) return 0;
@@ -1494,20 +1549,21 @@
   // never contradict each other.
   function borderAt(x, y, homeKomm) {
     const homeFy = homeKomm.slice(0, 2), homeLd = LANDSDEL[homeFy];
+    const B = state.borderKm, reach = borderReach();
     const fy = new Map(), ld = new Map(), km = [];
     for (const a of KOMMUNER) {
-      const d = areaDistKm(x, y, a);
-      if (d > BORDER_KM.landsdel) continue;
+      const d = areaDistKm(x, y, a, reach);
+      if (d > reach) continue;
       const f = a.nr.slice(0, 2), l = LANDSDEL[f];
       if (f !== homeFy && (!fy.has(f) || d < fy.get(f))) fy.set(f, d);
       if (l !== homeLd && (!ld.has(l) || d < ld.get(l))) ld.set(l, d);
-      if (a.nr !== homeKomm && d <= BORDER_KM.kommune) km.push({ nr: a.nr, name: a.name, d });
+      if (a.nr !== homeKomm && d <= B.kommune) km.push({ nr: a.nr, name: a.name, d });
     }
     const pick = (m, lim) => [...m].filter(([, d]) => d <= lim)
       .sort((a, b) => a[1] - b[1]).map(([k, d]) => ({ nr: k, d }));
     return {
-      landsdel: pick(ld, BORDER_KM.landsdel),
-      fylke: pick(fy, BORDER_KM.fylke),
+      landsdel: pick(ld, B.landsdel),
+      fylke: pick(fy, B.fylke),
       kommune: km.sort((a, b) => a.d - b.d)
     };
   }
@@ -1976,7 +2032,33 @@
   seg($('defSeg'),  'd',  v => { state.regionDefault = v; render(); });
   seg($('fwSeg'),   'f',  v => { state.fw = v; render(); });
   seg($('locSeg'),  'loc', v => { state.location = v === 'on'; render(); });
-  seg($('kbSeg'),   'kb', v => { state.borderKomm = v === 'on'; render(); });
+  seg($('kbSeg'),   'kb', v => {
+    state.borderKomm = v === 'on';
+    // the kommune radius is dimmed rather than hidden when the level is off,
+    // so it stays visible along with what unlocks it
+    $('kmKo').disabled = !state.borderKomm;
+    replace();
+  });
+
+  // Border radii. Clamped on the way in: a blank or junk field falls back to
+  // the starting value rather than silently becoming NaN and dropping a level.
+  for (const [id, key] of [['kmLd', 'landsdel'], ['kmFy', 'fylke'], ['kmKo', 'kommune']]) {
+    $(id).addEventListener('input', () => {
+      const raw = parseFloat($(id).value);
+      state.borderKm[key] = Number.isFinite(raw)
+        ? Math.min(BORDER_MAX, Math.max(0, raw)) : BORDER_KM[key];
+      replace();
+    });
+    // normalise what is shown only once the field is left, so it does not
+    // fight someone mid-type
+    $(id).addEventListener('blur', () => { $(id).value = state.borderKm[key]; });
+  }
+
+  // recompute the border set for the node already on the map, then redraw
+  function replace() {
+    if (state.kommune) state.border = borderAt(state.x, state.y, state.kommune);
+    render();
+  }
 
   // ---- theme ----
   // Deliberately outside `state`: this is how the page looks, not how the node
