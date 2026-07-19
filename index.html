@@ -94,14 +94,24 @@
     transition: stroke-width 0.18s linear;
   }
   .kommune.shown { stroke-width: 0.45; }
-  .kommune.on { fill: rgba(94,234,212,0.20); stroke: var(--accent); stroke-width: 1; }
 
   .fylke {
     fill: none; stroke: #2c4162; stroke-width: 0.8;
     stroke-linejoin: round; pointer-events: none;
     transition: stroke 0.18s linear;
   }
-  .fylke.on { stroke: var(--accent); stroke-width: 1.1; }
+
+  /* the selection overlay — painted after every boundary, so its outline is
+     never broken by a neighbour drawn later along a shared edge */
+  .sel { pointer-events: none; }
+  .sel-fylke {
+    fill: none; stroke: var(--accent); stroke-width: 1.1;
+    stroke-linejoin: round; vector-effect: non-scaling-stroke;
+  }
+  .sel-komm {
+    fill: rgba(94,234,212,0.20); stroke: var(--accent); stroke-width: 1.1;
+    stroke-linejoin: round; vector-effect: non-scaling-stroke;
+  }
 
   .pin { pointer-events: none; }
   .pin-dot { fill: var(--accent); }
@@ -675,6 +685,13 @@
         <path class="fylke" data-nr="55" data-name="Troms" d="M 264.1,126.0 L 270.3,125.4 L 271.9,128.2 L 276.0,126.2 L 279.4,129.2 L 284.8,128.5 L 299.2,134.3 L 303.4,128.5 L 298.9,126.1 L 302.6,121.4 L 304.2,115.8 L 303.4,110.7 L 299.4,106.1 L 306.6,105.0 L 308.8,102.4 L 314.0,105.5 L 314.5,102.7 L 312.6,98.0 L 316.3,94.0 L 321.4,95.0 L 327.3,102.8 L 334.4,100.6 L 334.6,95.3 L 331.1,90.3 L 329.9,85.8 L 336.1,84.1 L 336.4,80.0 L 337.9,78.2 L 337.0,77.5 L 336.0,78.5 L 333.2,76.7 L 331.0,73.0 L 332.1,70.7 L 330.6,69.7 L 331.6,68.5 L 327.4,66.4 L 324.8,58.1 L 322.0,58.9 L 321.1,61.3 L 318.0,58.0 L 315.3,58.5 L 309.2,56.8 L 300.6,38.4 L 271.6,52.9 L 260.4,69.2 L 255.1,79.4 L 243.7,85.6 L 247.6,92.9 L 244.7,103.1 L 240.9,109.5 L 241.8,112.7 L 239.1,117.0 L 240.5,117.5 L 240.8,119.8 L 236.9,121.7 L 236.8,124.1 L 234.8,124.8 L 234.4,132.2 L 238.5,128.9 L 239.6,125.6 L 240.2,128.6 L 242.5,129.4 L 240.6,135.3 L 242.6,135.5 L 248.6,132.9 L 248.6,130.2 L 250.8,129.8 L 253.1,127.2 L 258.1,127.8 L 264.1,126.0 Z"></path>
         <path class="fylke" data-nr="56" data-name="Finnmark" d="M 420.1,61.2 L 424.8,62.4 L 429.5,70.4 L 424.7,82.0 L 425.2,86.6 L 429.5,89.9 L 431.4,85.2 L 430.5,77.7 L 434.2,76.1 L 435.7,72.8 L 437.3,71.0 L 439.0,71.3 L 440.5,68.4 L 440.6,64.2 L 438.3,61.0 L 440.3,60.7 L 445.4,64.3 L 449.6,63.8 L 451.0,62.1 L 449.9,57.2 L 447.0,53.2 L 449.1,45.0 L 453.9,36.9 L 453.6,26.3 L 449.9,21.6 L 433.8,12.9 L 418.8,8.4 L 402.1,1.1 L 365.9,3.2 L 342.5,10.4 L 316.4,31.0 L 300.6,38.4 L 309.2,56.8 L 315.3,58.5 L 318.0,58.0 L 321.1,61.3 L 322.0,58.9 L 324.8,58.1 L 327.4,66.4 L 331.6,68.5 L 330.6,69.7 L 332.1,70.7 L 331.0,73.0 L 333.2,76.7 L 336.0,78.5 L 337.0,77.5 L 337.9,78.2 L 336.4,80.0 L 336.1,84.1 L 329.9,85.8 L 331.1,90.3 L 334.6,95.3 L 334.4,100.6 L 327.3,102.8 L 333.6,112.3 L 334.5,116.7 L 336.8,115.3 L 340.9,117.2 L 344.5,116.7 L 346.6,119.0 L 350.4,116.0 L 353.7,115.0 L 354.6,110.2 L 355.9,109.4 L 359.2,111.3 L 360.4,110.7 L 362.1,113.1 L 370.4,115.7 L 371.9,118.5 L 373.0,116.2 L 374.9,115.6 L 374.9,108.3 L 377.9,104.1 L 381.2,103.5 L 382.5,98.4 L 380.0,89.0 L 381.1,82.9 L 380.0,76.6 L 381.5,73.9 L 380.0,71.8 L 383.4,67.4 L 386.3,59.3 L 391.2,57.8 L 394.2,59.4 L 397.4,57.0 L 397.1,55.8 L 400.0,53.6 L 400.8,51.4 L 405.4,49.8 L 406.4,52.8 L 412.4,57.2 L 413.7,59.5 L 420.1,61.2 Z"></path>
         </g>
+        <!-- Selection is redrawn here rather than styled in place: SVG paints in
+             document order, so a neighbour that comes later would overpaint part
+             of the selected outline along their shared edge. -->
+        <g class="sel" aria-hidden="true">
+          <path class="sel-fylke" id="selFylke" d=""></path>
+          <path class="sel-komm" id="selKomm" d=""></path>
+        </g>
       <g class="city" data-key="no-kristiansand" data-minz="1" transform="translate(68.0,542.1)" tabindex="0" role="button" aria-label="Kristiansand"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Kristiansand</text></g>
       <g class="city" data-key="no-sandnes" data-minz="1" transform="translate(24.2,506.7)" tabindex="0" role="button" aria-label="Sandnes"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Sandnes</text></g>
       <g class="city" data-key="no-fredrikstad" data-minz="1" transform="translate(134.3,505.0)" tabindex="0" role="button" aria-label="Fredrikstad"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Fredrikstad</text></g>
@@ -1076,10 +1093,11 @@
                  : `<span class="k">${esc(cmd)}</span>${arg ? ' ' + esc(arg) : ''}`
     ).join('\n');
 
-    KOMMUNER.forEach(k => k.el.classList.toggle('on', k.nr === state.kommune));
-    FYLKER.forEach(f => {
-      f.el.classList.toggle('on', f.nr === state.fylke);
-    });
+    // redraw the selection on the overlay instead of styling it in place
+    const selK = KOMMUNER.find(k => k.nr === state.kommune);
+    const selF = FYLKER.find(f => f.nr === state.fylke);
+    $('selKomm').setAttribute('d', selK ? selK.el.getAttribute('d') : '');
+    $('selFylke').setAttribute('d', selF ? selF.el.getAttribute('d') : '');
     CITY_PTS.forEach(c => c.el.classList.toggle('on',
       !!state.metro && c.key === state.metro.key));
 
