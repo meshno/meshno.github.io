@@ -129,22 +129,31 @@
   .pin-ring { fill: none; stroke: var(--accent); stroke-width: 1.2; opacity: 0.55; }
 
   /* mirrors .map-head so the map reads as one panel with a header and footer */
-  .map-foot {
-    display: flex; justify-content: space-between; align-items: center;
-    gap: 10px; flex-wrap: wrap;
-    font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.04em;
-    color: var(--muted); padding-top: 9px; margin-top: 8px;
-    border-top: 1px solid var(--rule-2);
-  }
   .map-note { margin-top: 10px; font-size: 14px; }
-  .coordrow { display: flex; gap: 6px; }
-  .coordrow input[type="text"] {
-    width: 8.5em; min-height: 0; padding: 3px 7px;
-    font-size: 12px; background: transparent; border-color: var(--rule-2);
-  }
-  .coordrow input[type="text"]:focus { border-color: var(--accent); }
-  #coordNote { margin-top: 7px; font-size: 12px; }
+  #coordNote { margin-top: 7px; font-size: 13px; }
+  #coordNote:empty { display: none; }
   #coordNote.bad { color: #ff8f8f; }
+
+  /* the readout is the input: reads as text until you touch it */
+  #posRead {
+    font-family: var(--mono); font-size: 12.5px; color: var(--muted);
+    background: transparent; border: 1px solid transparent; border-radius: 0;
+    padding: 2px 6px; width: 15.5em; text-align: right; min-height: 0;
+  }
+  #posRead:hover { border-color: var(--rule-2); }
+  #posRead:focus { outline: none; border-color: var(--accent); color: var(--ink); }
+  #posRead.bad { border-color: #ff8f8f; color: #ff8f8f; }
+  .map-head label { cursor: default; }
+
+  /* zoom controls float over the map instead of pushing it down */
+  .mapbox { position: relative; }
+  .zoomctl {
+    position: absolute; top: 8px; left: 8px; z-index: 2;
+    display: flex; align-items: center; gap: 5px; margin: 0;
+    background: rgba(10,18,32,0.78); backdrop-filter: blur(3px);
+    border: 1px solid var(--rule-2); padding: 4px;
+  }
+  .zoomctl button { min-width: 28px; min-height: 28px; padding: 0 8px; }
 
   .map-note {
     font-size: 11.5px; color: var(--dim); line-height: 1.45;
@@ -373,7 +382,8 @@
     .profiles { grid-template-columns: 1fr; }
     input[type="text"] { min-height: 44px; }
     .copy { min-height: 44px; }
-    .coordrow input[type="text"] { min-height: 44px; width: 7.5em; }
+    #posRead { width: 14em; font-size: 12px; }
+    .zoomctl button { min-width: 40px; min-height: 40px; }
     /* expanders are the main way to reach the explanations on a phone */
     .explain > summary { min-height: 44px; display: flex; align-items: center; }
     .zoomctl button { min-height: 44px; min-width: 44px; }
@@ -394,9 +404,11 @@
     <div class="map-col">
       <h2>Region</h2>
       <div class="map-head">
-        <span>Position</span>
-        <span id="posRead">—</span>
+        <label for="posRead">Position</label>
+        <input type="text" id="posRead" spellcheck="false" autocomplete="off"
+               aria-label="Position, decimal degrees — edit to move the node">
       </div>
+      <div class="mapbox">
       <div class="zoomctl">
         <button type="button" id="zOut" aria-label="Zoom out">&minus;</button>
         <button type="button" id="zIn" aria-label="Zoom in">+</button>
@@ -812,14 +824,8 @@
           <circle class="pin-dot" r="3.5"></circle>
         </g>
       </svg>
-      <p class="map-note">Click anywhere to place your node.</p>
-      <div class="map-foot">
-        <span>Or type a position</span>
-        <span class="coordrow">
-          <input type="text" id="latIn" inputmode="decimal" placeholder="lat" aria-label="Latitude in decimal degrees">
-          <input type="text" id="lonIn" inputmode="decimal" placeholder="lon" aria-label="Longitude in decimal degrees">
-        </span>
       </div>
+      <p class="map-note">Click anywhere to place your node.</p>
       <p class="help" id="coordNote"></p>
     </div>
 
@@ -1301,7 +1307,12 @@
     // same precision as the emitted set lat / set lon, so the readout is
     // exactly what will be written to the node
     const ll = unproject(state.x, state.y);
-    $('posRead').textContent = `${ll[0].toFixed(5)}°N ${ll[1].toFixed(5)}°E`;
+    const box = $('posRead');
+    // never fight the user mid-edit
+    if (document.activeElement !== box) {
+      box.value = `${ll[0].toFixed(5)}, ${ll[1].toFixed(5)}`;
+      box.classList.remove('bad');
+    }
 
     $('kommNote').innerHTML =
       `<b>${state.kommune}</b> is ${esc(state.kommuneName)}'s kommunenummer — `
@@ -1545,32 +1556,23 @@
   seg($('fwSeg'),   'f',  v => { state.fw = v; render(); });
   seg($('locSeg'),  'loc', v => { state.location = v === 'on'; render(); });
 
-  function coordEntered() {
-    const la = parseFloat($('latIn').value.replace(',', '.'));
-    const lo = parseFloat($('lonIn').value.replace(',', '.'));
-    const note = $('coordNote');
-    if ($('latIn').value.trim() === '' && $('lonIn').value.trim() === '') {
-      note.className = 'help';
-      note.textContent = 'A GPS reading is far more precise than a click, and lets you '
-        + 'check which regions a spot falls in before going there.';
-      return;
-    }
-    if (isNaN(la) || isNaN(lo)) {
-      note.className = 'help bad';
-      note.textContent = 'Enter both as decimal degrees, e.g. 59.91229 and 10.75187.';
-      return;
-    }
+  // Editing the position moves the node. Same format the node is given, so it
+  // round-trips: paste what you see here into `set lat` / `set lon`.
+  function positionEdited() {
+    const box = $('posRead'), note = $('coordNote');
+    const m = box.value.trim().match(/^(-?\d+(?:[.,]\d+)?)[ ,]+(-?\d+(?:[.,]\d+)?)$/);
+    const fail = msg => { box.classList.add('bad'); note.className = 'help bad'; note.textContent = msg; };
+    if (!box.value.trim()) { box.classList.remove('bad'); note.className = 'help'; note.textContent = ''; return; }
+    if (!m) return fail('Type a position as latitude, longitude — e.g. 59.91229, 10.75187');
+    const la = parseFloat(m[1].replace(',', '.')), lo = parseFloat(m[2].replace(',', '.'));
     const [x, y] = project(la, lo);
-    if (!place(x, y)) {
-      note.className = 'help bad';
-      note.textContent = `${la.toFixed(5)}, ${lo.toFixed(5)} is not inside Norway.`;
-      return;
-    }
+    if (!place(x, y)) return fail(`${la.toFixed(5)}, ${lo.toFixed(5)} is not inside Norway.`);
+    box.classList.remove('bad');
     note.className = 'help';
-    note.textContent = `Placed in ${state.kommuneName}. Turn on lat/lon below to publish it.`;
+    note.textContent = '';
   }
-  $('latIn').addEventListener('input', coordEntered);
-  $('lonIn').addEventListener('input', coordEntered);
+  $('posRead').addEventListener('input', positionEdited);
+  $('posRead').addEventListener('blur', () => { $('posRead').classList.remove('bad'); render(); });
 
   $('nodeDesc').addEventListener('input', e => { state.desc = e.target.value; render(); });
   $('ownerInfo').addEventListener('input', e => { state.owner = e.target.value; render(); });
