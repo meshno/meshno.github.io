@@ -239,6 +239,8 @@
   .seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
   .profiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  /* odd count: the last one spans rather than leaving a gap */
+  .profile:nth-child(odd):last-child { grid-column: 1 / -1; }
   .profile {
     text-align: left; background: transparent; border: 1px solid var(--rule);
     padding: 11px 13px; cursor: pointer; color: var(--ink); font-family: var(--sans);
@@ -791,9 +793,13 @@
           <div class="k">txdelay<br>rxdelay</div>
           <div class="v">
             <div class="profiles" id="profiles">
+              <button class="profile" data-p="mountaintop">
+                <span class="p-n">Mountaintop <span>25+ strong</span></span>
+                <span class="p-d">Line of sight over a whole region — a real summit or a mast on one. <b>Only pick this if you genuinely see that far;</b> a tall building in town is Hilltop.</span>
+              </button>
               <button class="profile" data-p="hilltop">
-                <span class="p-n">Hilltop <span>15+ strong</span></span>
-                <span class="p-d">Clear view over a wide area. Backbone infrastructure — mast, ridge, high-rise rooftop.</span>
+                <span class="p-n">Hilltop <span>15–25 strong</span></span>
+                <span class="p-d">Clear view over a wide area. Backbone for a district — mast, ridge, high-rise rooftop.</span>
               </button>
               <button class="profile on" data-p="neighborhood">
                 <span class="p-n">Neighborhood <span>5–15 strong</span></span>
@@ -803,16 +809,12 @@
                 <span class="p-n">Local <span>1–4 strong</span></span>
                 <span class="p-d">Sees only a few neighbors. Indoors, ground level, or a low roof.</span>
               </button>
-              <button class="profile" data-p="mobile">
-                <span class="p-n">Mobile <span>varies</span></span>
-                <span class="p-d">Moves through the mesh — car, bike, hiking. Usually badly sited with weak reception, so it holds back and lets established repeaters carry the packet.</span>
-              </button>
             </div>
             <p class="help">When several repeaters hear the same flood, each waits a random moment before repeating it so they don't transmit over each other. The profile scales how wide that random window is: <b>the more repeaters around you, the wider it needs to be</b>. A wider window costs a little latency and nothing else — it does not change what your node repeats, or who can reach it.</p>
-            <p class="help">A wider window also means you usually transmit <em>after</em> a better-placed repeater already has, so your copy is dropped as a duplicate. That is why Mobile sits at the top: a badly sited node in a car should not be displacing established infrastructure.</p>
+            <p class="help"><b>A repeater should not move.</b> There is no mobile profile on purpose. A repeater that travels keeps changing which nodes it can hear, so routes through it break as fast as they form, and it drags traffic into areas that gain nothing from it. If you want to carry a node with you, run it as a companion rather than a repeater — you still get the mesh, without adding an unstable relay to it.</p>
             <p class="help">Run <code>neighbors</code> on the node and count how many have SNR above 0. Reported examples: 16 neighbours with only 4 above 0 is sparse; 50 with 19 above 0 is dense.</p>
             <p class="help">Two things here are firmware behaviour rather than opinion. <code>txdelay</code> only moves in steps of <b>0.2</b> — it is multiplied by five and truncated, so 0.3 does nothing that 0.2 does not — and both delays are <b>capped at 2</b>. Beyond that these values are a local convention: MeshCore's own tuning work is unresolved, and its simulations were contradicted by field tests, so nothing here is taken from them.</p>
-            <p class="help"><code>rxdelay</code> works on the same idea from the receiving side — a packet that arrived weakly is held back so a repeater that heard it clearly gets there first. Every profile sets <code>3</code>; Mobile sets <code>6</code>, because weak reception is the normal case for it rather than the exception.</p>
+            <p class="help"><code>rxdelay 3</code> is set on every profile. It works from the receiving side — a packet that arrived weakly is held back briefly so a repeater that heard it clearly gets there first, and the weak copy is dropped as a duplicate.</p>
           </div>
         </div>
       </section>
@@ -981,11 +983,17 @@
   //   * density is counted as neighbours with SNR > 0, not total.
   // The ladder itself remains a local convention. Real repeaters report 36-46%
   // packet errors across every setting tried, so this is not the dominant term.
+  // Four steps of two slots each: 2/4/6/8 slots for tx, exactly half for
+  // direct. All land on the 0.2 grid the firmware truncates to, and none
+  // truncate to zero. 2.0 is deliberately left as headroom.
+  //
+  // There is no mobile profile. A repeater is meant to be static — see the
+  // note in the page copy.
   const PROFILES = {
-    hilltop:      { tx: '1.4', dtx: '0.6', rx: '3', label: 'hilltop / backbone' },
+    mountaintop:  { tx: '1.6', dtx: '0.8', rx: '3', label: 'mountaintop / regional backbone' },
+    hilltop:      { tx: '1.2', dtx: '0.6', rx: '3', label: 'hilltop / local backbone' },
     neighborhood: { tx: '0.8', dtx: '0.4', rx: '3', label: 'neighborhood rooftop' },
-    local:        { tx: '0.4', dtx: '0.2', rx: '3', label: 'local / low elevation' },
-    mobile:       { tx: '2.0', dtx: '1.0', rx: '6', label: 'mobile node' }
+    local:        { tx: '0.4', dtx: '0.2', rx: '3', label: 'local / low elevation' }
   };
 
   const state = {
