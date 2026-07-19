@@ -169,6 +169,10 @@
   }
   .row > .v { min-width: 0; }
   .help { color: var(--muted); font-size: 13px; margin: 8px 0 0; max-width: 72ch; }
+  .namepv { font-family: var(--mono); font-size: 13px; margin: 8px 0 0; color: var(--ink); }
+  .namepv .bytes { color: var(--dim); font-size: 12px; }
+  .namepv .bytes.warn { color: var(--amber, #ffb454); }
+  .namepv .bytes.over { color: #ff6b6b; }
   .help b { color: var(--ink); font-weight: 500; }
 
   /* ---- station readout ---- */
@@ -806,6 +810,14 @@
       <section>
         <h2>Identity</h2>
         <div class="row">
+          <div class="k">name</div>
+          <div class="v">
+            <input type="text" id="nodeDesc" placeholder="Årvollåsen" maxlength="40" aria-label="Node name — the part after the kommune number">
+            <p class="namepv"><span id="namePreview">NO-0301</span> <span class="bytes" id="nameBytes"></span></p>
+            <p class="help">Convention: <code>NO-&lt;kommunenummer&gt;-&lt;place&gt;</code>, so a node on Årvollåsen in Oslo is <code>NO-0301-Årvollåsen</code>. The number comes from where you placed it on the map. <b>Max 24 bytes if the node has a location set, 32 if not</b> — Norwegian letters cost two bytes each, so <code>å</code> and <code>ø</code> count double. Takes effect after a reboot.</p>
+          </div>
+        </div>
+        <div class="row">
           <div class="k">owner.info</div>
           <div class="v">
             <input type="text" id="ownerInfo" placeholder="LA1ABC / 6dBi omni @9m / solar+batt / roof" maxlength="90" aria-label="owner.info — contact, antenna, power, mount">
@@ -906,7 +918,7 @@
     drilled: null,             // fylke the map is currently zoomed into
     fw: 'new', profile: 'neighborhood',
     cr: '8', hash: '1', loop: 'minimal', regionDefault: 'none',
-    owner: '', guest: ''
+    owner: '', guest: '', desc: ''
   };
 
   const $ = id => document.getElementById(id);
@@ -1039,6 +1051,8 @@
     L.push(['c', '# adverts']);
     L.push(['k', 'set advert.interval', '240']);
     L.push(['k', 'set flood.advert.interval', '24']);
+    L.push(['c', '# identity']);
+    L.push(['k', 'set name', nodeName()]);
     if (state.guest.trim()) L.push(['k', 'set guest.password', state.guest.trim()]);
     if (state.owner.trim()) L.push(['k', 'set owner.info', state.owner.trim()]);
     L.push(['c', '# regions — eu / europe / no relayed by every node;']);
@@ -1075,6 +1089,14 @@
 
   const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
+  // NO-<kommunenummer>-<place>, e.g. NO-0301-Årvollåsen
+  const nodeName = () => {
+    const base = 'NO-' + state.kommune;
+    const d = state.desc.trim().replace(/\s+/g, ' ');
+    return d ? `${base}-${d}` : base;
+  };
+  const byteLen = s => new TextEncoder().encode(s).length;
+
   function render() {
     const fy = 'no-' + state.fylke, km = 'no-' + state.kommune;
     $('kommName').textContent = state.kommuneName;
@@ -1108,6 +1130,13 @@
     // The selected kommune is redrawn on an overlay so a neighbour drawn later
     // cannot overpaint its outline. The fylke is tinted instead of outlined —
     // fills tile cleanly, so they need no such treatment.
+    const nm = nodeName(), nb = byteLen(nm);
+    $('namePreview').textContent = nm;
+    const bEl = $('nameBytes');
+    bEl.textContent = `· ${nb} bytes`
+      + (nb > 32 ? ' — too long' : nb > 24 ? ' — over 24, only fits without a location' : '');
+    bEl.className = 'bytes' + (nb > 32 ? ' over' : nb > 24 ? ' warn' : '');
+
     const selK = KOMMUNER.find(k => k.nr === state.kommune);
     $('selKomm').setAttribute('d', selK ? selK.el.getAttribute('d') : '');
     KOMMUNER.forEach(k => k.el.classList.toggle('in-fylke',
@@ -1303,6 +1332,7 @@
   seg($('defSeg'),  'd',  v => { state.regionDefault = v; render(); });
   seg($('fwSeg'),   'f',  v => { state.fw = v; render(); });
 
+  $('nodeDesc').addEventListener('input', e => { state.desc = e.target.value; render(); });
   $('ownerInfo').addEventListener('input', e => { state.owner = e.target.value; render(); });
   $('guestPw').addEventListener('input',  e => { state.guest = e.target.value; render(); });
 
