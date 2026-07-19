@@ -818,6 +818,17 @@
           </div>
         </div>
         <div class="row">
+          <div class="k">lat / lon</div>
+          <div class="v">
+            <div class="seg" id="locSeg">
+              <button data-loc="on" class="on">publish</button>
+              <button data-loc="off">omit</button>
+            </div>
+            <p class="help" id="locNote"></p>
+            <p class="help">Sent as two commands, <code>set lat</code> and <code>set lon</code> — MeshCore has no combined location command. The position comes from where you clicked, so it is only as precise as that; <b>replace it with a real GPS reading</b> if the node's exact spot matters. Publishing a location is normal for a repeater and puts it on mesh maps, but it is public. <b>It also drops the name limit from 32 bytes to 24.</b></p>
+          </div>
+        </div>
+        <div class="row">
           <div class="k">owner.info</div>
           <div class="v">
             <input type="text" id="ownerInfo" placeholder="LA1ABC / 6dBi omni @9m / solar+batt / roof" maxlength="90" aria-label="owner.info — contact, antenna, power, mount">
@@ -918,7 +929,7 @@
     drilled: null,             // fylke the map is currently zoomed into
     fw: 'new', profile: 'neighborhood',
     cr: '8', hash: '1', loop: 'minimal', regionDefault: 'none',
-    owner: '', guest: '', desc: ''
+    owner: '', guest: '', desc: '', location: true
   };
 
   const $ = id => document.getElementById(id);
@@ -1053,6 +1064,11 @@
     L.push(['k', 'set flood.advert.interval', '24']);
     L.push(['c', '# identity']);
     L.push(['k', 'set name', nodeName()]);
+    if (state.location) {
+      const ll = unproject(state.x, state.y);
+      L.push(['k', 'set lat', ll[0].toFixed(5)]);
+      L.push(['k', 'set lon', ll[1].toFixed(5)]);
+    }
     if (state.guest.trim()) L.push(['k', 'set guest.password', state.guest.trim()]);
     if (state.owner.trim()) L.push(['k', 'set owner.info', state.owner.trim()]);
     L.push(['c', '# regions — eu / europe / no relayed by every node;']);
@@ -1131,11 +1147,16 @@
     // cannot overpaint its outline. The fylke is tinted instead of outlined —
     // fills tile cleanly, so they need no such treatment.
     const nm = nodeName(), nb = byteLen(nm);
+    const cap = state.location ? 24 : 32;      // a published location costs 8 bytes of name
     $('namePreview').textContent = nm;
     const bEl = $('nameBytes');
-    bEl.textContent = `· ${nb} bytes`
-      + (nb > 32 ? ' — too long' : nb > 24 ? ' — over 24, only fits without a location' : '');
-    bEl.className = 'bytes' + (nb > 32 ? ' over' : nb > 24 ? ' warn' : '');
+    bEl.textContent = `· ${nb} of ${cap} bytes` + (nb > cap ? ' — too long' : '');
+    bEl.className = 'bytes' + (nb > cap ? ' over' : nb > cap - 4 ? ' warn' : '');
+
+    const ll2 = unproject(state.x, state.y);
+    $('locNote').textContent = state.location
+      ? `Publishes ${ll2[0].toFixed(5)}°N ${ll2[1].toFixed(5)}°E. Name limit is 24 bytes.`
+      : 'No location published. Name limit is 32 bytes.';
 
     const selK = KOMMUNER.find(k => k.nr === state.kommune);
     $('selKomm').setAttribute('d', selK ? selK.el.getAttribute('d') : '');
@@ -1331,6 +1352,7 @@
   seg($('loopSeg'), 'l',  v => { state.loop = v; render(); });
   seg($('defSeg'),  'd',  v => { state.regionDefault = v; render(); });
   seg($('fwSeg'),   'f',  v => { state.fw = v; render(); });
+  seg($('locSeg'),  'loc', v => { state.location = v === 'on'; render(); });
 
   $('nodeDesc').addEventListener('input', e => { state.desc = e.target.value; render(); });
   $('ownerInfo').addEventListener('input', e => { state.owner = e.target.value; render(); });
