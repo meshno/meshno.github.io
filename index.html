@@ -391,7 +391,9 @@
   /* ---- narrow ---- */
   @media (max-width: 900px) {
     main { grid-template-columns: minmax(0, 1fr); gap: 28px; }
-    .map-col { position: static; }
+    /* the columns stack here, so the left one must not be its own scroll
+       area inside the page scroll — release the sticky sizing entirely */
+    .map-col { position: static; max-height: none; overflow-y: visible; }
   }
   @media (max-width: 560px) {
     .wrap { padding: 0 18px; }
