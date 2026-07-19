@@ -137,6 +137,9 @@
      kept out of the config columns so it never reads as node state */
   .masthead { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
   .masthead h1 { margin-bottom: 10px; }
+  /* flex items refuse to shrink below their content; without this the lede
+     pushes the toggle off the right edge instead of wrapping */
+  .mast-text { min-width: 0; }
   .theme { flex: none; }
   .theme .seg button { font-size: 12px; padding: 4px 9px; min-height: 26px; }
   .lede { color: var(--muted); max-width: 70ch; margin: 0; font-size: 15px; line-height: 1.55; }
@@ -500,10 +503,11 @@
     .seg { display: grid; grid-template-columns: 1fr 1fr; }
     .seg button:nth-child(odd):last-child { grid-column: 1 / -1; }
     .seg button { min-height: 44px; }
-    /* the toggle drops below the title rather than squeezing beside it, and
-       takes three equal columns — the generic odd-last rule above would
-       otherwise stretch "Dark" across the full width on its own row */
-    .masthead { flex-direction: column; gap: 14px; }
+    /* Stacked, the toggle lands after the lede — page furniture at the end of
+       the masthead rather than a full-width control splitting the title from
+       its own intro paragraph. It takes three equal columns; the generic
+       odd-last rule above would otherwise stretch "Dark" across its own row. */
+    .masthead { flex-direction: column; gap: 18px; }
     .theme { width: 100%; }
     .theme .seg { grid-template-columns: repeat(3, 1fr); }
     .theme .seg button { min-height: 44px; font-size: 13px; }
@@ -543,9 +547,13 @@
 <div class="wrap">
   <header>
     <div class="masthead">
-      <div>
+      <!-- the lede sits inside this column, not after the masthead: when the
+           two stack on mobile that is what puts the theme toggle *after* the
+           intro instead of wedging it between the title and its own text -->
+      <div class="mast-text">
         <div class="kicker">MeshCore · Norway · EU868 869.618 MHz</div>
         <h1>Repeater node configurator</h1>
+        <p class="lede">Radio, timing profile, and region scope for a repeater in one paste-able block. Everything targets the <code>EU/UK Narrow</code> convention (869.618 MHz @ 62.5 kHz) already used across the Norwegian mesh.</p>
       </div>
       <div class="theme">
         <div class="seg" id="themeSeg" role="group" aria-label="Colour theme">
@@ -555,7 +563,6 @@
         </div>
       </div>
     </div>
-    <p class="lede">Radio, timing profile, and region scope for a repeater in one paste-able block. Everything targets the <code>EU/UK Narrow</code> convention (869.618 MHz @ 62.5 kHz) already used across the Norwegian mesh.</p>
   </header>
 
   <main id="main">
