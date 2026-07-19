@@ -185,20 +185,15 @@
   section { border-top: 1px solid var(--rule); padding: 22px 0 26px; }
   .needs-node { position: relative; padding-top: 18px; }
 
-  /* until a node is placed, the panel describing it is frosted over */
-  .veil { display: none; }
-  body.unplaced .veil {
-    display: flex; position: absolute; inset: 0 -8px; z-index: 3;
-    align-items: center; justify-content: center;
-    background: rgba(10,18,32,0.55); backdrop-filter: blur(4px);
-  }
-  body.unplaced .veil span {
-    font-size: 14px; color: var(--muted); text-align: center;
-    border: 1px solid var(--rule); padding: 9px 16px;
-    background: rgba(10,18,32,0.8);
-  }
-  .copy:disabled { opacity: 0.4; cursor: not-allowed; }
-  .copy:disabled:hover { background: transparent; }
+  /* A node without a position still gets a config — radio and timing do not
+     depend on where it stands. The region tree just says what is missing. */
+  .scope .empty { color: var(--dim); font-size: 13.5px; font-family: var(--sans); }
+
+  /* controls that need a position are dimmed, not hidden, so it is clear
+     the option exists and what unlocks it */
+  .seg button:disabled { opacity: 0.35; cursor: not-allowed; }
+  .seg button:disabled:hover { background: transparent; color: var(--muted); }
+  input:disabled { opacity: 0.45; cursor: not-allowed; }
 
   /* the left column carries the map and the node it describes; keep both in
      view, but let it scroll if the viewport is too short for the pair */
@@ -868,7 +863,6 @@
       </div>
       <p class="help" id="coordNote"></p>
       <section class="needs-node">
-        <div class="veil" aria-hidden="true"><span>Click the map to place your node</span></div>
         <div class="treebox">
           <div class="treehead">Region tree</div>
           <div class="scope" id="scope"></div>
@@ -1261,6 +1255,10 @@
 
   function buildLines() {
     const p = PROFILES[state.profile];
+    // Radio, timing and routing hygiene do not depend on where the node
+    // stands, so an unplaced node still gets a usable config — it just has no
+    // name, no coordinates and no region scope.
+    const placed = !!state.kommune;
     const L = [];
     L.push(['c', '# radio — EU/UK Narrow, CR per node']);
     L.push(['k', 'set radio', `869.618,62.5,8,${state.cr}`]);
@@ -1276,15 +1274,21 @@
     L.push(['k', 'set advert.interval', '240']);
     L.push(['k', 'set flood.advert.interval', '24']);
     L.push(['c', '# identity']);
-    // no name unless a place has been given — NO-0301 alone says nothing
-    if (state.desc.trim()) L.push(['k', 'set name', nodeName()]);
-    if (state.location) {
+    // no name unless a place has been given — NO-0301 alone says nothing,
+    // and without a map click there is no kommune number to build it from
+    if (placed && state.desc.trim()) L.push(['k', 'set name', nodeName()]);
+    if (placed && state.location) {
       const ll = unproject(state.x, state.y);
       L.push(['k', 'set lat', ll[0].toFixed(5)]);
       L.push(['k', 'set lon', ll[1].toFixed(5)]);
     }
     if (state.guest.trim()) L.push(['k', 'set guest.password', state.guest.trim()]);
     if (state.owner.trim()) L.push(['k', 'set owner.info', state.owner.trim()]);
+    if (!placed) {
+      L.push(['c', '# regions — none. Place the node on the map to scope its floods.']);
+      for (const w of rangeWarnings(L)) L.unshift(['c', w]);
+      return L;
+    }
     L.push(['c', '# regions — eu / europe / no relayed by every node;']);
     L.push(['c', '# fylke, kommune and city all scope down from no']);
     L.push(['c', '# allowf * is the default, restated in case this node had it denied']);
@@ -1335,6 +1339,11 @@
 
   const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
+  const renderLines = () => buildLines().map(([ty, cmd, arg]) =>
+    ty === 'c' ? `<span class="c">${esc(cmd)}</span>`
+               : `<span class="k">${esc(cmd)}</span>${arg ? ' ' + esc(arg) : ''}`
+  ).join('\n');
+
   // NO-<kommunenummer>-<place>, e.g. NO-0301-Årvollåsen
   const nodeName = () => {
     const base = 'NO-' + state.kommune;
@@ -1344,24 +1353,38 @@
   const byteLen = s => new TextEncoder().encode(s).length;
 
   function render() {
-    // Nothing is selected until the user selects it: no invented default, and
-    // no half-valid config sitting there waiting to be pasted.
+    // Nothing is selected until the user selects it: no invented default. The
+    // config still generates — radio and timing stand on their own — with the
+    // position-derived parts left out rather than guessed.
     const placed = !!state.kommune;
     document.body.classList.toggle('unplaced', !placed);
-    $('copyBtn').disabled = !placed;
+    // the two controls that need a position say so instead of going missing
+    $('locSeg').querySelector('[data-loc="on"]').disabled = !placed;
+    $('nodeDesc').disabled = !placed;
     if (!placed) {
+      // Reset can arrive here with publishing switched on. Leaving the toggle
+      // reading "configure" while nothing is published is a lie; snap it back.
+      state.location = false;
+      $('locSeg').querySelectorAll('button').forEach(x =>
+        x.classList.toggle('on', x.dataset.loc === 'off'));
       $('posRead').value = '';
-      $('cmdOut').innerHTML =
-        '<span class="c"># place your node on the map to generate its config</span>';
       $('pin').setAttribute('hidden', '');
       // the name is built from the kommune, so it cannot be previewed yet
       $('namePreview').textContent = 'NO-…';
       $('namePreview').classList.add('unset');
-      $('nameBytes').textContent = '· place the node first';
+      $('nameBytes').textContent = '· place the node to name it';
       $('nameBytes').className = 'bytes';
-      $('locNote').textContent = '';
+      $('locNote').textContent = 'Place the node on the map to publish a location.';
       $('kommName').textContent = '';
       $('fylkeLabel').textContent = '';
+      $('scope').innerHTML =
+        '<span class="empty">Place the node on the map and its regions appear here. '
+        + 'Everything else configures without one.</span>';
+      $('cmdOut').innerHTML = renderLines();
+      // Reset can land here from a placed state, so clear the map overlays too
+      $('selKomm').setAttribute('d', '');
+      KOMMUNER.forEach(k => k.el.classList.remove('in-fylke'));
+      CITY_PTS.forEach(c => c.el.classList.remove('on'));
       document.querySelectorAll('#profiles .profile').forEach(el =>
         el.classList.toggle('on', el.dataset.p === state.profile));
       applyView();
@@ -1410,10 +1433,7 @@
       + tag + ' '.repeat(Math.max(1, wide - indent.length - tag.length))
       + (note ? `<span class="an">${note}</span>` : '') + '</span>').join('');
 
-    $('cmdOut').innerHTML = buildLines().map(([ty, cmd, arg]) =>
-      ty === 'c' ? `<span class="c">${esc(cmd)}</span>`
-                 : `<span class="k">${esc(cmd)}</span>${arg ? ' ' + esc(arg) : ''}`
-    ).join('\n');
+    $('cmdOut').innerHTML = renderLines();
 
     // The selected kommune is redrawn on an overlay so a neighbour drawn later
     // cannot overpaint its outline. The fylke is tinted instead of outlined —
@@ -1525,9 +1545,15 @@
 
   $('zIn').addEventListener('click', () => zoomTo(view.z * 1.6, anchor()));
   $('zOut').addEventListener('click', () => zoomTo(view.z / 1.6, anchor()));
+  // Reset returns the map to how it opened, which means dropping the selection
+  // too — otherwise the region banner keeps floating over a view that no longer
+  // shows where it came from.
   $('zReset').addEventListener('click', () => {
     state.drilled = null;
-    view.z = 1; view.cx = VBX + W / 2; view.cy = VBY + H / 2; applyView();
+    state.kommune = null; state.kommuneName = ''; state.fylke = null;
+    state.metro = [];
+    view.z = 1; view.cx = VBX + W / 2; view.cy = VBY + H / 2;
+    render();
   });
 
   // Ctrl/⌘+wheel zooms. Plain wheel is left alone so the page still scrolls
