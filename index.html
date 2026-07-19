@@ -870,7 +870,7 @@
   const FYLKE_NAMES = {"03": "Oslo", "11": "Rogaland", "15": "Møre og Romsdal", "18": "Nordland", "31": "Østfold", "32": "Akershus", "33": "Buskerud", "34": "Innlandet", "39": "Vestfold", "40": "Telemark", "42": "Agder", "46": "Vestland", "50": "Trøndelag", "55": "Troms", "56": "Finnmark"};
   const FYLKE_BB = {"03": [127.7, 467.4, 136.9, 481.0], "11": [9.0, 469.4, 59.5, 531.9], "15": [38.1, 326.7, 116.4, 385.3], "18": [167.8, 96.6, 272.8, 274.2], "31": [127.7, 483.2, 153.0, 519.9], "32": [123.1, 449.1, 156.6, 494.4], "33": [67.3, 423.7, 130.3, 495.1], "34": [74.7, 362.4, 178.8, 481.2], "39": [110.1, 485.3, 126.2, 513.7], "40": [57.5, 460.0, 112.5, 520.2], "42": [34.3, 478.3, 99.8, 547.6], "46": [15.8, 369.6, 90.6, 480.2], "50": [95.6, 264.9, 211.3, 381.0], "55": [234.0, 54.6, 337.9, 134.9], "56": [311.8, 9.0, 451.0, 119.0]};
   const METRO_KEYS = ["no-kristiansand", "no-sandnes", "no-fredrikstad", "no-skien", "no-tonsberg", "no-stavanger", "no-drammen", "no-oslo", "no-bergen", "no-hamar", "no-molde", "no-trondheim", "no-bodo", "no-tromso", "no-alta", "no-kirkenes"];
-  const METRO_KM = 100;
+  const METRO_KM = 50;
 
   // Orthographic projection centred on Norway — the sphere seen from infinity.
   // Replaced the old equirectangular x cos(65) transform, which was accurate
@@ -902,7 +902,7 @@
 
   const state = {
     x: null, y: null,          // node position in map units
-    fylke: null, kommune: null, kommuneName: null, metro: null,
+    fylke: null, kommune: null, kommuneName: null, metro: [],
     drilled: null,             // fylke the map is currently zoomed into
     fw: 'new', profile: 'neighborhood',
     cr: '8', hash: '1', loop: 'minimal', regionDefault: 'none',
@@ -991,14 +991,14 @@
   // one map unit at the projection centre
   const UNIT_KM = 2.72276;
 
+  // every anchor within range, nearest first — a node between two cities
+  // genuinely relays for both, so it carries both tags
   function metroAt(x, y) {
-    let best = null;
-    for (const c of CITY_PTS) {
-      if (!METRO_KEYS.includes(c.key)) continue;
-      const d = Math.hypot(c.x - x, c.y - y) * UNIT_KM;
-      if (d <= METRO_KM && (!best || d < best.d)) best = { key: c.key, d };
-    }
-    return best;
+    return CITY_PTS
+      .filter(c => METRO_KEYS.includes(c.key))
+      .map(c => ({ key: c.key, d: Math.hypot(c.x - x, c.y - y) * UNIT_KM }))
+      .filter(m => m.d <= METRO_KM)
+      .sort((a, b) => a.d - b.d);
   }
 
   function place(x, y, drill = true) {
@@ -1019,9 +1019,8 @@
   // Region tags for this node. fylke, kommune and metro city are independent
   // overlays, so all three sit directly under `no` rather than nesting.
   function tags() {
-    const t = ['no-' + state.fylke, 'no-' + state.kommune];
-    if (state.metro) t.push(state.metro.key);
-    return t;
+    return ['no-' + state.fylke, 'no-' + state.kommune,
+            ...state.metro.map(m => m.key)];
   }
 
   function buildLines() {
@@ -1049,6 +1048,9 @@
       // `x|no` creates x at the cursor then pops back to no, so each tag is
       // a sibling. The last needs no jump.
       const chain = t.map((x, i) => (i === t.length - 1 ? x : `${x}|no`)).join(' ');
+      const line = `region def eu|* europe|eu no ${chain}`;
+      // the CLI takes at most 160 characters per serial line
+      if (line.length > 160) L.push(['c', `# NOTE: next line is ${line.length} chars, over the 160 limit`]);
       L.push(['k', 'region def', `eu|* europe|eu no ${chain}`]);
     } else {
       L.push(['k', 'region put', 'eu']);
@@ -1065,8 +1067,8 @@
     if (state.regionDefault === 'no') L.push(['k', 'region default', 'no']);
     if (state.regionDefault === 'fylke') L.push(['k', 'region default', 'no-' + state.fylke]);
     if (state.regionDefault === 'kommune') L.push(['k', 'region default', 'no-' + state.kommune]);
-    if (state.regionDefault === 'city' && state.metro)
-      L.push(['k', 'region default', state.metro.key]);
+    if (state.regionDefault === 'city' && state.metro.length)
+      L.push(['k', 'region default', state.metro[0].key]);   // nearest
     L.push(['k', 'region save', '']);
     return L;
   }
@@ -1080,9 +1082,10 @@
     const ll = unproject(state.x, state.y);
     $('posRead').textContent = `${ll[0].toFixed(2)}°N ${ll[1].toFixed(2)}°E`;
 
-    $('nearest').textContent = state.metro
-      ? `${FYLKE_NAMES[state.fylke]} · within ${Math.round(state.metro.d)} km of `
-        + `${CITIES[state.metro.key]}, so it carries that tag too.`
+    $('nearest').textContent = state.metro.length
+      ? `${FYLKE_NAMES[state.fylke]} · within ${METRO_KM} km of `
+        + state.metro.map(m => `${CITIES[m.key]} (${Math.round(m.d)} km)`).join(', ')
+        + `, so it carries ${state.metro.length > 1 ? 'those tags' : 'that tag'} too.`
       : `${FYLKE_NAMES[state.fylke]} · more than ${METRO_KM} km from a metro anchor, `
         + `so no city tag.`;
 
@@ -1109,8 +1112,8 @@
     $('selKomm').setAttribute('d', selK ? selK.el.getAttribute('d') : '');
     KOMMUNER.forEach(k => k.el.classList.toggle('in-fylke',
       k.nr !== state.kommune && k.nr.slice(0, 2) === state.fylke));
-    CITY_PTS.forEach(c => c.el.classList.toggle('on',
-      !!state.metro && c.key === state.metro.key));
+    const metroKeys = state.metro.map(m => m.key);
+    CITY_PTS.forEach(c => c.el.classList.toggle('on', metroKeys.includes(c.key)));
 
     applyView();
 
@@ -1155,7 +1158,7 @@
     // reveal labels as room appears; the selected node's city always shows
     for (const c of CITY_PTS) {
       c.el.classList.toggle('lab',
-        view.z >= c.minz || (!!state.metro && state.metro.key === c.key));
+        view.z >= c.minz || state.metro.some(m => m.key === c.key));
     }
   }
 
