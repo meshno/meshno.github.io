@@ -772,7 +772,7 @@
         <p class="kommnote" id="kommNote"></p>
         <p class="help" id="nearest"></p>
         <div class="scope" id="scope"></div>
-        <p class="help">Setting a region tells the repeater which floods to pass on. A packet scoped to <code>no-0301</code> only travels through nodes carrying that tag, so local traffic stays local instead of crossing the country.</p>
+        <p class="help">Setting a region tells the repeater which floods to pass on. <b>It does not limit who you can reach.</b> Every node carries <code>eu</code> and <code>no</code>, so anything sent at continent or country scope still crosses the whole mesh. The narrower tags exist so that a local city chat channel stops spending airtime being relayed across all of Norway.</p>
 
         <details class="explain">
           <summary>What the numbers mean</summary>
