@@ -56,6 +56,9 @@
     display: grid; grid-template-columns: 380px minmax(0, 1fr);
     gap: 40px; align-items: start; padding-bottom: 60px;
   }
+  /* grid items default to min-width:auto and refuse to shrink below their
+     content, so they burst out of the track and past the page padding */
+  .map-col, .col { min-width: 0; }
 
   /* ---- map ---- */
   .map-col { position: sticky; top: 24px; }
@@ -818,7 +821,6 @@
         </span>
       </div>
       <p class="help" id="coordNote">A GPS reading is far more precise than a click, and lets you check which regions a spot falls in before going there.</p>
-    </div>
     </div>
 
     <div class="col">
