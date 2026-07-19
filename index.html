@@ -866,7 +866,6 @@
           <span class="mt-fy" id="fylkeLabel"></span>
         </div>
       </div>
-      <p class="map-note">Click anywhere to place your node.</p>
       <p class="help" id="coordNote"></p>
       <section class="needs-node">
         <div class="veil" aria-hidden="true"><span>Click the map to place your node</span></div>
@@ -932,8 +931,49 @@
       </section>
 
       <section>
+        <h2>Radio</h2>
+        <p class="sub">Advanced radio settings. Defaults are fine.</p>
+        <div class="row">
+          <div class="k">coding rate</div>
+          <div class="v">
+            <div class="seg" id="crSeg">
+              <button data-cr="5">5 · +25%</button>
+              <button data-cr="6">6 · +50%</button>
+              <button data-cr="7">7 · +75%</button>
+              <button data-cr="8" class="on">8 · +100%</button>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="k">path.hash.mode</div>
+          <div class="v">
+            <div class="seg" id="hashSeg">
+              <button data-h="0">1-byte · 64 hops</button>
+              <button data-h="1" class="on">2-byte · 32 hops</button>
+              <button data-h="2">3-byte · 21 hops</button>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="k">loop.detect</div>
+          <div class="v">
+            <div class="seg" id="loopSeg">
+              <button data-l="minimal" class="on">minimal</button>
+              <button data-l="moderate">moderate</button>
+              <button data-l="strict">strict</button>
+            </div>
+          </div>
+        </div>
+        <details class="explain">
+          <summary>What these radio settings do</summary>
+          <p>CR is the one radio parameter that may differ between nodes — receivers decode any CR. Higher = more redundancy, better survival through noise, but slower and more channel load. <b>Well-connected repeater: consider 5.</b> Frequency, bandwidth, and SF must match the mesh and are fixed here.</p>
+          <p>1-byte hashes collide quickly as repeater count grows; 2-byte (65 536 values) makes collisions practically impossible at this mesh's scale and makes network debugging far easier. 3-byte only matters at millions of nodes.</p>
+        </details>
+      </section>
+
+      <section>
         <h2>Node profile</h2>
-        <p class="sub">Sizes the random back-off before repeating a flood — pick by your neighbour count, meaning neighbours with SNR above 0.</p>
+        <p class="sub">Sizes the random back-off before repeating a flood. Based on neighbour count with SNR above 0.</p>
         <div class="row">
           <div class="k">txdelay<br>rxdelay</div>
           <div class="v">
@@ -975,53 +1015,13 @@
         </details>
       </section>
 
-      <section>
-        <h2>Radio</h2>
-        <p class="sub">These must match the rest of the mesh — only the coding rate is yours to choose.</p>
-        <div class="row">
-          <div class="k">coding rate</div>
-          <div class="v">
-            <div class="seg" id="crSeg">
-              <button data-cr="5">5 · +25%</button>
-              <button data-cr="6">6 · +50%</button>
-              <button data-cr="7">7 · +75%</button>
-              <button data-cr="8" class="on">8 · +100%</button>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="k">path.hash.mode</div>
-          <div class="v">
-            <div class="seg" id="hashSeg">
-              <button data-h="0">1-byte · 64 hops</button>
-              <button data-h="1" class="on">2-byte · 32 hops</button>
-              <button data-h="2">3-byte · 21 hops</button>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="k">loop.detect</div>
-          <div class="v">
-            <div class="seg" id="loopSeg">
-              <button data-l="minimal" class="on">minimal</button>
-              <button data-l="moderate">moderate</button>
-              <button data-l="strict">strict</button>
-            </div>
-          </div>
-        </div>
-        <details class="explain">
-          <summary>What these radio settings do</summary>
-          <p>CR is the one radio parameter that may differ between nodes — receivers decode any CR. Higher = more redundancy, better survival through noise, but slower and more channel load. <b>Well-connected repeater: consider 5.</b> Frequency, bandwidth, and SF must match the mesh and are fixed here.</p>
-          <p>1-byte hashes collide quickly as repeater count grows; 2-byte (65 536 values) makes collisions practically impossible at this mesh's scale and makes network debugging far easier. 3-byte only matters at millions of nodes.</p>
-        </details>
-      </section>
 
 
       <section>
         <h2>Regions</h2>
-        <p class="sub">How far this repeater passes floods on, and how the tags are written.</p>
+        <p class="sub">Only change if using an outdated firmware. Default region config for experts.</p>
         <div class="row">
-          <div class="k">firmware</div>
+          <div class="k">repeater firmware</div>
           <div class="v">
             <div class="seg" id="fwSeg">
               <button data-f="new" class="on">1.16.0+</button>
