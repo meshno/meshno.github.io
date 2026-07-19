@@ -169,6 +169,20 @@
   }
   .row > .v { min-width: 0; }
   .help { color: var(--muted); font-size: 13px; margin: 8px 0 0; max-width: 72ch; }
+  .explain {
+    border-left: 2px solid var(--rule); padding: 2px 0 2px 14px;
+    margin: 16px 0 0; max-width: 72ch;
+  }
+  .explain h3 {
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    letter-spacing: 0.13em; text-transform: uppercase; color: var(--dim);
+    margin: 0 0 8px;
+  }
+  .explain p { color: var(--muted); font-size: 13px; line-height: 1.6; margin: 0 0 9px; }
+  .explain p:last-child { margin-bottom: 0; }
+  .explain b { color: var(--ink); font-weight: 500; }
+  .explain em { color: var(--muted); font-style: italic; }
+
   .namepv { font-family: var(--mono); font-size: 13px; margin: 8px 0 0; color: var(--ink); }
   .namepv .bytes { color: var(--dim); font-size: 12px; }
   .namepv .bytes.warn { color: var(--amber, #ffb454); }
@@ -739,6 +753,15 @@
         </div>
         <p class="help" id="nearest"></p>
         <div class="scope" id="scope"></div>
+
+        <div class="explain">
+          <h3>What the numbers mean</h3>
+          <p><b>A kommunenummer is not a postcode.</b> Both are four digits in Norway, which makes them easy to mix up, but they are unrelated systems. A <b>kommunenummer</b> is the official code Kartverket and SSB use for each of Norway's 357 municipalities — Oslo is <code>0301</code>, Bergen is <code>4601</code>. A <b>postnummer</b> identifies a postal delivery area, and a single kommune contains many of them. Never derive one from the other.</p>
+          <p><b>The first two digits are the fylke.</b> <code>4601</code> is kommune 01 in fylke <code>46</code> (Vestland); <code>0301</code> is in fylke <code>03</code> (Oslo). That is what makes the region tags useful: a node tagged <code>no-4601</code> is inside <code>no-46</code> by construction, so you can scope a flood to one kommune or widen it to the whole fylke without any lookup table, and the two can never contradict each other.</p>
+          <p><b>A city tag does not mean the node is in the city.</b> It means the node is within 50&nbsp;km of it — close enough to carry that city's traffic. A repeater on a ridge outside town is often exactly what makes routing <em>inside</em> the town work, so it should carry the city tag even though its address is somewhere else. It is also why a node can carry more than one: sitting between two cities, it relays for both.</p>
+          <p>All these codes come from the map — place the node and they follow. They are the current numbers, in use since the county reform of January 2024.</p>
+        </div>
+
         <p class="help">Fylke, kommune and city sit side by side under <code>no</code> — they are independent overlays, not a nesting, since a city's 100&nbsp;km radius crosses fylke borders. Region membership is not inherited from position in the tree, so every tag the node should relay is listed explicitly.</p>
       </section>
 
