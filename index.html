@@ -86,9 +86,7 @@
   }
   .zoomctl button:hover { border-color: var(--muted); color: var(--ink); }
   .zoomctl button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .zoomctl .zlvl {
-    font-family: var(--mono); font-size: 11px; color: var(--dim); margin-left: 2px;
-  }
+
   svg.map { cursor: crosshair; }
 
 
@@ -252,6 +250,8 @@
   .scope .t { white-space: pre; }
   .scope .br { color: var(--dim); }
   .scope b { color: var(--accent); font-weight: 400; }
+  .scope .an { color: var(--dim); }
+  .scope .an b { color: var(--accent); }
 
   /* ---- controls ---- */
   .seg { display: flex; flex-wrap: wrap; gap: 5px; }
@@ -416,9 +416,8 @@
         <button type="button" id="zOut" aria-label="Zoom out">&minus;</button>
         <button type="button" id="zIn" aria-label="Zoom in">+</button>
         <button type="button" id="zReset">Reset</button>
-        <span class="zlvl" id="zLvl">1.0×</span>
       </div>
-      <svg class="map" id="map" viewBox="-61.6 5.0 577.2 548.5" style="--k:1" role="application" aria-label="Map of Norway. Click to place your node, or use the city buttons.">
+      <svg class="map" id="map" viewBox="4.0 4.0 470.3 550.5" style="--k:1" role="application" aria-label="Map of Norway. Click to place your node, or use the city buttons.">
         <!-- territorial-limit outlines sit under the land, so only the part
              that runs out into the sea stays visible -->
         <g class="terrs" id="terrs" aria-hidden="true">
@@ -811,7 +810,7 @@
       <g class="city" data-key="no-fredrikstad" data-minz="1" transform="translate(134.3,505.0)" tabindex="0" role="button" aria-label="Fredrikstad"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Fredrikstad</text></g>
       <g class="city" data-key="no-skien" data-minz="1.6" transform="translate(106.6,503.0)" tabindex="0" role="button" aria-label="Skien"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:0.0;--dy:16.5" text-anchor="middle">Skien</text></g>
       <g class="city" data-key="no-tonsberg" data-minz="2.5" transform="translate(123.5,502.2)" tabindex="0" role="button" aria-label="Tønsberg"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:0.0;--dy:-6.0" text-anchor="middle">Tønsberg</text></g>
-      <g class="city" data-key="no-stavanger" data-minz="1" transform="translate(24.9,502.0)" tabindex="0" role="button" aria-label="Stavanger"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:-10.0;--dy:4.0" text-anchor="end">Stavanger</text></g>
+      <g class="city" data-key="no-stavanger" data-minz="2.5" transform="translate(24.9,502.0)" tabindex="0" role="button" aria-label="Stavanger"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:-10.0;--dy:4.0" text-anchor="end">Stavanger</text></g>
       <g class="city" data-key="no-drammen" data-minz="1" transform="translate(120.9,482.5)" tabindex="0" role="button" aria-label="Drammen"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:-10.0;--dy:4.0" text-anchor="end">Drammen</text></g>
       <g class="city" data-key="no-oslo" data-minz="1" transform="translate(132.7,476.6)" tabindex="0" role="button" aria-label="Oslo"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Oslo</text></g>
       <g class="city" data-key="no-bergen" data-minz="1" transform="translate(25.7,443.4)" tabindex="0" role="button" aria-label="Bergen"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Bergen</text></g>
@@ -821,7 +820,7 @@
       <g class="city" data-key="no-bodo" data-minz="1" transform="translate(214.9,179.7)" tabindex="0" role="button" aria-label="Bodø"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Bodø</text></g>
       <g class="city" data-key="no-tromso" data-minz="1" transform="translate(282.1,82.5)" tabindex="0" role="button" aria-label="Tromsø"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Tromsø</text></g>
       <g class="city" data-key="no-alta" data-minz="1" transform="translate(341.7,64.6)" tabindex="0" role="button" aria-label="Alta"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Alta</text></g>
-      <g class="city" data-key="no-kirkenes" data-minz="1" transform="translate(437.1,58.4)" tabindex="0" role="button" aria-label="Kirkenes"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Kirkenes</text></g>
+      <g class="city" data-key="no-kirkenes" data-minz="1" transform="translate(437.1,58.4)" tabindex="0" role="button" aria-label="Kirkenes"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:0.0;--dy:-6.0" text-anchor="middle">Kirkenes</text></g>
         <g class="pin" id="pin" aria-hidden="true" hidden>
           <circle class="pin-ring" r="10"></circle>
           <circle class="pin-dot" r="3.5"></circle>
@@ -839,7 +838,6 @@
           <span class="nm" id="kommName">Oslo</span>
           <span class="tag" id="kommTag">no-0301</span>
         </div>
-        <p class="kommnote" id="kommNote"></p>
         <p class="help" id="nearest"></p>
         <div class="scope" id="scope"></div>
 
@@ -1317,9 +1315,6 @@
       box.classList.remove('bad');
     }
 
-    $('kommNote').innerHTML =
-      `<b>${state.kommune}</b> is ${esc(state.kommuneName)}'s kommunenummer — `
-      + `<span class="no">not a postcode</span>.`;
 
     $('nearest').textContent = state.metro.length
       ? `${FYLKE_NAMES[state.fylke]} · within ${METRO_KM} km of `
@@ -1329,15 +1324,23 @@
         + `so no city tag.`;
 
     // Drawn as a tree because it is one: europe is its own top-level entry,
-    // and fylke/kommune/city are siblings, not nested.
+    // and fylke/kommune/city are siblings, not nested. Each row is annotated
+    // so the numbers explain themselves — "kommunenummer" is picked out in
+    // the accent because it is the one people mistake for a postcode.
+    const ann = {};
+    ann['no-' + state.fylke] = 'fylke';
+    ann['no-' + state.kommune] = '<b>kommunenummer</b>';   // accented: mistaken for a postcode
+    for (const m of state.metro) ann[m.key] = `within ${METRO_KM} km of ${CITIES[m.key]}`;
     const t = tags();
-    const rows = t.map((x, i) => {
-      const branch = i === t.length - 1 ? '   └─ ' : '   ├─ ';
-      return `<span class="t"><span class="br">${branch}</span><b>${x}</b></span>`;
-    }).join('');
-    $('scope').innerHTML =
-      `<span class="t">eu</span><span class="t"><span class="br">└─ </span>no</span>`
-      + rows + `<span class="t">europe</span>`;
+    const rows = [['', 'eu', 'continent'], ['└─ ', 'no', 'country']]
+      .concat(t.map((x, i) => [i === t.length - 1 ? '   └─ ' : '   ├─ ', x, ann[x]]))
+      .concat([['', 'europe', 'continent']]);
+    // pad branch+tag together, or the annotations stagger
+    const wide = Math.max(...rows.map(([i, x]) => i.length + x.length)) + 2;
+    $('scope').innerHTML = rows.map(([indent, tag, note]) =>
+      `<span class="t"><span class="br">${indent}</span>`
+      + tag + ' '.repeat(Math.max(1, wide - indent.length - tag.length))
+      + (note ? `<span class="an">${note}</span>` : '') + '</span>').join('');
 
     $('cmdOut').innerHTML = buildLines().map(([ty, cmd, arg]) =>
       ty === 'c' ? `<span class="c">${esc(cmd)}</span>`
@@ -1393,8 +1396,8 @@
 
   // ---- view: pan and zoom by rewriting the viewBox ----
   const map = $('map');
-  const VBX = -61.6, VBY = 5.0;
-  const W = 577.2, H = 548.5, MAXZ = 32;  // ~130 m/px, enough to place a pin; see note in CLAUDE.md
+  const VBX = 4.0, VBY = 4.0;
+  const W = 470.3, H = 550.5, MAXZ = 32;  // ~130 m/px, enough to place a pin; see note in CLAUDE.md
   const view = { z: 1, cx: VBX + W / 2, cy: VBY + H / 2 };
 
   function applyView() {
@@ -1406,7 +1409,6 @@
       `${view.cx - w / 2} ${view.cy - h / 2} ${w} ${h}`);
     map.classList.toggle('zoomed', view.z > 1.001);
     map.style.setProperty('--k', 1 / view.z);   // keep text and dots readable
-    $('zLvl').textContent = view.z.toFixed(1) + '×';
     for (const k of KOMMUNER) {
       k.el.classList.toggle('shown', k.nr.slice(0, 2) === state.drilled);
     }
