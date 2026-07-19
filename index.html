@@ -65,6 +65,12 @@
        be a brighter, more chromatic teal than --accent: the accent tinted at
        low alpha over pale land comes out a muddy sage, not a selection */
     --wash-2:  rgba(0,150,136,0.28);
+    /* relay coverage, fading outward from the node: bordered kommune, then
+       bordered fylke, then bordered landsdel. Low enough that a whole
+       landsdel lighting up reads as a tint, not as a second selection. */
+    --nb-1:    rgba(0,150,136,0.17);
+    --nb-2:    rgba(0,150,136,0.095);
+    --nb-3:    rgba(0,150,136,0.045);
     --slot:    rgba(10,108,98,0.34);
     --slot-b:  rgba(10,108,98,0.50);
     /* the floating map furniture reads as glass over whatever is beneath */
@@ -98,6 +104,9 @@
     --on-accent: #062621;
     --wash:    rgba(94,234,212,0.08);
     --wash-2:  rgba(94,234,212,0.20);
+    --nb-1:    rgba(94,234,212,0.16);
+    --nb-2:    rgba(94,234,212,0.085);
+    --nb-3:    rgba(94,234,212,0.04);
     --slot:    rgba(94,234,212,0.30);
     --slot-b:  rgba(94,234,212,0.45);
     --glass:   rgba(10,18,32,0.80);
@@ -216,6 +225,12 @@
   /* the selected fylke is tinted rather than outlined: fills tile cleanly,
      so there is no shared-edge overpainting to work around */
   .kommune.in-fylke { fill: var(--land-on); }
+  /* Painted over the land fill, and after .in-fylke so relay coverage wins
+     over the drill-down tint — what the node relays for matters more than
+     which fylke happens to be open. A kommune carries at most one of these. */
+  .kommune.nb-3 { fill: var(--nb-3); }
+  .kommune.nb-2 { fill: var(--nb-2); }
+  .kommune.nb-1 { fill: var(--nb-1); }
 
   .terr {
     fill: none; stroke: var(--line-t); stroke-width: 0.7;
@@ -1750,7 +1765,8 @@
       $('cmdOut').innerHTML = renderLines();
       // Reset can land here from a placed state, so clear the map overlays too
       $('selKomm').setAttribute('d', '');
-      KOMMUNER.forEach(k => k.el.classList.remove('in-fylke'));
+      KOMMUNER.forEach(k =>
+        k.el.classList.remove('in-fylke', 'nb-1', 'nb-2', 'nb-3'));
       CITY_PTS.forEach(c => c.el.classList.remove('on'));
       document.querySelectorAll('#profiles .profile').forEach(el =>
         el.classList.toggle('on', el.dataset.p === state.profile));
@@ -1833,8 +1849,25 @@
 
     const selK = KOMMUNER.find(k => k.nr === state.kommune);
     $('selKomm').setAttribute('d', selK ? selK.el.getAttribute('d') : '');
-    KOMMUNER.forEach(k => k.el.classList.toggle('in-fylke',
-      k.nr !== state.kommune && k.nr.slice(0, 2) === state.fylke));
+    // Light the ground this node actually relays for, fading outward: the
+    // kommuner it borders, then the rest of a bordering fylke, then a
+    // bordering landsdel. Each kommune takes at most ONE tier — the most
+    // specific that applies — so the washes never stack into mud.
+    const nbK = new Set(state.border.kommune.map(x => x.nr));
+    const nbF = new Set(state.border.fylke.map(x => x.nr));
+    const nbL = new Set(state.border.landsdel.map(x => x.nr));
+    KOMMUNER.forEach(k => {
+      const fy = k.nr.slice(0, 2);
+      const tier = k.nr === state.kommune ? 0      // the selection overlay owns it
+        : nbK.has(k.nr) ? 1
+        : nbF.has(fy) ? 2
+        : nbL.has(LANDSDEL[fy]) ? 3 : 0;
+      k.el.classList.toggle('nb-1', tier === 1);
+      k.el.classList.toggle('nb-2', tier === 2);
+      k.el.classList.toggle('nb-3', tier === 3);
+      k.el.classList.toggle('in-fylke',
+        tier === 0 && k.nr !== state.kommune && fy === state.fylke);
+    });
     const metroKeys = state.metro.map(m => m.key);
     CITY_PTS.forEach(c => c.el.classList.toggle('on', metroKeys.includes(c.key)));
 
