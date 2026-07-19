@@ -450,7 +450,9 @@
   /* ---- output: the deliverable ---- */
   .out-head {
     display: flex; justify-content: space-between; align-items: center;
-    gap: 12px; margin-bottom: 10px;
+    /* matches h2's own margin, so the gap down to .sub is the same 8px it is
+       under every other section heading */
+    gap: 12px; margin-bottom: 14px;
   }
   .out-head h2 { margin: 0; }
   .copy {
@@ -1182,11 +1184,15 @@
       </section>
 
       <section>
+        <!-- .out-head is a space-between row for the heading and Copy only.
+             The sub belongs under it, as in every other section — inside the
+             row it was laid out between the two and read as a caption on the
+             button. -->
         <div class="out-head">
-          <h2>Repeater CLI — full config</h2>
-        <p class="sub">Paste the whole block into the node over USB serial.</p>
+          <h2>Full node config</h2>
           <button class="copy" id="copyBtn">Copy</button>
         </div>
+        <p class="sub">Paste the whole block into the node over USB serial.</p>
         <pre class="cmd" id="cmdOut"></pre>
         <details class="explain">
           <summary>Before you paste this</summary>
