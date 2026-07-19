@@ -8,6 +8,10 @@
 <!-- must track --bg in styles.css; these are the browser-chrome colours -->
 <meta name="theme-color" content="#fbfcfc" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0a1220" media="(prefers-color-scheme: dark)">
+<!-- The favicon is a data: URI because the public repo holds index.html and
+     nothing else - there is nowhere to put a favicon.svg. Standalone, so it
+     carries its own light/dark rather than inheriting currentColor. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2040%2040%22%3E%3Cstyle%3E.i%7Bfill%3Anone%3Bstroke%3A%230d1b26%3Bstroke-width%3A3%3Bstroke-linecap%3Around%3Bstroke-linejoin%3Around%7D.n%7Bfill%3A%230d1b26%7D.a%7Bfill%3A%230a6c62%7D%40media%28prefers-color-scheme%3Adark%29%7B.i%7Bstroke%3A%23e7edf4%7D.n%7Bfill%3A%23e7edf4%7D.a%7Bfill%3A%235eead4%7D%7D%3C%2Fstyle%3E%3Cpath%20class%3D%22i%22%20d%3D%22M10%2010V30M10%2010L30%2030M30%2030V10%22%2F%3E%3Ccircle%20class%3D%22n%22%20cx%3D%2210%22%20cy%3D%2210%22%20r%3D%224%22%2F%3E%3Ccircle%20class%3D%22n%22%20cx%3D%2210%22%20cy%3D%2230%22%20r%3D%224%22%2F%3E%3Ccircle%20class%3D%22n%22%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%224%22%2F%3E%3Ccircle%20class%3D%22a%22%20cx%3D%2230%22%20cy%3D%2210%22%20r%3D%224%22%2F%3E%3C%2Fsvg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -134,6 +138,22 @@
     text-transform: uppercase; color: var(--dim); margin-bottom: 10px;
   }
   h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.015em; margin: 0 0 10px; }
+  /* Mark and title as one lockup. flex-start, not center: the headline wraps
+     to two lines on a phone, and centring left the mark floating in the
+     margin between them instead of holding to the first line. The mark's ink
+     is centred in its own box, so at 34px against a 28px/1.2 line it lands on
+     the first line's cap centre with no nudge. */
+  .title { display: flex; align-items: flex-start; gap: 13px; }
+  .title h1 { margin: 0 0 10px; }
+  .logo { width: 34px; height: 34px; flex: none; }
+  /* two colours only: ink follows the text, one node takes the accent —
+     the same way the map marks the node you have selected */
+  .lg-link {
+    fill: none; stroke: currentColor; stroke-width: 3;
+    stroke-linecap: round; stroke-linejoin: round;
+  }
+  .lg-n { fill: currentColor; }
+  .lg-a { fill: var(--accent); }
   /* title block left, theme toggle parked at the top right — page furniture,
      kept out of the config columns so it never reads as node state */
   .masthead { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
@@ -560,7 +580,21 @@
         <!-- "Norway" is dropped from the kicker: the title says MeshNO and the
              lede says Norwegian, so the eyebrow is left to carry the band -->
         <div class="kicker">MeshCore · EU868 869.618 MHz</div>
-        <h1>MeshNO repeater node configurator</h1>
+        <!-- The mark is the monogram and the network in one drawing: four
+             nodes, three links, an N falling out of it. Ink follows
+             currentColor and the accent follows --accent, so it themes with
+             the page and needs no second copy. Inline, not a file: the public
+             repo holds index.html and nothing else. -->
+        <div class="title">
+          <svg class="logo" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+            <path class="lg-link" d="M10 10 V30 M10 10 L30 30 M30 30 V10"/>
+            <circle class="lg-n" cx="10" cy="10" r="4"/>
+            <circle class="lg-n" cx="10" cy="30" r="4"/>
+            <circle class="lg-n" cx="30" cy="30" r="4"/>
+            <circle class="lg-a" cx="30" cy="10" r="4"/>
+          </svg>
+          <h1>MeshNO repeater node configurator</h1>
+        </div>
         <p class="lede">A configurator for setting up Norwegian MeshCore nodes, following conventions similar to those used by Sweden and Denmark. It targets the <code>EU/UK Narrow</code> preset already running across the mesh — 869.618&nbsp;MHz at 62.5&nbsp;kHz — and tags each node with the regions it relays for.</p>
       </div>
       <div class="theme">
