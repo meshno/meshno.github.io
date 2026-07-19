@@ -382,7 +382,10 @@
     .profiles { grid-template-columns: 1fr; }
     input[type="text"] { min-height: 44px; }
     .copy { min-height: 44px; }
-    #posRead { width: 14em; font-size: 12px; }
+    /* it is an input now, so it needs a real tap target */
+    #posRead { width: 100%; font-size: 13px; min-height: 44px; text-align: left;
+               border-color: var(--rule-2); padding: 0 8px; }
+    .map-head { align-items: stretch; }
     .zoomctl button { min-width: 40px; min-height: 40px; }
     /* expanders are the main way to reach the explanations on a phone */
     .explain > summary { min-height: 44px; display: flex; align-items: center; }
