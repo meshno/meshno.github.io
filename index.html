@@ -64,6 +64,7 @@
   .map-col { position: sticky; top: 24px; }
   .map-col > h2 { margin-bottom: 6px; }
   .map-col > .sub { margin-bottom: 14px; }
+  .sub { color: var(--muted); font-size: 14px; margin: -6px 0 14px; max-width: 68ch; }
   .map-head {
     display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
     font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.04em;
@@ -182,7 +183,7 @@
 
   /* ---- sections ---- */
   section { border-top: 1px solid var(--rule); padding: 22px 0 26px; }
-  .needs-node { position: relative; padding-top: 20px; }
+  .needs-node { position: relative; padding-top: 18px; }
 
   /* until a node is placed, the panel describing it is frosted over */
   .veil { display: none; }
@@ -247,19 +248,18 @@
   .help b { color: var(--ink); font-weight: 500; }
 
   /* ---- station readout ---- */
-  .station { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; }
-  .station .nm { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
-  .station .fy {
-    font-size: 14px; color: var(--muted);
-  }
-  .station .fy::before { content: '· '; color: var(--dim); }
+
   /* the region tag rides on the map, mirroring the zoom controls opposite */
   .maptag {
-    position: absolute; bottom: 8px; left: 8px; z-index: 2;
-    font-family: var(--mono); font-size: 13px; color: var(--accent);
-    background: rgba(10,18,32,0.78); backdrop-filter: blur(3px);
-    border: 1px solid var(--rule); padding: 5px 10px; pointer-events: none;
+    position: absolute; bottom: 8px; left: 8px; right: 8px; z-index: 2;
+    display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+    background: rgba(10,18,32,0.8); backdrop-filter: blur(3px);
+    border: 1px solid var(--rule); padding: 6px 10px; pointer-events: none;
   }
+  .mt-tag { font-family: var(--mono); font-size: 13px; color: var(--accent); }
+  .mt-nm  { font-size: 14px; font-weight: 600; color: var(--ink); }
+  .mt-fy  { font-size: 13px; color: var(--muted); }
+  .mt-fy::before { content: '· '; color: var(--dim); }
   body.unplaced .maptag { display: none; }
   /* region tree — drawn as a tree because it is one; a left-to-right chain
      would imply europe sits above no, which it does not */
@@ -299,9 +299,9 @@
   }
   .seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-  .profiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  /* odd count: the last one spans rather than leaving a gap */
-  .profile:nth-child(odd):last-child { grid-column: 1 / -1; }
+  /* stacked, not a grid: in two columns the cards ended up different
+     heights and the bars no longer read as a ladder */
+  .profiles { display: flex; flex-direction: column; gap: 8px; }
   .profile {
     text-align: left; background: transparent; border: 1px solid var(--rule);
     padding: 11px 13px; cursor: pointer; color: var(--ink); font-family: var(--sans);
@@ -413,7 +413,6 @@
     .seg { display: grid; grid-template-columns: 1fr 1fr; }
     .seg button:nth-child(odd):last-child { grid-column: 1 / -1; }
     .seg button { min-height: 44px; }
-    .profiles { grid-template-columns: 1fr; }
     input[type="text"] { min-height: 44px; }
     .copy { min-height: 44px; }
     /* it is an input now, so it needs a real tap target */
@@ -440,6 +439,7 @@
   <main id="main">
     <div class="map-col">
       <h2>Region</h2>
+      <p class="sub">Where the node stands decides which regions it relays for.</p>
       <div class="map-head">
         <label for="posRead">Position</label>
         <input type="text" id="posRead" spellcheck="false" autocomplete="off" placeholder="not placed"
@@ -860,16 +860,16 @@
           <circle class="pin-dot" r="3.5"></circle>
         </g>
       </svg>
-        <div class="maptag" id="kommTag" aria-hidden="true"></div>
+        <div class="maptag" aria-hidden="true">
+          <span class="mt-tag" id="kommTag"></span>
+          <span class="mt-nm" id="kommName"></span>
+          <span class="mt-fy" id="fylkeLabel"></span>
+        </div>
       </div>
       <p class="map-note">Click anywhere to place your node.</p>
       <p class="help" id="coordNote"></p>
       <section class="needs-node">
         <div class="veil" aria-hidden="true"><span>Click the map to place your node</span></div>
-        <div class="station">
-          <span class="nm" id="kommName"></span>
-          <span class="fy" id="fylkeLabel"></span>
-        </div>
         <div class="treebox">
           <div class="treehead">Region tree</div>
           <div class="scope" id="scope"></div>
@@ -891,6 +891,7 @@
     <div class="col">
       <section>
         <h2>Identity</h2>
+        <p class="sub">What the node calls itself, and whether it says where it is.</p>
         <div class="row">
           <div class="k">name</div>
           <div class="v">
@@ -902,8 +903,8 @@
           <div class="k">lat / lon</div>
           <div class="v">
             <div class="seg" id="locSeg">
-              <button data-loc="on">publish</button>
-              <button data-loc="off" class="on">omit</button>
+              <button data-loc="on">configure</button>
+              <button data-loc="off" class="on">skip</button>
             </div>
           </div>
         </div>
@@ -932,6 +933,7 @@
 
       <section>
         <h2>Node profile</h2>
+        <p class="sub">Sizes the random back-off before repeating a flood — pick by your neighbour count, meaning neighbours with SNR above 0.</p>
         <div class="row">
           <div class="k">txdelay<br>rxdelay</div>
           <div class="v">
@@ -975,6 +977,7 @@
 
       <section>
         <h2>Radio</h2>
+        <p class="sub">These must match the rest of the mesh — only the coding rate is yours to choose.</p>
         <div class="row">
           <div class="k">coding rate</div>
           <div class="v">
@@ -1016,6 +1019,7 @@
 
       <section>
         <h2>Regions</h2>
+        <p class="sub">How far this repeater passes floods on, and how the tags are written.</p>
         <div class="row">
           <div class="k">firmware</div>
           <div class="v">
@@ -1046,6 +1050,7 @@
       <section>
         <div class="out-head">
           <h2>Repeater CLI — full config</h2>
+        <p class="sub">Paste the whole block into the node over USB serial.</p>
           <button class="copy" id="copyBtn">Copy</button>
         </div>
         <pre class="cmd" id="cmdOut"></pre>
