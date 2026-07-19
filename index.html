@@ -18,8 +18,6 @@
     --rule:    rgba(160,185,215,0.16);
     --rule-2:  rgba(160,185,215,0.08);
     --accent:  #5eead4;
-    /* reserved for the two administrative-code terms, nothing else */
-    --amber:   #ffb454;
     --on-accent: #062621;
     --sans: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
     --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -125,6 +123,8 @@
   }
 
   .pin { pointer-events: none; }
+  /* [hidden] is not honoured on SVG elements by the UA stylesheet */
+  .pin[hidden] { display: none; }
   .pin-dot { fill: var(--accent); }
   .pin-ring { fill: none; stroke: var(--accent); stroke-width: 1.2; opacity: 0.55; }
 
@@ -253,7 +253,7 @@
   .scope .br { color: var(--dim); }
 
   .scope .an { color: var(--dim); }
-  .scope .an b { color: var(--amber); font-weight: 400; }
+  .scope .an b { color: var(--accent); font-weight: 400; }
 
   /* ---- controls ---- */
   .seg { display: flex; flex-wrap: wrap; gap: 5px; }
@@ -1330,15 +1330,15 @@
     // so the numbers explain themselves — "kommunenummer" is picked out in
     // the accent because it is the one people mistake for a postcode.
     // Only the no-* rows are annotated — eu / no / europe speak for themselves.
-    // "Fylkesnummer" and "Kommunenummer" carry the amber, since those are the
-    // terms people read as a postcode.
+    // The two administrative-code terms carry the accent, since those are the
+    // ones people read as a postcode.
     const ann = {};
     ann['no-' + state.fylke] =
-      `<b>Fylkesnummer</b> for ${esc(FYLKE_NAMES[state.fylke])}`;
+      `<b>fylkesnummer</b> for ${esc(FYLKE_NAMES[state.fylke])}`;
     ann['no-' + state.kommune] =
-      `<b>Kommunenummer</b> for ${esc(state.kommuneName)}`;
+      `<b>kommunenummer</b> for ${esc(state.kommuneName)}`;
     for (const m of state.metro)
-      ann[m.key] = `Within ${METRO_KM} km of ${esc(CITIES[m.key])}`;
+      ann[m.key] = `within ${METRO_KM} km of ${esc(CITIES[m.key])}`;
 
     const t = tags();
     const rows = [['', 'eu', ''], ['└─ ', 'no', '']]
@@ -1385,7 +1385,7 @@
     applyView();
 
     const pin = $('pin');
-    pin.hidden = false;
+    pin.removeAttribute('hidden');
     pin.setAttribute('transform', `translate(${state.x},${state.y})`);
 
     document.querySelectorAll('#profiles .profile').forEach(el =>
@@ -1605,8 +1605,8 @@
     setTimeout(() => { b.textContent = 'Copy'; b.classList.remove('done'); }, 1400);
   });
 
-  // Start on Oslo but zoomed out, showing only fylke outlines — the first
-  // click is what drills in.
+  // Start on Oslo, zoomed out — a region is always selected so the config is
+  // always complete. The first click is what drills in.
   const oslo = CITY_PTS.find(c => c.key === 'no-oslo');
   place(oslo.x, oslo.y, false);
 </script>
