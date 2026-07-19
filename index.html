@@ -3,9 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MeshCore Node Configurator — Norway</title>
-<meta name="description" content="Generate MeshCore repeater configuration for Norwegian nodes: radio, regions, profiles.">
-<meta name="theme-color" content="#e8ebf0" media="(prefers-color-scheme: light)">
+<title>MeshNO — MeshCore repeater node configurator for Norway</title>
+<meta name="description" content="A configurator for setting up Norwegian MeshCore nodes: radio, timing profile, identity and region scope, as one paste-able block.">
+<!-- must track --bg in styles.css; these are the browser-chrome colours -->
+<meta name="theme-color" content="#fbfcfc" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0a1220" media="(prefers-color-scheme: dark)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -310,6 +311,9 @@
     padding-top: 8px; line-height: 1.35;
   }
   .row > .v { min-width: 0; }
+  /* the 8px above lines labels up with padded inputs and buttons; a row whose
+     value is bare text or a link needs the label back at the top */
+  .row.plain > .k { padding-top: 0; }
   .help { color: var(--muted); font-size: 14px; line-height: 1.55; margin: 9px 0 0; max-width: 68ch; }
   .explain {
     border-left: 2px solid var(--rule); padding: 2px 0 2px 14px;
@@ -551,9 +555,11 @@
            two stack on mobile that is what puts the theme toggle *after* the
            intro instead of wedging it between the title and its own text -->
       <div class="mast-text">
-        <div class="kicker">MeshCore · Norway · EU868 869.618 MHz</div>
-        <h1>Repeater node configurator</h1>
-        <p class="lede">Radio, timing profile, and region scope for a repeater in one paste-able block. Everything targets the <code>EU/UK Narrow</code> convention (869.618 MHz @ 62.5 kHz) already used across the Norwegian mesh.</p>
+        <!-- "Norway" is dropped from the kicker: the title says MeshNO and the
+             lede says Norwegian, so the eyebrow is left to carry the band -->
+        <div class="kicker">MeshCore · EU868 869.618 MHz</div>
+        <h1>MeshNO repeater node configurator</h1>
+        <p class="lede">A configurator for setting up Norwegian MeshCore nodes. Follows conventions similar to those used by Sweden and Denmark.</p>
       </div>
       <div class="theme">
         <div class="seg" id="themeSeg" role="group" aria-label="Colour theme">
@@ -1186,6 +1192,28 @@
           <summary>Before you paste this</summary>
           <p>Run over USB/serial, or via the companion app's admin CLI. <code>set dutycycle 10</code> is the legal EU maximum on this sub-band — the EU/UK Narrow preset ships with 50, so it must be set explicitly. <b>Norway is EEA/EFTA, not EU</b> — nesting <code>no</code> under <code>eu</code> follows the existing convention, not geopolitics. Reboot after radio changes.</p>
         </details>
+      </section>
+
+      <!-- Last thing in the column, which is where someone lands once they
+           have their config. Uses the same label/value rows as the controls
+           above rather than a new block style. -->
+      <section>
+        <h2>Contact</h2>
+        <p class="sub">The region convention on this page is a proposal, not a standard — push back on it.</p>
+        <div class="row plain">
+          <div class="k">discord</div>
+          <div class="v">
+            <a href="https://discord.gg/2X4C9J4PR" target="_blank" rel="noopener">Norwegian MeshCore community</a>
+            <p class="help">Where the convention gets discussed and agreed. Best place for anything about the mesh itself.</p>
+          </div>
+        </div>
+        <div class="row plain">
+          <div class="k">email</div>
+          <div class="v">
+            <a href="mailto:meshno.cloning239@passmail.com">meshno.cloning239@passmail.com</a>
+            <p class="help">The site operator, for corrections to this page.</p>
+          </div>
+        </div>
       </section>
     </div>
   </main>
