@@ -805,11 +805,12 @@
               </button>
               <button class="profile" data-p="mobile">
                 <span class="p-n">Mobile <span>variable</span></span>
-                <span class="p-d">Moves through the mesh — car, bike, hiking. Neighbour count is unpredictable, so it takes the widest window.</span>
+                <span class="p-d">Moves through the mesh — car, bike, hiking. Usually badly sited with weak reception, so it holds back and lets established repeaters carry the packet.</span>
               </button>
             </div>
             <p class="help">When several repeaters hear the same flood, each waits a random moment before repeating it so they don't transmit over each other. The profile scales how wide that random window is: <b>the more repeaters around you, the wider it needs to be</b>. A wider window costs a little latency and nothing else — it does not change what your node repeats, or who can reach it.</p>
-            <p class="help"><code>rxdelay 3</code> is set on every profile. It holds a packet briefly if it arrived with a weak signal, so a repeater that heard it clearly usually gets there first and the weak copy is dropped as a duplicate.</p>
+            <p class="help">A wider window also means you usually transmit <em>after</em> a better-placed repeater already has, so your copy is dropped as a duplicate. That is why Mobile sits at the top: a badly sited node in a car should not be displacing established infrastructure.</p>
+            <p class="help"><code>rxdelay</code> works on the same idea from the receiving side — a packet that arrived weakly is held back so a repeater that heard it clearly gets there first. Every profile sets <code>3</code>; Mobile sets <code>6</code>, because weak reception is the normal case for it rather than the exception.</p>
           </div>
         </div>
       </section>
@@ -969,7 +970,10 @@
     hilltop:      { tx: '1.4', dtx: '1.2', rx: '3', label: 'hilltop / backbone' },
     neighborhood: { tx: '0.8', dtx: '0.4', rx: '3', label: 'neighborhood rooftop' },
     local:        { tx: '0.3', dtx: '0.1', rx: '3', label: 'local / low elevation' },
-    mobile:       { tx: '2.0', dtx: '2.0', rx: '3', label: 'mobile node' }
+    // Mobile is usually badly sited with weak reception. Widest back-off so a
+    // fixed repeater has normally already relayed by the time it transmits,
+    // and a higher rxdelay so anything it hears weakly is held longer still.
+    mobile:       { tx: '2.0', dtx: '2.0', rx: '6', label: 'mobile node' }
   };
 
   const state = {
