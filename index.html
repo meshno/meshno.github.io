@@ -125,6 +125,12 @@
   .pin-dot { fill: var(--accent); }
   .pin-ring { fill: none; stroke: var(--accent); stroke-width: 1.2; opacity: 0.55; }
 
+  .coordin { margin-top: 14px; }
+  .coordrow { display: flex; gap: 6px; }
+  .coordrow input { flex: 1; min-width: 0; }
+  .coordin .help { margin-top: 7px; font-size: 12px; }
+  .coordin .help.bad { color: #ff8f8f; }
+
   .map-note {
     font-size: 11.5px; color: var(--dim); line-height: 1.45;
     margin: 9px 0 0; max-width: 46ch;
@@ -193,6 +199,7 @@
 
   .namepv { font-family: var(--mono); font-size: 13px; margin: 8px 0 0; color: var(--ink); }
   .namepv .bytes { color: var(--dim); font-size: 12px; }
+  .namepv #namePreview.unset { color: var(--dim); }
   .namepv .bytes.warn { color: var(--amber, #ffb454); }
   .namepv .bytes.over { color: #ff6b6b; }
   .help b { color: var(--ink); font-weight: 500; }
@@ -261,7 +268,12 @@
 
   /* the back-off window, drawn as the slots the firmware actually uses:
      txdelay x 5, truncated. Makes "wider window" literal. */
-  .p-slots { display: flex; gap: 2px; margin-top: 12px; }
+  .p-nb {
+    display: block; font-family: var(--mono); font-size: 11px;
+    color: var(--muted); margin-top: 12px;
+  }
+  .profile.on .p-nb { color: var(--accent); }
+  .p-slots { display: flex; gap: 2px; margin-top: 5px; }
   .p-slots i {
     flex: 1; height: 5px; border-radius: 1px;
     background: var(--rule-2); border: 1px solid var(--rule-2);
@@ -282,7 +294,10 @@
     padding: 9px 11px; width: 100%; min-height: 38px;
   }
   input[type="text"]:focus { outline: none; border-color: var(--accent); }
-  input[type="text"]::placeholder { color: var(--dim); }
+  /* clearly a hint, not a value someone already typed */
+  input[type="text"]::placeholder {
+    color: rgba(160,185,215,0.32); font-style: italic;
+  }
 
   /* ---- output: the deliverable ---- */
   .out-head {
@@ -782,6 +797,14 @@
         </g>
       </svg>
       <p class="map-note">Click anywhere to place your node; the map zooms into that fylke and reveals the kommuner inside it.</p>
+      <div class="coordin">
+        <label class="lbl" for="latIn">Or type a position, if you know it</label>
+        <div class="coordrow">
+          <input type="text" id="latIn" inputmode="decimal" placeholder="lat 59.91229" aria-label="Latitude in decimal degrees">
+          <input type="text" id="lonIn" inputmode="decimal" placeholder="lon 10.75187" aria-label="Longitude in decimal degrees">
+        </div>
+        <p class="help" id="coordNote">A GPS reading is far more precise than a click, and lets you check which regions a spot falls in before going there.</p>
+      </div>
     </div>
 
     <div class="col">
@@ -814,26 +837,30 @@
           <div class="v">
             <div class="profiles" id="profiles">
               <button class="profile" data-p="mountaintop">
-                <span class="p-n">Mountaintop <span>25+ strong</span></span>
+                <span class="p-n">Mountaintop</span>
                 <span class="p-d">Line of sight over a whole region — a real summit or a mast on one. <b>Only pick this if you genuinely see that far;</b> a tall building in town is Hilltop.</span>
+                <span class="p-nb">25+ neighbours</span>
                 <span class="p-slots" aria-hidden="true"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i></span>
                 <span class="p-v">back-off 8/10 slots · <b>txdelay 1.6</b> · direct 0.8 · rx 3</span>
               </button>
               <button class="profile" data-p="hilltop">
-                <span class="p-n">Hilltop <span>15–25 strong</span></span>
+                <span class="p-n">Hilltop</span>
                 <span class="p-d">Clear view over a wide area. Backbone for a district — mast, ridge, high-rise rooftop.</span>
+                <span class="p-nb">15–25 neighbours</span>
                 <span class="p-slots" aria-hidden="true"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i></span>
                 <span class="p-v">back-off 6/10 slots · <b>txdelay 1.2</b> · direct 0.6 · rx 3</span>
               </button>
               <button class="profile on" data-p="neighborhood">
-                <span class="p-n">Neighborhood <span>5–15 strong</span></span>
+                <span class="p-n">Neighborhood</span>
                 <span class="p-d">Typical install covering its own district. Ordinary rooftop in a city or suburb.</span>
+                <span class="p-nb">5–15 neighbours</span>
                 <span class="p-slots" aria-hidden="true"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
                 <span class="p-v">back-off 4/10 slots · <b>txdelay 0.8</b> · direct 0.4 · rx 3</span>
               </button>
               <button class="profile" data-p="local">
-                <span class="p-n">Local <span>1–4 strong</span></span>
+                <span class="p-n">Local</span>
                 <span class="p-d">Sees only a few neighbors. Indoors, ground level, or a low roof.</span>
+                <span class="p-nb">1–4 neighbours</span>
                 <span class="p-slots" aria-hidden="true"><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
                 <span class="p-v">back-off 2/10 slots · <b>txdelay 0.4</b> · direct 0.2 · rx 3</span>
               </button>
@@ -889,7 +916,7 @@
         <div class="row">
           <div class="k">name</div>
           <div class="v">
-            <input type="text" id="nodeDesc" placeholder="Årvollåsen" maxlength="40" aria-label="Node name — the part after the kommune number">
+            <input type="text" id="nodeDesc" placeholder="e.g. Årvollåsen" maxlength="40" aria-label="Node name — the part after the kommune number">
             <p class="namepv"><span id="namePreview">NO-0301</span> <span class="bytes" id="nameBytes"></span></p>
             <p class="help">Convention: <code>NO-&lt;kommunenummer&gt;-&lt;place&gt;</code>, so a node on Årvollåsen in Oslo is <code>NO-0301-Årvollåsen</code>. The number comes from where you placed it on the map. <b>Max 24 bytes if the node has a location set, 32 if not</b> — Norwegian letters cost two bytes each, so <code>å</code> and <code>ø</code> count double. Takes effect after a reboot.</p>
           </div>
@@ -898,24 +925,24 @@
           <div class="k">lat / lon</div>
           <div class="v">
             <div class="seg" id="locSeg">
-              <button data-loc="on" class="on">publish</button>
-              <button data-loc="off">omit</button>
+              <button data-loc="on">publish</button>
+              <button data-loc="off" class="on">omit</button>
             </div>
             <p class="help" id="locNote"></p>
-            <p class="help">Sent as two commands, <code>set lat</code> and <code>set lon</code> — MeshCore has no combined location command. The position comes from where you clicked, so it is only as precise as that; <b>replace it with a real GPS reading</b> if the node's exact spot matters. Publishing a location is normal for a repeater and puts it on mesh maps, but it is public. <b>It also drops the name limit from 32 bytes to 24.</b></p>
+            <p class="help">Sent as two commands, <code>set lat</code> and <code>set lon</code> — MeshCore has no combined location command. <b>Off by default,</b> because a map click is only accurate to a hundred metres or so and a wrong published position is worse than none. Turn it on once you have typed a real GPS reading above. Publishing is normal for a repeater and puts it on mesh maps, but it is public, and <b>it drops the name limit from 32 bytes to 24</b>.</p>
           </div>
         </div>
         <div class="row">
           <div class="k">owner.info</div>
           <div class="v">
-            <input type="text" id="ownerInfo" placeholder="LA1ABC / 6dBi omni @9m / solar+batt / roof" maxlength="90" aria-label="owner.info — contact, antenna, power, mount">
+            <input type="text" id="ownerInfo" placeholder="e.g. LA1ABC / 6dBi omni @9m / solar+batt / roof" maxlength="90" aria-label="owner.info — contact, antenna, power, mount">
             <p class="help">Contact, antenna, power, mount. Visible to anyone who queries the node — no personal info.</p>
           </div>
         </div>
         <div class="row">
           <div class="k">guest.password</div>
           <div class="v">
-            <input type="text" id="guestPw" placeholder="hello" maxlength="30" aria-label="guest.password">
+            <input type="text" id="guestPw" placeholder="leave blank for none" maxlength="30" aria-label="guest.password">
             <p class="help">Lets members query node status.</p>
           </div>
         </div>
@@ -980,6 +1007,14 @@
   const D2R = Math.PI / 180, R2D = 180 / Math.PI;
   const P0 = PROJ.lat0 * D2R;
 
+  // [lat, lon] -> (x, y) in map units
+  function project(lat, lon) {
+    const phi = lat * D2R, lam = (lon - PROJ.lon0) * D2R;
+    const u = Math.cos(phi) * Math.sin(lam);
+    const v = Math.cos(P0) * Math.sin(phi) - Math.sin(P0) * Math.cos(phi) * Math.cos(lam);
+    return [u * PROJ.S + PROJ.CX, PROJ.CY - v * PROJ.S];
+  }
+
   // (x, y) in map units -> [lat, lon]
   function unproject(x, y) {
     const u = (x - PROJ.CX) / PROJ.S, v = (PROJ.CY - y) / PROJ.S;
@@ -1030,7 +1065,7 @@
     drilled: null,             // fylke the map is currently zoomed into
     fw: 'new', profile: 'neighborhood',
     cr: '8', hash: '1', loop: 'minimal', regionDefault: 'none',
-    owner: '', guest: '', desc: '', location: true
+    owner: '', guest: '', desc: '', location: false
   };
 
   const $ = id => document.getElementById(id);
@@ -1164,7 +1199,8 @@
     L.push(['k', 'set advert.interval', '240']);
     L.push(['k', 'set flood.advert.interval', '24']);
     L.push(['c', '# identity']);
-    L.push(['k', 'set name', nodeName()]);
+    // no name unless a place has been given — NO-0301 alone says nothing
+    if (state.desc.trim()) L.push(['k', 'set name', nodeName()]);
     if (state.location) {
       const ll = unproject(state.x, state.y);
       L.push(['k', 'set lat', ll[0].toFixed(5)]);
@@ -1269,12 +1305,16 @@
     // The selected kommune is redrawn on an overlay so a neighbour drawn later
     // cannot overpaint its outline. The fylke is tinted instead of outlined —
     // fills tile cleanly, so they need no such treatment.
+    const named = !!state.desc.trim();
     const nm = nodeName(), nb = byteLen(nm);
     const cap = state.location ? 24 : 32;      // a published location costs 8 bytes of name
-    $('namePreview').textContent = nm;
+    $('namePreview').textContent = named ? nm : `${nm}-…`;
+    $('namePreview').classList.toggle('unset', !named);
     const bEl = $('nameBytes');
-    bEl.textContent = `· ${nb} of ${cap} bytes` + (nb > cap ? ' — too long' : '');
-    bEl.className = 'bytes' + (nb > cap ? ' over' : nb > cap - 4 ? ' warn' : '');
+    bEl.textContent = named
+      ? `· ${nb} of ${cap} bytes` + (nb > cap ? ' — too long' : '')
+      : '· add a place to name the node';
+    bEl.className = 'bytes' + (named && nb > cap ? ' over' : named && nb > cap - 4 ? ' warn' : '');
 
     const ll2 = unproject(state.x, state.y);
     $('locNote').textContent = state.location
@@ -1476,6 +1516,33 @@
   seg($('defSeg'),  'd',  v => { state.regionDefault = v; render(); });
   seg($('fwSeg'),   'f',  v => { state.fw = v; render(); });
   seg($('locSeg'),  'loc', v => { state.location = v === 'on'; render(); });
+
+  function coordEntered() {
+    const la = parseFloat($('latIn').value.replace(',', '.'));
+    const lo = parseFloat($('lonIn').value.replace(',', '.'));
+    const note = $('coordNote');
+    if ($('latIn').value.trim() === '' && $('lonIn').value.trim() === '') {
+      note.className = 'help';
+      note.textContent = 'A GPS reading is far more precise than a click, and lets you '
+        + 'check which regions a spot falls in before going there.';
+      return;
+    }
+    if (isNaN(la) || isNaN(lo)) {
+      note.className = 'help bad';
+      note.textContent = 'Enter both as decimal degrees, e.g. 59.91229 and 10.75187.';
+      return;
+    }
+    const [x, y] = project(la, lo);
+    if (!place(x, y)) {
+      note.className = 'help bad';
+      note.textContent = `${la.toFixed(5)}, ${lo.toFixed(5)} is not inside Norway.`;
+      return;
+    }
+    note.className = 'help';
+    note.textContent = `Placed in ${state.kommuneName}. Turn on lat/lon below to publish it.`;
+  }
+  $('latIn').addEventListener('input', coordEntered);
+  $('lonIn').addEventListener('input', coordEntered);
 
   $('nodeDesc').addEventListener('input', e => { state.desc = e.target.value; render(); });
   $('ownerInfo').addEventListener('input', e => { state.owner = e.target.value; render(); });
