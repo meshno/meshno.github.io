@@ -963,7 +963,9 @@
     hilltop:      { tx: '2.0', dtx: '2.0', rx: '3', label: 'hilltop / backbone' },
     neighborhood: { tx: '0.8', dtx: '0.4', rx: '3', label: 'neighborhood rooftop' },
     local:        { tx: '0.3', dtx: '0.1', rx: '3', label: 'local / low elevation' },
-    mobile:       { tx: '3.0', dtx: '2.5', rx: '3', label: 'mobile node' }
+    // txdelay and direct.txdelay are capped at 2 by the firmware; mobile was
+    // 3.0/2.5, which is out of range. Clamped to the maximum yield.
+    mobile:       { tx: '2.0', dtx: '2.0', rx: '3', label: 'mobile node' }
   };
 
   const state = {
@@ -1140,7 +1142,26 @@
     if (state.regionDefault === 'city' && state.metro.length)
       L.push(['k', 'region default', state.metro[0].key]);   // nearest
     L.push(['k', 'region save', '']);
+    for (const w of rangeWarnings(L)) L.unshift(['c', w]);
     return L;
+  }
+
+  // documented limits from docs.meshcore.io — anything outside these is
+  // flagged in the output rather than pasted into a node unnoticed
+  const LIMITS = {
+    'set txdelay': [0, 2], 'set direct.txdelay': [0, 2], 'set rxdelay': [0, 20],
+    'set path.hash.mode': [0, 2], 'set dutycycle': [1, 100],
+    'set advert.interval': [60, 240], 'set flood.advert.interval': [3, 168]
+  };
+  function rangeWarnings(lines) {
+    const out = [];
+    for (const [t, cmd, arg] of lines) {
+      if (t !== 'k' || !(cmd in LIMITS)) continue;
+      const v = parseFloat(arg), [lo, hi] = LIMITS[cmd];
+      if (!isNaN(v) && (v < lo || v > hi))
+        out.push(`# WARNING: ${cmd} ${arg} is outside the documented range ${lo}-${hi}`);
+    }
+    return out;
   }
 
   const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
