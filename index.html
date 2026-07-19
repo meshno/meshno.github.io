@@ -772,7 +772,7 @@
         <p class="kommnote" id="kommNote"></p>
         <p class="help" id="nearest"></p>
         <div class="scope" id="scope"></div>
-        <p class="help">Setting a region tells the repeater which floods to pass on. <b>It does not limit who you can reach.</b> The config sets <code>region allowf *</code>, so packets carrying no region tag keep flooding exactly as before — nodes that have never been configured still get through. Every node also carries <code>eu</code> and <code>no</code>, so continent- and country-scope traffic crosses the whole mesh. The narrower tags exist so that a local city chat channel stops spending airtime being relayed across all of Norway.</p>
+        <p class="help">Setting a region tells the repeater which floods to pass on. <b>It does not limit who you can reach.</b> Packets carrying no region tag keep flooding by default, so nodes that have never been configured still get through, and every node here carries <code>eu</code> and <code>no</code>, so continent- and country-scope traffic crosses the whole mesh. The narrower tags exist so that a local city chat channel stops spending airtime being relayed across all of Norway.</p>
 
         <details class="explain">
           <summary>What the numbers mean</summary>
@@ -1116,9 +1116,6 @@
     if (state.owner.trim()) L.push(['k', 'set owner.info', state.owner.trim()]);
     L.push(['c', '# regions — eu / europe / no relayed by every node;']);
     L.push(['c', '# fylke, kommune and city all scope down from no']);
-    L.push(['c', '# allowf * keeps relaying packets that carry no region tag,']);
-    L.push(['c', '# so nodes that have not been configured still get through']);
-    L.push(['k', 'region allowf', '*']);
     const t = tags();
     if (state.fw === 'new') {
       // `x|no` creates x at the cursor then pops back to no, so each tag is
