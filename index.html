@@ -125,11 +125,23 @@
   .pin-dot { fill: var(--accent); }
   .pin-ring { fill: none; stroke: var(--accent); stroke-width: 1.2; opacity: 0.55; }
 
-  .coordin { margin-top: 14px; }
+  /* mirrors .map-head so the map reads as one panel with a header and footer */
+  .map-foot {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 10px; flex-wrap: wrap;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em;
+    color: var(--dim); padding-top: 8px; margin-top: 8px;
+    border-top: 1px solid var(--rule-2);
+  }
+  .map-note { margin-top: 9px; }
   .coordrow { display: flex; gap: 6px; }
-  .coordrow input { flex: 1; min-width: 0; }
-  .coordin .help { margin-top: 7px; font-size: 12px; }
-  .coordin .help.bad { color: #ff8f8f; }
+  .coordrow input[type="text"] {
+    width: 8.5em; min-height: 0; padding: 3px 7px;
+    font-size: 12px; background: transparent; border-color: var(--rule-2);
+  }
+  .coordrow input[type="text"]:focus { border-color: var(--accent); }
+  #coordNote { margin-top: 7px; font-size: 12px; }
+  #coordNote.bad { color: #ff8f8f; }
 
   .map-note {
     font-size: 11.5px; color: var(--dim); line-height: 1.45;
@@ -269,11 +281,11 @@
   /* the back-off window, drawn as the slots the firmware actually uses:
      txdelay x 5, truncated. Makes "wider window" literal. */
   .p-nb {
-    display: block; font-family: var(--mono); font-size: 11px;
-    color: var(--muted); margin-top: 12px;
+    font-family: var(--mono); font-size: 10.5px; font-weight: 400;
+    color: var(--dim); white-space: nowrap;
   }
   .profile.on .p-nb { color: var(--accent); }
-  .p-slots { display: flex; gap: 2px; margin-top: 5px; }
+  .p-slots { display: flex; gap: 2px; margin-top: 12px; }
   .p-slots i {
     flex: 1; height: 5px; border-radius: 1px;
     background: var(--rule-2); border: 1px solid var(--rule-2);
@@ -360,6 +372,7 @@
     .profiles { grid-template-columns: 1fr; }
     input[type="text"] { min-height: 44px; }
     .copy { min-height: 44px; }
+    .coordrow input[type="text"] { min-height: 38px; width: 7.5em; }
     .zoomctl button { min-height: 44px; min-width: 44px; }
   }
 </style>
@@ -797,14 +810,15 @@
         </g>
       </svg>
       <p class="map-note">Click anywhere to place your node; the map zooms into that fylke and reveals the kommuner inside it.</p>
-      <div class="coordin">
-        <label class="lbl" for="latIn">Or type a position, if you know it</label>
-        <div class="coordrow">
-          <input type="text" id="latIn" inputmode="decimal" placeholder="lat 59.91229" aria-label="Latitude in decimal degrees">
-          <input type="text" id="lonIn" inputmode="decimal" placeholder="lon 10.75187" aria-label="Longitude in decimal degrees">
-        </div>
-        <p class="help" id="coordNote">A GPS reading is far more precise than a click, and lets you check which regions a spot falls in before going there.</p>
+      <div class="map-foot">
+        <span>Or type a position</span>
+        <span class="coordrow">
+          <input type="text" id="latIn" inputmode="decimal" placeholder="lat" aria-label="Latitude in decimal degrees">
+          <input type="text" id="lonIn" inputmode="decimal" placeholder="lon" aria-label="Longitude in decimal degrees">
+        </span>
       </div>
+      <p class="help" id="coordNote">A GPS reading is far more precise than a click, and lets you check which regions a spot falls in before going there.</p>
+    </div>
     </div>
 
     <div class="col">
@@ -837,30 +851,26 @@
           <div class="v">
             <div class="profiles" id="profiles">
               <button class="profile" data-p="mountaintop">
-                <span class="p-n">Mountaintop</span>
+                <span class="p-n">Mountaintop <span class="p-nb">25+ neighbours</span></span>
                 <span class="p-d">Line of sight over a whole region — a real summit or a mast on one. <b>Only pick this if you genuinely see that far;</b> a tall building in town is Hilltop.</span>
-                <span class="p-nb">25+ neighbours</span>
                 <span class="p-slots" aria-hidden="true"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i></span>
                 <span class="p-v">back-off 8/10 slots · <b>txdelay 1.6</b> · direct 0.8 · rx 3</span>
               </button>
               <button class="profile" data-p="hilltop">
-                <span class="p-n">Hilltop</span>
+                <span class="p-n">Hilltop <span class="p-nb">15–25 neighbours</span></span>
                 <span class="p-d">Clear view over a wide area. Backbone for a district — mast, ridge, high-rise rooftop.</span>
-                <span class="p-nb">15–25 neighbours</span>
                 <span class="p-slots" aria-hidden="true"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i></span>
                 <span class="p-v">back-off 6/10 slots · <b>txdelay 1.2</b> · direct 0.6 · rx 3</span>
               </button>
               <button class="profile on" data-p="neighborhood">
-                <span class="p-n">Neighborhood</span>
+                <span class="p-n">Neighborhood <span class="p-nb">5–15 neighbours</span></span>
                 <span class="p-d">Typical install covering its own district. Ordinary rooftop in a city or suburb.</span>
-                <span class="p-nb">5–15 neighbours</span>
                 <span class="p-slots" aria-hidden="true"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
                 <span class="p-v">back-off 4/10 slots · <b>txdelay 0.8</b> · direct 0.4 · rx 3</span>
               </button>
               <button class="profile" data-p="local">
-                <span class="p-n">Local</span>
+                <span class="p-n">Local <span class="p-nb">1–4 neighbours</span></span>
                 <span class="p-d">Sees only a few neighbors. Indoors, ground level, or a low roof.</span>
-                <span class="p-nb">1–4 neighbours</span>
                 <span class="p-slots" aria-hidden="true"><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
                 <span class="p-v">back-off 2/10 slots · <b>txdelay 0.4</b> · direct 0.2 · rx 3</span>
               </button>
