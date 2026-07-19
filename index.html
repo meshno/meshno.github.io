@@ -133,19 +133,16 @@
   header {
     border-bottom: 1px solid var(--rule); padding: 30px 0 20px; margin-bottom: 26px;
   }
-  .kicker {
-    font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em;
-    text-transform: uppercase; color: var(--dim); margin-bottom: 10px;
-  }
   h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.015em; margin: 0 0 10px; }
-  /* Mark and title as one lockup. flex-start, not center: the headline wraps
-     to two lines on a phone, and centring left the mark floating in the
-     margin between them instead of holding to the first line. The mark's ink
-     is centred in its own box, so at 34px against a 28px/1.2 line it lands on
-     the first line's cap centre with no nudge. */
-  .title { display: flex; align-items: flex-start; gap: 13px; }
-  .title h1 { margin: 0 0 10px; }
-  .logo { width: 34px; height: 34px; flex: none; }
+  /* The brand lockup sits above the page title, in the slot the kicker held.
+     It is the persistent identity; the h1 below is the page, and stays the
+     larger of the two so the hierarchy reads title-under-brand, not the
+     reverse. Single line, so align-items: center is safe here. */
+  .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 13px; }
+  .logo { width: 26px; height: 26px; flex: none; }
+  .wordmark { font-size: 19px; font-weight: 600; letter-spacing: -0.005em; }
+  /* the NO carries the accent, the same tie the mark's accent node makes */
+  .wordmark b { font-weight: 600; color: var(--accent); }
   /* two colours only: ink follows the text, one node takes the accent —
      the same way the map marks the node you have selected */
   .lg-link {
@@ -577,15 +574,18 @@
            two stack on mobile that is what puts the theme toggle *after* the
            intro instead of wedging it between the title and its own text -->
       <div class="mast-text">
-        <!-- "Norway" is dropped from the kicker: the title says MeshNO and the
-             lede says Norwegian, so the eyebrow is left to carry the band -->
-        <div class="kicker">MeshCore · EU868 869.618 MHz</div>
-        <!-- The mark is the monogram and the network in one drawing: four
+        <!-- The full lockup takes the top slot the kicker used to hold. The
+             kicker read "MeshCore · EU868 869.618 MHz", which the wordmark and
+             the lede now both cover — four tiers above the headline was one
+             too many.
+             The mark is the monogram and the network in one drawing: four
              nodes, three links, an N falling out of it. Ink follows
              currentColor and the accent follows --accent, so it themes with
              the page and needs no second copy. Inline, not a file: the public
-             repo holds index.html and nothing else. -->
-        <div class="title">
+             repo holds index.html and nothing else. The name is real text, not
+             paths, so it stays selectable and readable to a screen reader —
+             which is why the mark itself is aria-hidden. -->
+        <div class="brand">
           <svg class="logo" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
             <path class="lg-link" d="M10 10 V30 M10 10 L30 30 M30 30 V10"/>
             <circle class="lg-n" cx="10" cy="10" r="4"/>
@@ -593,8 +593,9 @@
             <circle class="lg-n" cx="30" cy="30" r="4"/>
             <circle class="lg-a" cx="30" cy="10" r="4"/>
           </svg>
-          <h1>MeshNO repeater node configurator</h1>
+          <span class="wordmark">Mesh<b>NO</b></span>
         </div>
+        <h1>Repeater node configurator</h1>
         <p class="lede">A configurator for setting up Norwegian MeshCore nodes, following conventions similar to those used by Sweden and Denmark. It targets the <code>EU/UK Narrow</code> preset already running across the mesh — 869.618&nbsp;MHz at 62.5&nbsp;kHz — and tags each node with the regions it relays for.</p>
       </div>
       <div class="theme">
