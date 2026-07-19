@@ -247,12 +247,20 @@
   .help b { color: var(--ink); font-weight: 500; }
 
   /* ---- station readout ---- */
-  .station { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .station .nm { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
-  .station .tag {
-    font-family: var(--mono); font-size: 13px; color: var(--accent);
-    border: 1px solid var(--rule); padding: 2px 8px;
+  .station { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; }
+  .station .nm { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+  .station .fy {
+    font-size: 14px; color: var(--muted);
   }
+  .station .fy::before { content: '· '; color: var(--dim); }
+  /* the region tag rides on the map, mirroring the zoom controls opposite */
+  .maptag {
+    position: absolute; bottom: 8px; left: 8px; z-index: 2;
+    font-family: var(--mono); font-size: 13px; color: var(--accent);
+    background: rgba(10,18,32,0.78); backdrop-filter: blur(3px);
+    border: 1px solid var(--rule); padding: 5px 10px; pointer-events: none;
+  }
+  body.unplaced .maptag { display: none; }
   /* region tree — drawn as a tree because it is one; a left-to-right chain
      would imply europe sits above no, which it does not */
   /* the kommunenummer is four digits, exactly like a postnummer — say so
@@ -850,14 +858,15 @@
           <circle class="pin-dot" r="3.5"></circle>
         </g>
       </svg>
+        <div class="maptag" id="kommTag" aria-hidden="true"></div>
       </div>
       <p class="map-note">Click anywhere to place your node.</p>
       <p class="help" id="coordNote"></p>
       <section class="needs-node">
         <div class="veil" aria-hidden="true"><span>Click the map to place your node</span></div>
         <div class="station">
-          <span class="nm" id="kommName">Oslo</span>
-          <span class="tag" id="kommTag">no-0301</span>
+          <span class="nm" id="kommName"></span>
+          <span class="fy" id="fylkeLabel"></span>
         </div>
         <div class="scope" id="scope"></div>
 
@@ -1341,6 +1350,8 @@
       $('nameBytes').textContent = '· place the node first';
       $('nameBytes').className = 'bytes';
       $('locNote').textContent = '';
+      $('kommName').textContent = '';
+      $('fylkeLabel').textContent = '';
       document.querySelectorAll('#profiles .profile').forEach(el =>
         el.classList.toggle('on', el.dataset.p === state.profile));
       applyView();
@@ -1349,6 +1360,7 @@
 
     const fy = 'no-' + state.fylke, km = 'no-' + state.kommune;
     $('kommName').textContent = state.kommuneName;
+    $('fylkeLabel').textContent = FYLKE_NAMES[state.fylke];
     $('kommTag').textContent = km;
     // same precision as the emitted set lat / set lon, so the readout is
     // exactly what will be written to the node
