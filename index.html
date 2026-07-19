@@ -1126,16 +1126,11 @@
       if (line.length > 160) L.push(['c', `# NOTE: next line is ${line.length} chars, over the 160 limit`]);
       L.push(['k', 'region def', `eu|* europe|eu no ${chain}`]);
     } else {
+      // region put already creates each region flood-allowed, so no allowf
       L.push(['k', 'region put', 'eu']);
-      L.push(['k', 'region allowf', 'eu']);
       L.push(['k', 'region put', 'europe']);
-      L.push(['k', 'region allowf', 'europe']);
       L.push(['k', 'region put', 'no eu']);
-      L.push(['k', 'region allowf', 'no']);
-      for (const x of t) {
-        L.push(['k', 'region put', `${x} no`]);
-        L.push(['k', 'region allowf', x]);
-      }
+      for (const x of t) L.push(['k', 'region put', `${x} no`]);
     }
     if (state.regionDefault === 'no') L.push(['k', 'region default', 'no']);
     if (state.regionDefault === 'fylke') L.push(['k', 'region default', 'no-' + state.fylke]);
