@@ -1205,6 +1205,7 @@
           <div class="v">
             <div class="seg" id="defSeg">
               <button data-d="no">no</button>
+              <button data-d="landsdel">landsdel</button>
               <button data-d="fylke">fylke</button>
               <button data-d="kommune">kommune</button>
               <button data-d="city">city</button>
@@ -1271,6 +1272,11 @@
   const FYLKE_NAMES = {"03": "Oslo", "11": "Rogaland", "15": "Møre og Romsdal", "18": "Nordland", "31": "Østfold", "32": "Akershus", "33": "Buskerud", "34": "Innlandet", "39": "Vestfold", "40": "Telemark", "42": "Agder", "46": "Vestland", "50": "Trøndelag", "55": "Troms", "56": "Finnmark"};
   const FYLKE_BB = {"03": [127.7, 467.4, 136.9, 481.0], "11": [9.0, 469.4, 59.5, 531.9], "15": [38.1, 326.7, 116.4, 385.3], "18": [167.8, 96.6, 272.8, 274.2], "31": [127.7, 483.2, 153.0, 519.9], "32": [123.1, 449.1, 156.6, 494.4], "33": [67.3, 423.7, 130.3, 495.1], "34": [74.7, 362.4, 178.8, 481.2], "39": [110.1, 485.3, 126.2, 513.7], "40": [57.5, 460.0, 112.5, 520.2], "42": [34.3, 478.3, 99.8, 547.6], "46": [15.8, 369.6, 90.6, 480.2], "50": [95.6, 264.9, 211.3, 381.0], "55": [234.0, 54.6, 337.9, 134.9], "56": [311.8, 9.0, 451.0, 119.0]};
   const METRO_KEYS = ["no-kristiansand", "no-sandnes", "no-fredrikstad", "no-skien", "no-tonsberg", "no-stavanger", "no-drammen", "no-oslo", "no-bergen", "no-hamar", "no-molde", "no-trondheim", "no-bodo", "no-tromso", "no-alta", "no-kirkenes"];
+  // fylke -> landsdel, and the display name. Keyed off the fylke so the two
+  // can never disagree, but the grouping itself is a convention, not a lookup
+  // against anything official — see the note in build.py.
+  const LANDSDEL = {"03": "ost", "31": "ost", "32": "ost", "33": "ost", "34": "ost", "39": "ost", "40": "ost", "42": "sor", "11": "vest", "46": "vest", "50": "midt", "15": "midt", "18": "nord", "55": "nord", "56": "nord"};
+  const LANDSDEL_NAMES = {"ost": "Østlandet", "sor": "Sørlandet", "vest": "Vestlandet", "midt": "Midt-Norge", "nord": "Nord-Norge"};
   const METRO_KM = 50;
 
   // Orthographic projection centred on Norway — the sphere seen from infinity.
@@ -1449,10 +1455,11 @@
     return true;
   }
 
-  // Region tags for this node. fylke, kommune and metro city are independent
-  // overlays, so all three sit directly under `no` rather than nesting.
+  // Region tags for this node. landsdel, fylke, kommune and metro city are
+  // independent overlays, so all four sit directly under `no` rather than
+  // nesting. Ordered broadest first, which is also how the tree reads.
   function tags() {
-    return ['no-' + state.fylke, 'no-' + state.kommune,
+    return ['no-' + LANDSDEL[state.fylke], 'no-' + state.fylke, 'no-' + state.kommune,
             ...state.metro.map(m => m.key)];
   }
 
@@ -1493,7 +1500,7 @@
       return L;
     }
     L.push(['c', '# regions — eu / europe / no relayed by every node;']);
-    L.push(['c', '# fylke, kommune and city all scope down from no']);
+    L.push(['c', '# landsdel, fylke, kommune and city all scope down from no']);
     L.push(['c', '# allowf * is the default, restated in case this node had it denied']);
     L.push(['k', 'region allowf', '*']);
     const t = tags();
@@ -1513,6 +1520,8 @@
       for (const x of t) L.push(['k', 'region put', `${x} no`]);
     }
     if (state.regionDefault === 'no') L.push(['k', 'region default', 'no']);
+    if (state.regionDefault === 'landsdel')
+      L.push(['k', 'region default', 'no-' + LANDSDEL[state.fylke]]);
     if (state.regionDefault === 'fylke') L.push(['k', 'region default', 'no-' + state.fylke]);
     if (state.regionDefault === 'kommune') L.push(['k', 'region default', 'no-' + state.kommune]);
     if (state.regionDefault === 'city' && state.metro.length)
@@ -1618,6 +1627,8 @@
     // The two administrative-code terms carry the accent, since those are the
     // ones people read as a postcode.
     const ann = {};
+    ann['no-' + LANDSDEL[state.fylke]] =
+      `landsdel — ${esc(LANDSDEL_NAMES[LANDSDEL[state.fylke]])}`;
     ann['no-' + state.fylke] =
       `<b>fylkesnummer</b> for ${esc(FYLKE_NAMES[state.fylke])}`;
     ann['no-' + state.kommune] =
