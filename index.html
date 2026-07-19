@@ -65,7 +65,11 @@
     color: var(--dim); padding-bottom: 8px; border-bottom: 1px solid var(--rule-2);
     margin-bottom: 10px;
   }
-  svg.map { display: block; width: 100%; height: auto; touch-action: none; }
+  /* At 1x there is nothing to pan, so let the page scroll normally when the
+     swipe starts on the map — pan-y still withholds pinch, so zooming reaches
+     our handler. Once zoomed in the map owns every gesture. */
+  svg.map { display: block; width: 100%; height: auto; touch-action: pan-y; }
+  svg.map.zoomed { touch-action: none; }
   svg.map.panning { cursor: grabbing; }
 
 
@@ -1135,6 +1139,7 @@
     view.cy = Math.min(VBY + H - h / 2, Math.max(VBY + h / 2, view.cy));
     map.setAttribute('viewBox',
       `${view.cx - w / 2} ${view.cy - h / 2} ${w} ${h}`);
+    map.classList.toggle('zoomed', view.z > 1.001);
     map.style.setProperty('--k', 1 / view.z);   // keep text and dots readable
     $('zLvl').textContent = view.z.toFixed(1) + '×';
     for (const k of KOMMUNER) {
@@ -1242,6 +1247,13 @@
   }
   map.addEventListener('pointerup', endPointer);
   map.addEventListener('pointercancel', endPointer);
+
+  // Belt and braces for touch: iOS Safari has not always honoured touch-action
+  // on inline SVG, which lets the page scroll instead of the map panning.
+  // Only swallow the gesture when there is actually something to pan.
+  map.addEventListener('touchmove', e => {
+    if (view.z > 1.001 && pointers.size > 0) e.preventDefault();
+  }, { passive: false });
 
   // A click all but on a marker snaps to its exact coordinates: at 1x the map
   // renders 460 units into ~380px, so a raw click carries ~1.2 units (~3.5 km)
