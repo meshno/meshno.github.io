@@ -772,7 +772,7 @@
         <p class="kommnote" id="kommNote"></p>
         <p class="help" id="nearest"></p>
         <div class="scope" id="scope"></div>
-        <p class="help">Setting a region tells the repeater which floods to pass on. <b>It does not limit who you can reach.</b> Packets carrying no region tag keep flooding by default — the config restates <code>region allowf *</code> in case it was ever denied — so nodes that have never been configured still get through, and every node here carries <code>eu</code> and <code>no</code>, so continent- and country-scope traffic crosses the whole mesh. The narrower tags exist so that a local city chat channel stops spending airtime being relayed across all of Norway.</p>
+        <p class="help">Setting a region tells the repeater which floods to pass on. <b>It does not limit who you can reach</b> — every node carries <code>eu</code> and <code>no</code>, so wide-scope traffic still crosses the whole mesh. The narrower tags stop a local city chat channel from being relayed across all of Norway.</p>
 
         <details class="explain">
           <summary>What the numbers mean</summary>
