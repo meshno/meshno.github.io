@@ -263,19 +263,21 @@
   body.unplaced .maptag { display: none; }
   /* region tree — drawn as a tree because it is one; a left-to-right chain
      would imply europe sits above no, which it does not */
-  /* the kommunenummer is four digits, exactly like a postnummer — say so
-     where the number is shown, not only inside the collapsed explainer */
-  .kommnote {
-    font-size: 13px; color: var(--muted); margin: 7px 0 0;
-    font-family: var(--mono);
+
+  /* Boxed and labelled: unboxed, the last line (europe) read as a heading
+     for whatever followed it. */
+  .treebox {
+    background: var(--inset); border: 1px solid var(--rule); margin-top: 14px;
   }
-  .kommnote b { color: var(--ink); font-weight: 500; }
-  .kommnote .no { color: var(--amber, #ffb454); }
+  .treehead {
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.04em;
+    color: var(--dim); padding: 7px 12px; border-bottom: 1px solid var(--rule);
+  }
 
   .scope {
     display: flex; flex-direction: column;
     font-family: var(--mono); font-size: 13px; line-height: 1.7;
-    color: var(--muted); margin-top: 12px;
+    color: var(--muted); padding: 11px 12px; overflow-x: auto;
   }
   .scope .t { white-space: pre; }
   .scope .br { color: var(--dim); }
@@ -868,7 +870,10 @@
           <span class="nm" id="kommName"></span>
           <span class="fy" id="fylkeLabel"></span>
         </div>
-        <div class="scope" id="scope"></div>
+        <div class="treebox">
+          <div class="treehead">Region tree</div>
+          <div class="scope" id="scope"></div>
+        </div>
 
         <details class="explain">
           <summary>What these regions do, and what the numbers mean</summary>
