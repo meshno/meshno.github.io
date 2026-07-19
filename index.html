@@ -727,7 +727,7 @@
           <circle class="pin-dot" r="3.5"></circle>
         </g>
       </svg>
-      <p class="map-note">Click anywhere to pick a fylke; the map zooms in and its kommuner appear for a finer choice. Land is clipped to the coastline; the fylke outlines run out to the territorial limit, which is their real administrative extent. The fylke is the first two digits of the kommune number, so the two can never disagree.</p>
+      <p class="map-note">Click anywhere to pick a fylke; the map zooms in and its kommuner appear for a finer choice. Zoom further to place the pin precisely — the coordinates stay exact, though the borders visibly coarsen past about 16&times;. Land is clipped to the coastline; the fylke outlines run out to the territorial limit, which is their real administrative extent. The fylke is the first two digits of the kommune number, so the two can never disagree.</p>
     </div>
 
     <div class="col">
@@ -1117,8 +1117,10 @@
     const fy = 'no-' + state.fylke, km = 'no-' + state.kommune;
     $('kommName').textContent = state.kommuneName;
     $('kommTag').textContent = km;
+    // same precision as the emitted set lat / set lon, so the readout is
+    // exactly what will be written to the node
     const ll = unproject(state.x, state.y);
-    $('posRead').textContent = `${ll[0].toFixed(2)}°N ${ll[1].toFixed(2)}°E`;
+    $('posRead').textContent = `${ll[0].toFixed(5)}°N ${ll[1].toFixed(5)}°E`;
 
     $('nearest').textContent = state.metro.length
       ? `${FYLKE_NAMES[state.fylke]} · within ${METRO_KM} km of `
@@ -1189,7 +1191,7 @@
   // ---- view: pan and zoom by rewriting the viewBox ----
   const map = $('map');
   const VBX = -61.6, VBY = 5.0;
-  const W = 577.2, H = 548.5, MAXZ = 8;   // beyond this the ~2.6 km simplification becomes visible
+  const W = 577.2, H = 548.5, MAXZ = 32;  // ~130 m/px, enough to place a pin; see note in CLAUDE.md
   const view = { z: 1, cx: VBX + W / 2, cy: VBY + H / 2 };
 
   function applyView() {
