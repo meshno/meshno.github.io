@@ -805,10 +805,11 @@
               </button>
               <button class="profile" data-p="mobile">
                 <span class="p-n">Mobile <span>variable</span></span>
-                <span class="p-d">Moves through the mesh — car, bike, hiking. Always yields to fixed infrastructure.</span>
+                <span class="p-d">Moves through the mesh — car, bike, hiking. Neighbour count is unpredictable, so it takes the widest window.</span>
               </button>
             </div>
-            <p class="help">A hilltop node briefly waits before re-transmitting; if it hears another repeater relay the same packet with better SNR, it drops its copy instead of duplicating local traffic on airtime that's better spent on long-haul packets.</p>
+            <p class="help">When several repeaters hear the same flood, each waits a random moment before repeating it so they don't transmit over each other. The profile scales how wide that random window is: <b>the more repeaters around you, the wider it needs to be</b>. A wider window costs a little latency and nothing else — it does not change what your node repeats, or who can reach it.</p>
+            <p class="help"><code>rxdelay 3</code> is set on every profile. It holds a packet briefly if it arrived with a weak signal, so a repeater that heard it clearly usually gets there first and the weak copy is dropped as a duplicate.</p>
           </div>
         </div>
       </section>
