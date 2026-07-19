@@ -857,7 +857,6 @@
           <span class="nm" id="kommName">Oslo</span>
           <span class="tag" id="kommTag">no-0301</span>
         </div>
-        <p class="help" id="nearest"></p>
         <div class="scope" id="scope"></div>
 
         <details class="explain">
@@ -1360,12 +1359,6 @@
     }
 
 
-    $('nearest').textContent = state.metro.length
-      ? `${FYLKE_NAMES[state.fylke]} · within ${METRO_KM} km of `
-        + state.metro.map(m => `${CITIES[m.key]} (${Math.round(m.d)} km)`).join(', ')
-        + `, so it carries ${state.metro.length > 1 ? 'those tags' : 'that tag'} too.`
-      : `${FYLKE_NAMES[state.fylke]} · more than ${METRO_KM} km from a metro anchor, `
-        + `so no city tag.`;
 
     // Drawn as a tree because it is one: europe is its own top-level entry,
     // and fylke/kommune/city are siblings, not nested. Each row is annotated
