@@ -267,16 +267,46 @@
   #coordNote:empty { display: none; }
   #coordNote.bad { color: var(--bad); }
 
-  /* the readout is the input: reads as text until you touch it */
+  /* The readout is the input, dressed as a prompt. It used to read as plain
+     text until hovered, which meant a first-time visitor had no way to learn
+     it was typeable at all — and hover does not exist on touch. The accent
+     prompt is the standing affordance; the caret below teaches the empty
+     state. Same idiom in both, and it matches the CLI the page emits. */
+  .posfield { display: inline-flex; align-items: center; gap: 7px; }
+  .posfield::before {
+    content: '\203A'; font-family: var(--mono); font-size: 14px;
+    color: var(--accent); line-height: 1;
+  }
+  .posval { position: relative; display: inline-block; }
   #posRead {
     font-family: var(--mono); font-size: 12.5px; color: var(--muted);
     background: transparent; border: 1px solid transparent; border-radius: 0;
-    padding: 2px 6px; width: 15.5em; text-align: right; min-height: 0;
+    padding: 2px 0; width: 15.5em; text-align: left; min-height: 0;
   }
   #posRead:hover { border-color: var(--rule-2); }
   #posRead:focus { outline: none; border-color: var(--accent); color: var(--ink); }
   #posRead.bad { border-color: var(--bad); color: var(--bad); }
+  /* an instruction, not a ghost value, so it does not take the italic
+     --placeholder treatment the other inputs use */
+  #posRead::placeholder { color: var(--dim); font-style: normal; opacity: 1; }
   .map-head label { cursor: default; }
+
+  /* Anchored to .posval, not to .posfield, so it lands at the start of the
+     text rather than at an offset guessed from the width of the prompt glyph.
+     Height is fixed rather than inset from the box: the mobile block gives
+     the input a 44px tap target, and a stretched caret would fill it. */
+  .caret {
+    position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+    width: 1.5px; height: 1.15em; background: var(--accent);
+    opacity: 0; pointer-events: none;
+  }
+  #posRead:placeholder-shown ~ .caret { animation: caret 1.15s steps(1) infinite; }
+  #posRead:focus ~ .caret { animation: none; opacity: 0; }
+  @keyframes caret { 0%, 49% { opacity: 1 } 50%, 100% { opacity: 0 } }
+  @media (prefers-reduced-motion: reduce) {
+    #posRead:placeholder-shown ~ .caret { animation: none; opacity: 0.9; }
+    #posRead:focus ~ .caret { opacity: 0; }
+  }
 
   /* zoom controls float over the map instead of pushing it down.
      The water is painted here rather than inherited from the page, so the
@@ -601,9 +631,17 @@
     /* it is an input now, so it needs a real tap target */
     #posRead { width: 100%; font-size: 13px; min-height: 44px; text-align: left;
                border-color: var(--rule-2); padding: 0 8px; }
+    /* the field takes the rest of the row, so the prompt has to stay put
+       while the box grows; the caret follows the input's own left padding */
+    .posfield { flex: 1; }
+    .posval { flex: 1; }
+    .caret { left: 8px; }
     /* the ladder needs no reflow on a phone, only real tap targets */
     .kms input, .kms button { min-height: 44px; }
-    .map-head { align-items: stretch; }
+    /* centred, not stretched: the field is a 44px tap target here and a
+       stretched label would render its text at the top of that height,
+       leaving "Position" floating above the prompt beside it */
+    .map-head { align-items: center; }
     .zoomctl button { min-width: 40px; min-height: 40px; }
     /* expanders are the main way to reach the explanations on a phone */
     .explain > summary { min-height: 44px; display: flex; align-items: center; }
@@ -675,8 +713,19 @@
       <p class="sub">Where the node stands decides which regions it relays for.</p>
       <div class="map-head">
         <label for="posRead">Position</label>
-        <input type="text" id="posRead" spellcheck="false" autocomplete="off" placeholder="not placed"
-               aria-label="Position, decimal degrees — edit to move the node">
+        <!-- The readout is typeable, and nothing about a right-aligned line of
+             mono said so. It is dressed as a prompt instead: the caret parks in
+             the empty field until a node is placed. .posval exists only to give
+             the caret a box to anchor to — without it the offset would be a
+             magic number chasing the width of the > glyph. -->
+        <span class="posfield">
+          <span class="posval">
+            <input type="text" id="posRead" spellcheck="false" autocomplete="off"
+                   placeholder="type lat, lon"
+                   aria-label="Position, decimal degrees — edit to move the node">
+            <i class="caret" aria-hidden="true"></i>
+          </span>
+        </span>
       </div>
       <div class="mapbox">
       <div class="zoomctl">
