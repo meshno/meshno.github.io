@@ -404,7 +404,35 @@
 
   .namepv { font-family: var(--mono); font-size: 13.5px; margin: 8px 0 0; color: var(--ink); }
   .namepv .bytes { color: var(--dim); font-size: 12px; }
-  .namepv #namePreview.unset { color: var(--dim); }
+  /* the number is real before a place is typed, so only the trailing
+     placeholder dims — not the whole preview */
+  .namepv #namePreview.unset .s-pl { color: var(--dim); }
+  .namepv .s-fy { color: var(--accent); }
+
+  /* Live breakdown of the name. The brackets are open-topped boxes, so both
+     ends turn up toward the digits above; 3ch clears the "NO-". The accent
+     marks one thing only — the part that gives you the fylke — and the
+     kommune term is made prominent by brightness instead of a second hue.
+     Row height comes from the label's line-height, NOT from row-gap: the
+     bracket is 6px in a box the 12px text sizes, so line-height is the dial
+     if this ever needs to breathe. */
+  .nmbars { font-family: var(--mono); font-size: 13.5px; margin: 0;
+            display: grid; grid-template-columns: 8ch auto 1fr;
+            row-gap: 2px; column-gap: 12px; align-items: center; }
+  /* display:grid out-specifies the UA [hidden] rule, so say it again */
+  .nmbars[hidden] { display: none; }
+  .nmbars .br { height: 6px; margin-left: 3ch; border: 1.5px solid;
+                border-top: none; }
+  .nmbars .br.f { width: 2ch; border-color: var(--accent); }
+  .nmbars .br.k { width: 4ch; border-color: var(--muted); }
+  .nmbars .tm { font-size: 12px; line-height: 1.15; }
+  .nmbars .tm.f { color: var(--accent); }
+  .nmbars .tm.k { color: var(--ink); }
+  .nmbars .vl { font-size: 12px; line-height: 1.15; color: var(--dim); }
+  .nmwhy { font-size: 13px; color: var(--dim); margin: 7px 0 0;
+           line-height: 1.5; max-width: 48ch; }
+  .nmwhy b { color: var(--ink); font-weight: 500; }
+  .nmwhy b.a { color: var(--accent); }
   .namepv .bytes.warn { color: var(--warn); }
   .namepv .bytes.over { color: var(--bad); }
   .help b { color: var(--ink); font-weight: 500; }
@@ -1177,7 +1205,19 @@
           <div class="k">name</div>
           <div class="v">
             <input type="text" id="nodeDesc" placeholder="e.g. Årvollåsen" maxlength="40" aria-label="Node name — the part after the kommune number">
-            <p class="namepv"><span id="namePreview">NO-0301</span> <span class="bytes" id="nameBytes"></span></p>
+            <p class="namepv"><span id="namePreview">NO-…</span> <span class="bytes" id="nameBytes"></span></p>
+            <!-- The brackets point up at the digits they name. Both start at
+                 the same character and the kommune one runs two further, so
+                 the fylke prefix is shown rather than asserted. Only the
+                 brackets are decorative; the terms carry the meaning in
+                 words, so colour is never the only channel. -->
+            <div class="nmbars" id="nmBars">
+              <i class="br f" aria-hidden="true"></i>
+              <span class="tm f">fylkesnummer</span><span class="vl" id="nmFy"></span>
+              <i class="br k" aria-hidden="true"></i>
+              <span class="tm k">kommunenummer</span><span class="vl" id="nmKm"></span>
+            </div>
+            <p class="nmwhy">We use the <b>kommunenummer</b> rather than the postnummer — it tells you both the <b class="a">fylke</b> and the <b>kommune</b>.</p>
           </div>
         </div>
         <div class="row">
@@ -1809,6 +1849,12 @@
       // the name is built from the kommune, so it cannot be previewed yet
       $('namePreview').textContent = 'NO-…';
       $('namePreview').classList.add('unset');
+      // nothing to point a bracket at yet; the prose below it still stands.
+      // Blank the rows as well as hiding them — hidden stale values are how
+      // a later change starts showing a fylke for a node that is gone.
+      $('nmBars').hidden = true;
+      $('nmFy').textContent = '';
+      $('nmKm').textContent = '';
       $('nameBytes').textContent = '· place the node to name it';
       $('nameBytes').className = 'bytes';
       $('locNote').textContent = 'Place the node on the map to publish a location.';
@@ -1889,8 +1935,16 @@
     const named = !!state.desc.trim();
     const nm = nodeName(), nb = byteLen(nm);
     const cap = state.location ? 24 : 32;      // a published location costs 8 bytes of name
-    $('namePreview').textContent = named ? nm : `${nm}-…`;
+    // split so the fylke digits can be picked out and the brackets below can
+    // name them; the kommune prefix IS the fylke, so this can never disagree
+    const tail = named ? esc(state.desc.trim().replace(/\s+/g, ' ')) : '…';
+    $('namePreview').innerHTML =
+      `NO-<span class="s-fy">${state.fylke}</span>${state.kommune.slice(2)}`
+      + `<span class="s-pl">-${tail}</span>`;
     $('namePreview').classList.toggle('unset', !named);
+    $('nmBars').hidden = false;
+    $('nmFy').textContent = `${state.fylke} — ${FYLKE_NAMES[state.fylke]}`;
+    $('nmKm').textContent = `${state.kommune} — ${state.kommuneName}`;
     const bEl = $('nameBytes');
     bEl.textContent = named
       ? `· ${nb} of ${cap} bytes` + (nb > cap ? ' — too long' : '')
