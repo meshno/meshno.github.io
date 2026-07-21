@@ -402,12 +402,39 @@
   .explain b { color: var(--ink); font-weight: 500; }
   .explain em { color: var(--muted); font-style: italic; }
 
-  .namepv { font-family: var(--mono); font-size: 13.5px; margin: 8px 0 0; color: var(--ink); }
-  .namepv .bytes { color: var(--dim); font-size: 12px; }
-  /* the number is real before a place is typed, so only the trailing
-     placeholder dims — not the whole preview */
-  .namepv #namePreview.unset .s-pl { color: var(--dim); }
-  .namepv .s-pn { color: var(--accent); }
+  /* The field carries the whole name: the NO-<postnummer> prefix, the typed
+     place, and the byte count measuring both. It used to be a field with a
+     separate preview line underneath, which said the same thing twice and
+     left the prefix looking like commentary rather than part of the name.
+     The box takes the input's border treatment and the input goes bare, so
+     the three parts read as one control. */
+  .namebox {
+    display: flex; align-items: center;
+    background: var(--inset); border: 1px solid var(--rule);
+    padding: 0 11px; min-height: 38px;
+  }
+  .namebox:focus-within { border-color: var(--accent); }
+  /* exactly one character of mono at the input's own size, so the gap IS the
+     space that `set name` emits rather than an approximation of it */
+  .namebox .np {
+    font-family: var(--mono); font-size: 13.5px; color: var(--ink);
+    white-space: nowrap; margin-right: 1ch;
+  }
+  .namebox .np .s-pn { color: var(--accent); }
+  /* out-specifies the base input rule (0,2,1 against 0,1,1) */
+  .namebox input[type="text"] {
+    border: 0; background: transparent; padding: 9px 0; min-height: 0;
+    flex: 1 1 auto; min-width: 0; width: auto;
+  }
+  .namebox input[type="text"]:focus { outline: none; border-color: transparent; }
+  .namebox .bytes {
+    font-family: var(--mono); font-size: 12px; color: var(--dim);
+    white-space: nowrap; margin-left: 10px;
+  }
+  .namebox .bytes:empty { display: none; }
+  /* the input dims itself when disabled; the prefix has to follow, or an
+     unplaced node shows a live-looking NO- against a greyed field */
+  body.unplaced .namebox .np { opacity: 0.45; }
 
   /* Live breakdown of the kommune tag. The brackets are open-topped boxes, so
      both ends turn up toward the digits above; 3ch clears the "no-". The
@@ -442,8 +469,11 @@
            line-height: 1.5; max-width: 48ch; }
   .nmwhy b { color: var(--ink); font-weight: 500; }
   .nmwhy b.a { color: var(--accent); }
-  .namepv .bytes.warn { color: var(--warn); }
-  .namepv .bytes.over { color: var(--bad); }
+  .namebox .bytes.warn { color: var(--warn); }
+  .namebox .bytes.over { color: var(--bad); }
+  /* colour is never the only channel: over-cap also says so in words on the
+     hint line below, which has the room the byte badge does not */
+  .nmwhy.bad { color: var(--bad); }
   .help b { color: var(--ink); font-weight: 500; }
 
   /* ---- station readout ---- */
@@ -670,6 +700,9 @@
        stretches across its own row instead of sitting in the third column */
     .theme .seg button:nth-child(odd):last-child { grid-column: auto; }
     input[type="text"] { min-height: 44px; }
+    /* the input inside .namebox is deliberately min-height:0 and out-specifies
+       the rule above, so the tap target has to come from the box itself */
+    .namebox { min-height: 44px; }
     .copy { min-height: 44px; }
     /* it is an input now, so it needs a real tap target */
     #posRead { width: 100%; font-size: 13px; min-height: 44px; text-align: left;
@@ -1239,15 +1272,19 @@
         <div class="row">
           <div class="k">name</div>
           <div class="v">
-            <input type="text" id="nodeDesc" placeholder="e.g. Årvollåsen" maxlength="40" aria-label="Node name — the part after the postnummer">
-            <p class="namepv"><span id="namePreview">NO-…</span> <span class="bytes" id="nameBytes"></span></p>
-            <!-- One bracket, pointing up at the four digits the row names.
-                 The kommunenummer earned a second nested bracket because its
-                 first two digits ARE the fylke; a postnummer's are a delivery
-                 zone and nest into nothing, so the regions row gets no bracket
-                 and that asymmetry is honest. The terms are spelled out in
-                 words, so colour is never the only channel. -->
-            <p class="nmwhy">The four digits are your <b class="a">postnummer</b>.</p>
+            <!-- The prefix sits INSIDE the field, so the box shows the whole
+                 name and there is no second copy of it to disagree with. It is
+                 mono at the input's own size and separated by exactly 1ch, so
+                 what you read here is character-for-character what `set name`
+                 emits — including the space. The byte count rides at the right
+                 edge of the same box, measuring the whole thing. -->
+            <div class="namebox">
+              <span class="np" id="namePrefix">NO-…</span>
+              <input type="text" id="nodeDesc" placeholder="e.g. Årvollåsen" maxlength="40"
+                     aria-label="Node name" aria-describedby="namePrefix nameBytes">
+              <span class="bytes" id="nameBytes"></span>
+            </div>
+            <p class="nmwhy" id="nameHint">The four digits are your <b class="a">postnummer</b>.</p>
           </div>
         </div>
         <div class="row">
@@ -1949,9 +1986,8 @@
         x.classList.toggle('on', x.dataset.loc === 'off'));
       $('posRead').value = '';
       $('pin').setAttribute('hidden', '');
-      // the name is built from the kommune, so it cannot be previewed yet
-      $('namePreview').textContent = 'NO-…';
-      $('namePreview').classList.add('unset');
+      // the name is built from where the node stands, so there is no prefix yet
+      $('namePrefix').textContent = 'NO-…';
       // nothing to point a bracket at yet; the prose below it still stands.
       // Blank the rows as well as hiding them — hidden stale values are how
       // a later change starts showing a fylke for a node that is gone.
@@ -1961,8 +1997,10 @@
       $('nmKm').textContent = '';
       $('nodeDesc').placeholder = 'e.g. Årvollåsen';
       $('mtPost').textContent = '';
-      $('nameBytes').textContent = '· place the node to name it';
+      $('nameBytes').textContent = '';
       $('nameBytes').className = 'bytes';
+      $('nameHint').className = 'nmwhy';
+      $('nameHint').textContent = 'Place the node on the map to name it.';
       $('locNote').textContent = 'Place the node on the map to publish a location.';
       $('kommName').textContent = '';
       $('fylkeLabel').textContent = '';
@@ -2049,9 +2087,9 @@
     const tail = named ? esc(state.desc.trim().replace(/\s+/g, ' ')) : '…';
     const pn = state.post || state.kommune;
     const sted = POST_BY_NR[pn] ? POST_BY_NR[pn][1] : state.kommuneName;
-    $('namePreview').innerHTML =
-      `NO-<span class="s-pn">${pn}</span><span class="s-pl"> ${tail}</span>`;
-    $('namePreview').classList.toggle('unset', !named);
+    // The prefix is the field's own leading text, so there is no preview to
+    // keep in step with it — the box shows the name and nothing else does.
+    $('namePrefix').innerHTML = `NO-<span class="s-pn">${pn}</span>`;
     // The poststed is offered as the placeholder, never filled in: every node
     // in the area would otherwise land on the same name, which is the same
     // collision that keeps a bare NO-1354 from being emitted at all.
@@ -2070,11 +2108,20 @@
     // change it: type a postnummer into the position prompt to set one, or
     // accept the guess a map click leaves behind.
     $('mtPost').textContent = POST_BY_NR[pn] ? `${pn} ${sted}` : '';
-    const bEl = $('nameBytes');
-    bEl.textContent = named
-      ? `· ${nb} of ${cap} bytes` + (nb > cap ? ' — too long' : '')
-      : '· add a place to name the node';
-    bEl.className = 'bytes' + (named && nb > cap ? ' over' : named && nb > cap - 4 ? ' warn' : '');
+    // Inside the field now, so it has to stay short — the words that used to
+    // ride along with it move to the hint line below, which has the room.
+    const bEl = $('nameBytes'), over = named && nb > cap;
+    bEl.textContent = named ? `${nb} / ${cap}` : '';
+    bEl.className = 'bytes' + (over ? ' over' : named && nb > cap - 4 ? ' warn' : '');
+    // Over-cap is red AND says so, because colour is never the only channel.
+    const hint = $('nameHint');
+    hint.className = 'nmwhy' + (over ? ' bad' : '');
+    hint.innerHTML = over
+      ? `Too long — trim it to ${cap} bytes. Norwegian letters cost two each.`
+      : named
+        ? 'The four digits are your <b class="a">postnummer</b>.'
+        : 'Add a place — the number on its own identifies nothing, so no '
+          + '<code>set name</code> is emitted yet.';
 
     const ll2 = unproject(state.x, state.y);
     $('locNote').textContent = state.location
