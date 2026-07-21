@@ -2607,7 +2607,12 @@
   // #baerum are THE SAME CHANNEL: anyone who scanned the unscoped code still
   // hears everyone once the mesh turns scoping on. Nobody re-scans, nothing
   // orphans. That property is why this can ship defaulting to off.
-  const channelUrl = c => `meshcore://channel/add?name=${encodeURIComponent(c.name)}`
+  // The '#' IS PART OF THE NAME and must be in the URL, percent-encoded as
+  // %23. Without it the app adds a plain channel that happens to carry a
+  // pasted key, not a hashtag channel — the secret is identical either way, so
+  // it looks right and is not. Verified by decoding the app's own share QR:
+  //   meshcore://channel/add?name=%23ostlandet&secret=101ab84…&region_scope=no-ost
+  const channelUrl = c => `meshcore://channel/add?name=${encodeURIComponent('#' + c.name)}`
                         + `&secret=${channelSecret(c.name)}`
                         + (state.chanScope ? `&region_scope=${encodeURIComponent(c.scope)}` : '');
 
