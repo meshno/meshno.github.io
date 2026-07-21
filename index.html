@@ -1208,7 +1208,7 @@
           <summary>What these regions do, and what the numbers mean</summary>
           <p >Setting a region tells the repeater which floods to pass on. <b>It does not limit who you can reach</b> — every node carries <code>eu</code> and <code>no</code>, so wide-scope traffic still crosses the whole mesh. The narrower tags stop a local city chat channel from being relayed across all of Norway.</p>
           <p><b>A kommunenummer is not a postcode.</b> Both are four digits in Norway, which makes them easy to mix up, but they are unrelated systems. A <b>kommunenummer</b> is the official code Kartverket and SSB use for each of Norway's 357 municipalities — Oslo is <code>0301</code>, Bergen is <code>4601</code>. A <b>postnummer</b> identifies a postal delivery area, and a single kommune contains many of them. Never derive one from the other.</p>
-          <p><b>This is why your node name and your region tags carry different numbers.</b> The name uses the <b>postnummer</b>, because that is the number you know without looking it up. The regions use the <b>kommunenummer</b>, because that is the one with real boundaries behind it and a fylke in its first two digits. A node named <code>NO-1354-Skuiåsen</code> tagged <code>no-3201</code> is correct, not a mismatch.</p>
+          <p><b>This is why your node name and your region tags carry different numbers.</b> The name uses the <b>postnummer</b>, because that is the number you know without looking it up. The regions use the <b>kommunenummer</b>, because that is the one with real boundaries behind it and a fylke in its first two digits. A node named <code>NO-1354 Skuiåsen</code> tagged <code>no-3201</code> is correct, not a mismatch.</p>
           <p><b>The first two digits are the fylke.</b> <code>4601</code> is kommune 01 in fylke <code>46</code> (Vestland); <code>0301</code> is in fylke <code>03</code> (Oslo). That is what makes the region tags useful: a node tagged <code>no-4601</code> is inside <code>no-46</code> by construction, so you can scope a flood to one kommune or widen it to the whole fylke without any lookup table, and the two can never contradict each other.</p>
           <!-- The brackets are open-topped boxes, so both ends turn up toward
                the digits above; 3ch clears the "no-" and the kommune bracket
@@ -1247,7 +1247,7 @@
                  zone and nest into nothing, so the regions row gets no bracket
                  and that asymmetry is honest. The terms are spelled out in
                  words, so colour is never the only channel. -->
-            <p class="nmwhy">The four digits are your <b class="a">postnummer</b> — type it into the position field above the map to set it.</p>
+            <p class="nmwhy">The four digits are your <b class="a">postnummer</b>.</p>
           </div>
         </div>
         <div class="row">
@@ -1274,7 +1274,7 @@
         <details class="explain">
           <summary>About the name and location</summary>
           <p id="locNote"></p>
-          <p>Convention: <code>NO-&lt;postnummer&gt;-&lt;place&gt;</code>, so a node on Skuiåsen in Bærums Verk is <code>NO-1354-Skuiåsen</code>. <b>Max 24 bytes if the node has a location set, 32 if not</b> — Norwegian letters cost two bytes each, so <code>å</code> and <code>ø</code> count double. Takes effect after a reboot.</p>
+          <p>Convention: <code>NO-&lt;postnummer&gt; &lt;place&gt;</code>, so a node on Skuiåsen in Bærums Verk is <code>NO-1354 Skuiåsen</code>. <b>Max 24 bytes if the node has a location set, 32 if not</b> — Norwegian letters cost two bytes each, so <code>å</code> and <code>ø</code> count double. Takes effect after a reboot.</p>
           <p><b>Type your postnummer into the position field</b> and the node lands in the middle of that area — usually the quickest way to place it, and the only way to set the postnummer exactly. Clicking the map works the other way round: it pins the exact spot and works out the kommune from the real border, but it cannot know which postnummer you are in, so it takes the nearest as a guess. <b>Check the bar under the map</b> — that guess is right about two times in three. Type the postnummer instead if it is wrong.</p>
           <p></p>
           <p>Sent as two commands, <code>set lat</code> and <code>set lon</code> — MeshCore has no combined location command. <b>Off by default,</b> because a map click is only accurate to a hundred metres or so and a wrong published position is worse than none. Turn it on once you have typed a real GPS reading above. Publishing is normal for a repeater and puts it on mesh maps, but it is public, and <b>it drops the name limit from 32 bytes to 24</b>.</p>
@@ -1912,14 +1912,19 @@
                : `<span class="k">${esc(cmd)}</span>${arg ? ' ' + esc(arg) : ''}`
   ).join('\n');
 
-  // NO-<postnummer>-<place>, e.g. NO-1354-Skuiåsen. Was the kommunenummer
+  // NO-<postnummer> <place>, e.g. NO-1354 Skuiåsen. Was the kommunenummer
   // until 2026-07-21; operators know their postnummer and did not know their
   // kommunenummer, and a convention nobody can check is one nobody adopts.
   // Same four digits, so the byte budget is unchanged.
+  //
+  // The separator is a SPACE, not a hyphen (changed 2026-07-21). A space is
+  // also one byte, so this costs nothing either. Note the place itself may
+  // already contain spaces — "Mo i Rana" — so a space here is not a delimiter
+  // anything can split on; it is purely how the name reads.
   const nodeName = () => {
     const base = 'NO-' + (state.post || state.kommune);
     const d = state.desc.trim().replace(/\s+/g, ' ');
-    return d ? `${base}-${d}` : base;
+    return d ? `${base} ${d}` : base;
   };
   const byteLen = s => new TextEncoder().encode(s).length;
 
@@ -2041,7 +2046,7 @@
     const pn = state.post || state.kommune;
     const sted = POST_BY_NR[pn] ? POST_BY_NR[pn][1] : state.kommuneName;
     $('namePreview').innerHTML =
-      `NO-<span class="s-pn">${pn}</span><span class="s-pl">-${tail}</span>`;
+      `NO-<span class="s-pn">${pn}</span><span class="s-pl"> ${tail}</span>`;
     $('namePreview').classList.toggle('unset', !named);
     // The poststed is offered as the placeholder, never filled in: every node
     // in the area would otherwise land on the same name, which is the same
