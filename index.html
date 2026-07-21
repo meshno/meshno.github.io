@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MeshNO — MeshCore repeater node configurator for Norway</title>
+<title>MeshNO — MeshCore node configurator for Norway</title>
 <meta name="description" content="A configurator for setting up Norwegian MeshCore nodes: radio, timing profile, identity and region scope, as one paste-able block.">
 <!-- must track --bg in styles.css; these are the browser-chrome colours -->
 <meta name="theme-color" content="#fbfcfc" media="(prefers-color-scheme: light)">
@@ -92,6 +92,10 @@
     --line-k:  #a9b4ba;
     --line-t:  #b9c8d3;
     --cmd-ink: #12403a;
+    /* a QR must stay dark-on-light in both themes; an inverted code
+       fails on many readers, so these two do NOT follow --ink/--bg */
+    --qr-ink:  #0d1b26;
+    --qr-bg:   #ffffff;
     --sans: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
     --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   }
@@ -125,6 +129,10 @@
     --line-k:  #35507a;
     --line-t:  #22385c;
     --cmd-ink: #cfe7e0;
+    /* a QR must stay dark-on-light in both themes; an inverted code
+       fails on many readers, so these two do NOT follow --ink/--bg */
+    --qr-ink:  #0d1b26;
+    --qr-bg:   #ffffff;
   }
   * { box-sizing: border-box; }
   body {
@@ -352,6 +360,168 @@
   .city.on .name { fill: var(--accent); }
   .city.on .halo { fill: none; stroke: var(--accent); stroke-width: 0.75; opacity: 0.16; }
   .halo { fill: none; stroke: none; }
+
+  /* ---- channels ----
+     One row each, the same label/value rhythm as the control rows above rather
+     than a card language of its own. The key sits under the name because it is
+     reference material — you never need it to join, since a #name channel
+     derives its own. */
+  .chans .empty { color: var(--dim); font-size: 13.5px; margin: 0; }
+  .chan {
+    display: grid; grid-template-columns: 58px minmax(0, 1fr) auto;
+    gap: 0 16px; align-items: center;
+    padding: 12px 0; border-top: 1px solid var(--rule-2);
+  }
+  .chan:first-child { border-top: none; padding-top: 0; }
+
+  /* A QR is dark-on-light in BOTH themes — it is not page furniture, and an
+     inverted code fails on a lot of readers. Hence its own two tokens rather
+     than --ink/--bg, identical in both blocks. */
+  .qr { background: var(--qr-bg); display: block; line-height: 0; padding: 3px; }
+  .qr svg { display: block; width: 100%; height: auto; }
+  .qr path { fill: var(--qr-ink); }
+  .cqr {
+    background: transparent; border: 1px solid var(--rule-2); padding: 0;
+    width: 58px; cursor: zoom-in; line-height: 0;
+  }
+  .cqr:hover { border-color: var(--accent); }
+  .cqr:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---- the enlarged code ---- */
+  .qrdlg {
+    border: 1px solid var(--rule); background: var(--bg); color: var(--ink);
+    padding: 0; max-width: min(92vw, 360px); width: 100%;
+  }
+  .qrdlg::backdrop { background: rgba(4, 10, 18, 0.72); }
+  .qrd-in { padding: 20px 20px 4px; }
+  .qr.big { max-width: 280px; margin: 0 auto 16px; padding: 10px; }
+  .qrdlg h3 {
+    font-family: var(--mono); font-size: 19px; font-weight: 500;
+    margin: 0 0 3px; text-align: center;
+  }
+  .qrd-kind { font-size: 12.5px; color: var(--dim); text-align: center; margin: 0 0 16px; }
+  .qrd-lab {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.05em;
+    text-transform: uppercase; color: var(--dim); margin: 0 0 2px;
+    border-top: 1px solid var(--rule-2); padding-top: 12px;
+  }
+  .qrd-scope {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap; margin-bottom: 4px;
+  }
+  /* inside the flex row the label is a span and must not claim the full width
+     the block version takes */
+  .qrd-scope .qrd-lab { border-top: none; padding-top: 0; margin: 0; }
+  .qrd-scope .seg button { font-size: 12px; min-height: 28px; padding: 4px 9px; }
+
+  /* neighbours are grouped, not hidden — a section break rather than a toggle */
+  .chgroup {
+    border-top: 1px solid var(--rule); margin-top: 6px; padding-top: 16px;
+  }
+  .chgroup > span {
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.04em;
+    color: var(--muted); display: block;
+  }
+  .chgroup > p { color: var(--dim); font-size: 12.5px; margin: 4px 0 0; max-width: 62ch; }
+  /* the first row after the group heading owns its own spacing */
+  .chgroup + .chan { border-top: none; padding-top: 14px; }
+  .qrd-secret {
+    font-family: var(--mono); font-size: 11.5px; color: var(--muted);
+    margin: 0; word-break: break-all;
+  }
+  .qrd-foot { display: flex; gap: 8px; padding: 16px 20px 18px; }
+  .qrd-foot > * {
+    flex: 1; font-family: var(--mono); font-size: 12.5px; padding: 9px 12px;
+    min-height: 40px; border: 1px solid var(--rule); background: transparent;
+    color: var(--muted); cursor: pointer; text-decoration: none;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .qrd-foot .go { border-color: var(--accent); color: var(--accent); background: var(--wash); }
+  .qrd-foot > *:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .cm { min-width: 0; }
+  .cn { font-family: var(--mono); font-size: 15px; color: var(--ink); }
+  /* display:block — margin-top does nothing to an inline span, and without it
+     the label runs straight into the name */
+  .ca { display: block; font-size: 13px; color: var(--dim); margin-top: 2px; }
+  .ca b { color: var(--muted); font-weight: 400; }
+  .ck {
+    display: block; font-family: var(--mono); font-size: 11px; color: var(--dim);
+    margin-top: 4px; word-break: break-all; opacity: 0.75;
+  }
+  .cadd {
+    font-family: var(--mono); font-size: 12.5px; color: var(--accent);
+    border: 1px solid var(--rule); padding: 7px 12px; text-decoration: none;
+    white-space: nowrap; min-height: 34px; display: inline-flex; align-items: center;
+  }
+  .cadd:hover { border-color: var(--accent); background: var(--wash); }
+  .cadd:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* Which device's pin the shared map is showing. Sits with the map, not with
+     the tabs, because it is a fact about the pin. */
+  .pinnote {
+    color: var(--dim); font-size: 12.5px; line-height: 1.5;
+    margin: 9px 0 0; max-width: 68ch;
+  }
+  .pinnote[hidden] { display: none; }
+  .pinnote button {
+    font-family: var(--mono); font-size: 12px; background: transparent;
+    border: none; border-bottom: 1px solid var(--rule); color: var(--accent);
+    padding: 0; cursor: pointer;
+  }
+  .pinnote button:hover { border-bottom-color: var(--accent); }
+  .pinnote button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---- device switch ----
+     Which device the right column configures. Two nodes on one mesh: the
+     selected one carries the ring, reusing the mark that already means "your
+     node" on the map rather than inventing a second one. Not a .seg — every
+     .seg here sets a value that reaches the config block, and this navigates.
+
+     A link line between the two nodes was tried and removed: it read as
+     decoration once the panes turned out to share nothing but the pin. */
+  /* 22px below the rule is what every section already puts between its own
+     border-top and its heading, so the tab line falls into the page's rhythm
+     instead of sitting tight against the first heading. */
+  .dsw {
+    display: flex; align-items: stretch;
+    border-bottom: 1px solid var(--rule-2); margin-bottom: 22px;
+  }
+  .dsw button {
+    flex: 1; display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 0 10px;
+    align-items: center; background: transparent; border: none;
+    border-bottom: 2px solid transparent; padding: 11px 4px 13px;
+    cursor: pointer; text-align: left; color: inherit; font-family: inherit;
+    /* sit the accent underline on the container's own rule, not below it */
+    margin-bottom: -1px;
+  }
+  .dsw button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .dsw .node { grid-row: 1 / 3; width: 22px; height: 22px; position: relative; }
+  .dsw .node::before {
+    content: ''; position: absolute; inset: 0; border-radius: 50%;
+    border: 1.5px solid transparent;
+  }
+  .dsw .node::after {
+    content: ''; position: absolute; left: 50%; top: 50%;
+    width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px;
+    border-radius: 50%; background: var(--dim);
+  }
+  /* the ring means "the node you are configuring" — same meaning it carries
+     on the map, and nothing else on the page may borrow it */
+  .dsw button.on { border-bottom-color: var(--accent); }
+  .dsw button.on .node::before { border-color: var(--accent); }
+  .dsw button.on .node::after {
+    background: var(--accent); width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px;
+  }
+  .dsw .dn { font-size: 15px; font-weight: 500; color: var(--muted); line-height: 1.25; }
+  .dsw button.on .dn { color: var(--ink); }
+  .dsw .dv {
+    font-family: var(--mono); font-size: 12px; color: var(--dim); line-height: 1.4;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .dsw button.on .dv { color: var(--accent); }
+  .dsw button:hover .dn { color: var(--ink); }
+  /* display:block would out-specify the UA [hidden] rule — same trap as .nmbars */
+  .pane[hidden] { display: none; }
 
   /* ---- sections ---- */
   section { border-top: 1px solid var(--rule); padding: 22px 0 26px; }
@@ -790,7 +960,7 @@
           </svg>
           <span class="wordmark">Mesh<b>NO</b></span>
         </div>
-        <h1>Repeater node configurator</h1>
+        <h1>MeshCore node configurator</h1>
         <p class="lede">A configurator for setting up Norwegian MeshCore nodes, following conventions similar to those used by Sweden and Denmark. It targets the <code>EU/UK Narrow</code> preset already running across the mesh — 869.618&nbsp;MHz at 62.5&nbsp;kHz — and tags each node with the regions it relays for.</p>
       </div>
       <div class="theme">
@@ -1250,6 +1420,10 @@
           <span class="mt-pn" id="mtPost"></span>
         </div>
       </div>
+      <!-- Says whether this tab's pin is its own or the other device's. The
+           rule is invisible without it, and behaviour you cannot see reads as
+           a bug the first time the pin does not move with you. -->
+      <p class="pinnote" id="pinNote" hidden></p>
       <p class="help" id="coordNote"></p>
       <section class="needs-node">
         <div class="treebox">
@@ -1286,6 +1460,27 @@
     </div>
 
     <div class="col">
+      <!-- Which device this column configures. Two nodes on one mesh, not two
+           pages: the selected one carries the ring, which already means "your
+           node" on the map. Deliberately NOT a .seg — every .seg on this page
+           sets a value that lands in the config block, and this one navigates.
+           The map column is shared and stays put. -->
+      <div class="dsw" id="devSw" role="tablist" aria-label="Device to configure">
+        <button type="button" role="tab" data-dev="repeater" class="on"
+                aria-selected="true" aria-controls="paneRep" id="tabRep">
+          <span class="node" aria-hidden="true"></span>
+          <span class="dn">Repeater</span>
+          <span class="dv" id="devRep"></span>
+        </button>
+        <button type="button" role="tab" data-dev="companion"
+                aria-selected="false" aria-controls="paneCom" id="tabCom">
+          <span class="node" aria-hidden="true"></span>
+          <span class="dn">Companion</span>
+          <span class="dv" id="devCom">not set up yet</span>
+        </button>
+      </div>
+
+      <div class="pane" id="paneRep" role="tabpanel" aria-labelledby="tabRep">
       <section>
         <h2>Identity</h2>
         <p class="sub">What the node calls itself, and whether it says where it is.</p>
@@ -1508,8 +1703,85 @@
           </div>
         </div>
       </section>
+      </div>
+
+      <!-- Companion. Shares the map pin and nothing else: no name convention,
+           no radio, no back-off profile. The channels come from the region
+           tree, which is why the map column serves both panes. -->
+      <div class="pane" id="paneCom" role="tabpanel" aria-labelledby="tabCom" hidden>
+        <section>
+          <h2>Channels</h2>
+          <p class="sub">One channel per region you are in, taken from the map.</p>
+          <div class="row">
+            <div class="k">region scope</div>
+            <div class="v">
+              <div class="seg" id="scopeSeg">
+                <button data-sc="off" class="on">skip</button>
+                <button data-sc="on">include</button>
+              </div>
+              <p class="help" id="scopeNote"></p>
+            </div>
+          </div>
+          <details class="explain">
+            <summary>How these channels work, and who else is on them</summary>
+            <p><b>The name is the channel.</b> A channel starting with <code>#</code> derives its
+               own key from its name — <code>sha256("#" + name)</code>, cut to 16 bytes — so
+               everyone who types <code>#baerum</code> lands on the same channel without anyone
+               sending anyone a key. That is what makes a regional channel joinable at all.</p>
+            <p><b>Which also means they are not private.</b> Anyone who knows the name can work out
+               the key, so treat these as an open calling frequency — the mesh equivalent of a
+               published repeater output. For something private, make your own channel with a
+               random secret and hand it out yourself.</p>
+            <p><b>Spelling is exact and unforgiving.</b> The key comes from the name character for
+               character, so <code>#norge</code> and <code>#Norge</code> are two different channels
+               that cannot hear each other. The app only accepts <code>a-z</code>,
+               <code>0-9</code> and <code>-</code>, which is why these are written
+               <code>ostlandet</code> and <code>baerum</code> rather than with ø and æ — the same
+               transliteration the region tags use.</p>
+            <p><b>Nothing here is ratified yet.</b> These names are this page's proposal. Raise them
+               on the Discord before assuming anyone else is listening — a channel with one member
+               is a quiet channel, not a broken one.</p>
+          </details>
+        </section>
+
+        <!-- The codes are the companion's output, so they take a section of
+             their own and run full width, the same shape the repeater pane
+             gives `Full node config`. Inside a .row they would sit in the
+             150px label grid and read as a setting. -->
+        <section>
+          <h2>QR codes</h2>
+          <p class="sub">Scan one with the MeshCore app to join. Reading this on the phone you are
+             setting up? Tap <b>Add</b> instead.</p>
+          <div class="chans" id="chans"></div>
+        </section>
+      </div>
     </div>
   </main>
+
+  <!-- A native <dialog>: Esc, the backdrop and focus return are the browser's
+       job rather than three more things to get wrong, and its top layer means
+       no z-index argument with the sticky map column. -->
+  <dialog class="qrdlg" id="qrDlg" aria-labelledby="qrName">
+    <div class="qrd-in">
+      <span class="qr big" id="qrBig"></span>
+      <h3 id="qrName"></h3>
+      <p class="qrd-kind" id="qrKind"></p>
+      <!-- the same global setting, put where you are actually about to scan -->
+      <div class="qrd-scope">
+        <span class="qrd-lab">region scope</span>
+        <div class="seg" id="qrScope">
+          <button data-sc="off" class="on">skip</button>
+          <button data-sc="on">include</button>
+        </div>
+      </div>
+      <p class="qrd-lab">secret</p>
+      <p class="qrd-secret" id="qrSecret"></p>
+    </div>
+    <div class="qrd-foot">
+      <a class="go" id="qrGo" href="#">Add &rarr;</a>
+      <button type="button" id="qrClose">Close</button>
+    </div>
+  </dialog>
 
   <footer>
     <span>Unofficial community tool · not affiliated with the MeshCore project</span>
@@ -1678,6 +1950,26 @@
     // almost no members to filter, and its tags are the longest on the line.
     reach: { ...REACH_KM, kommune: 0 },
     drilled: null,             // fylke the map is currently zoomed into
+    // Which device the right column is configuring. Unlike the theme this
+    // lives in `state`, because it decides what gets emitted — but it is not
+    // itself emitted, and buildLines() must never read it as a node setting.
+    device: 'repeater',
+    // One pin per device, because the two mean different things: where a
+    // repeater is installed, and roughly where you live. A pin stays `auto` —
+    // showing the other device's — until this device's own is moved, after
+    // which the two are independent. Same shape as descAuto: the flag means
+    // "still ours to manage", not "empty". So setting up the repeater gives
+    // the companion a home for free, and moving the companion afterwards
+    // never disturbs the repeater that is already configured.
+    pins: {
+      repeater:  { x: null, y: null, post: null, auto: true },
+      companion: { x: null, y: null, post: null, auto: true }
+    },
+    // Companion-only: reaches the channel URLs, never buildLines(). Starts OFF
+    // because a scoped channel only routes properly where the repeaters around
+    // you have regions configured, and almost none do yet (open question 2).
+    // Turning it on later is safe — see channelUrl().
+    chanScope: false,
     fw: 'new', profile: 'neighborhood',
     cr: '8', hash: '1', loop: 'minimal', regionDefault: 'none',
     owner: '', guest: '', desc: '', location: false,
@@ -1860,9 +2152,429 @@
   // clicking around inside Gausdal moved the pin and the coordinates while the
   // postnummer sat on whatever the first click resolved. Do not reintroduce it
   // unless something can set this by hand again.
-  function place(x, y, drill = true, pn = null) {
-    const k = resolve(x, y);
-    if (!k) return false;              // out at sea — ignore the click
+  // ---- QR encoding ----
+  //
+  // Byte mode, error correction level M, versions 1-10. Every URL this page
+  // emits is ~110 characters at most, which fits version 6 with room over.
+  //
+  // Written out rather than pulled in: the public repo holds index.html and
+  // nothing else, so there is nowhere to put a library, and a CDN script would
+  // be both a runtime dependency and a privacy leak on a page that has neither.
+  //
+  // VERIFIED BY ROUND-TRIP, not by eye. Every real channel URL was rendered and
+  // read back with an independent decoder (jsQR), scoped and unscoped. Do not
+  // change anything below without re-running that — three separate bugs here
+  // each produced a code that looked perfect and decoded to nothing:
+  //   * the RS generator polynomial built in ascending instead of descending order
+  //   * the data traversal toggling direction instead of deriving it, which
+  //     mirrors the lower half once the timing column is skipped
+  //   * the two copies of the format block written in opposite bit orders
+  // A QR code has no partial failure mode. It scans or it does not.
+
+  // Minimal QR encoder — byte mode, error correction level M, versions 1-10.
+  // That range covers every URL this page emits (the longest is ~110 chars,
+  // which fits version 6 at level M) with room to spare.
+  //
+  // Written out rather than pulled in, because the public repo holds index.html
+  // and nothing else: there is nowhere to put a library, and a CDN script is
+  // both a runtime dependency and a privacy leak on a page that has neither.
+
+  // ---- Galois field GF(256), generator 0x11d ----
+  const EXP = new Uint8Array(512), LOG = new Uint8Array(256);
+  (function () {
+    let x = 1;
+    for (let i = 0; i < 255; i++) {
+      EXP[i] = x; LOG[x] = i;
+      x <<= 1; if (x & 0x100) x ^= 0x11d;
+    }
+    for (let i = 255; i < 512; i++) EXP[i] = EXP[i - 255];
+  })();
+  const mul = (a, b) => (a === 0 || b === 0) ? 0 : EXP[LOG[a] + LOG[b]];
+
+  // Reed-Solomon generator polynomial for `n` error-correction codewords
+  // Coefficients are DESCENDING, so g[0] is the leading 1. Getting this
+  // backwards produces a well-formed code that no reader can decode.
+  function rsGen(n) {
+    let g = [1];
+    for (let i = 0; i < n; i++) {
+      // multiply by (x + a^i)
+      const ng = new Array(g.length + 1).fill(0);
+      for (let j = 0; j < g.length; j++) {
+        ng[j] ^= g[j];                     // the x term
+        ng[j + 1] ^= mul(g[j], EXP[i]);    // the a^i term
+      }
+      g = ng;
+    }
+    return g;
+  }
+  function rsEncode(data, n) {
+    const g = rsGen(n), res = new Array(n).fill(0);
+    for (const d of data) {
+      const factor = d ^ res[0];
+      res.shift(); res.push(0);
+      for (let i = 0; i < n; i++) res[i] ^= mul(g[i + 1], factor);
+    }
+    return res;
+  }
+
+  // ---- capacity tables, level M, versions 1-10 ----
+  // [total codewords, EC codewords per block, blocks in group 1, blocks in group 2]
+  const VER = {
+    1:  [26,   10, 1, 0], 2:  [44,   16, 1, 0], 3:  [70,   26, 1, 0],
+    4:  [100,  18, 2, 0], 5:  [134,  24, 2, 0], 6:  [172,  16, 4, 0],
+    7:  [196,  18, 4, 0], 8:  [242,  22, 2, 2], 9:  [292,  22, 3, 2],
+    10: [346,  26, 4, 1]
+  };
+  const ALIGN = {
+    1: [], 2: [6,18], 3: [6,22], 4: [6,26], 5: [6,30],
+    6: [6,34], 7: [6,22,38], 8: [6,24,42], 9: [6,26,46], 10: [6,28,50]
+  };
+  // BCH format/version strings, COMPUTED rather than typed. A mistyped table
+  // entry produces a code that is structurally perfect and undecodable, which is
+  // exactly the bug that is hardest to spot by eye.
+  const FORMAT_M = [0,1,2,3,4,5,6,7].map(mask => {
+    const d = (0 << 3) | mask;          // 0 = EC level M
+    let rem = d;
+    for (let i = 0; i < 10; i++) rem = (rem << 1) ^ ((rem >>> 9) * 0x537);
+    return ((d << 10) | rem) ^ 0x5412;
+  });
+  const VERSION_BITS = {};
+  for (let v = 7; v <= 10; v++) {
+    let rem = v;
+    for (let i = 0; i < 12; i++) rem = (rem << 1) ^ ((rem >>> 11) * 0x1F25);
+    VERSION_BITS[v] = (v << 12) | rem;
+  }
+
+  function capacityBytes(v) {
+    const [total, ecPer, g1, g2] = VER[v];
+    return total - ecPer * (g1 + g2);
+  }
+
+  function pickVersion(len) {
+    for (let v = 1; v <= 10; v++) {
+      // 4 bits mode + 8 or 16 bits length + payload
+      const lenBits = v < 10 ? 8 : 16;
+      if (Math.ceil((4 + lenBits) / 8) + len <= capacityBytes(v)) return v;
+    }
+    throw new Error('QR: payload too long for version 10');
+  }
+
+  function bitStream(bytes, v) {
+    const bits = [];
+    const push = (val, n) => { for (let i = n - 1; i >= 0; i--) bits.push((val >> i) & 1); };
+    push(0b0100, 4);                       // byte mode
+    push(bytes.length, v < 10 ? 8 : 16);   // character count
+    for (const b of bytes) push(b, 8);
+    const cap = capacityBytes(v) * 8;
+    for (let i = 0; i < 4 && bits.length < cap; i++) bits.push(0);  // terminator
+    while (bits.length % 8) bits.push(0);
+    const pad = [0xEC, 0x11];
+    for (let i = 0; bits.length < cap; i++) push(pad[i % 2], 8);
+    const out = [];
+    for (let i = 0; i < bits.length; i += 8) {
+      out.push(bits.slice(i, i + 8).reduce((a, b) => (a << 1) | b, 0));
+    }
+    return out;
+  }
+
+  // interleave data and EC codewords across blocks, per spec
+  function codewords(data, v) {
+    const [total, ecPer, g1, g2] = VER[v];
+    const nBlocks = g1 + g2;
+    const dTotal = total - ecPer * nBlocks;
+    const short = Math.floor(dTotal / nBlocks);
+    const blocks = [];
+    let at = 0;
+    for (let i = 0; i < nBlocks; i++) {
+      const n = i < g1 ? short : short + 1;
+      blocks.push(data.slice(at, at + n));
+      at += n;
+    }
+    const ec = blocks.map(b => rsEncode(b, ecPer));
+    const out = [];
+    const maxD = Math.max(...blocks.map(b => b.length));
+    for (let i = 0; i < maxD; i++) for (const b of blocks) if (i < b.length) out.push(b[i]);
+    for (let i = 0; i < ecPer; i++) for (const b of ec) out.push(b[i]);
+    return out;
+  }
+
+  // ---- module placement ----
+  function buildMatrix(v) {
+    const n = v * 4 + 17;
+    const m = [], fn = [];   // fn marks function modules (not maskable)
+    for (let i = 0; i < n; i++) { m.push(new Array(n).fill(0)); fn.push(new Array(n).fill(0)); }
+    const set = (r, c, val) => { m[r][c] = val; fn[r][c] = 1; };
+
+    // finder patterns + separators
+    const finder = (r0, c0) => {
+      for (let r = -1; r <= 7; r++) for (let c = -1; c <= 7; c++) {
+        const rr = r0 + r, cc = c0 + c;
+        if (rr < 0 || rr >= n || cc < 0 || cc >= n) continue;
+        const on = (r >= 0 && r <= 6 && (c === 0 || c === 6)) ||
+                   (c >= 0 && c <= 6 && (r === 0 || r === 6)) ||
+                   (r >= 2 && r <= 4 && c >= 2 && c <= 4);
+        set(rr, cc, on ? 1 : 0);
+      }
+    };
+    finder(0, 0); finder(0, n - 7); finder(n - 7, 0);
+
+    // timing patterns
+    for (let i = 8; i < n - 8; i++) { set(6, i, i % 2 === 0 ? 1 : 0); set(i, 6, i % 2 === 0 ? 1 : 0); }
+
+    // alignment patterns
+    const al = ALIGN[v];
+    for (const r of al) for (const c of al) {
+      if ((r <= 8 && c <= 8) || (r <= 8 && c >= n - 9) || (r >= n - 9 && c <= 8)) continue;
+      for (let dr = -2; dr <= 2; dr++) for (let dc = -2; dc <= 2; dc++) {
+        set(r + dr, c + dc, Math.max(Math.abs(dr), Math.abs(dc)) !== 1 ? 1 : 0);
+      }
+    }
+
+    // dark module + reserved format areas
+    set(n - 8, 8, 1);
+    for (let i = 0; i < 9; i++) { if (!fn[8][i]) set(8, i, 0); if (!fn[i][8]) set(i, 8, 0); }
+    for (let i = 0; i < 8; i++) { if (!fn[8][n-1-i]) set(8, n-1-i, 0); if (!fn[n-1-i][8]) set(n-1-i, 8, 0); }
+
+    // version info for 7+
+    if (v >= 7) {
+      const bits = VERSION_BITS[v];
+      for (let i = 0; i < 18; i++) {
+        const b = (bits >> i) & 1;
+        set(Math.floor(i / 3), n - 11 + (i % 3), b);
+        set(n - 11 + (i % 3), Math.floor(i / 3), b);
+      }
+    }
+    return { m, fn, n };
+  }
+
+  function placeData(m, fn, n, cw) {
+    let bit = 0;
+    const total = cw.length * 8;
+    for (let right = n - 1; right >= 1; right -= 2) {
+      if (right === 6) right = 5;                    // skip the vertical timing column
+      for (let vert = 0; vert < n; vert++) {
+        for (let j = 0; j < 2; j++) {
+          const c = right - j;
+          // derived from the column, not toggled: skipping column 6 desyncs a
+          // toggle and mirrors the lower half of the code
+          const up = ((right + 1) & 2) === 0;
+          const r = up ? n - 1 - vert : vert;
+          if (fn[r][c]) continue;
+          m[r][c] = bit < total ? (cw[bit >> 3] >> (7 - (bit & 7))) & 1 : 0;
+          bit++;
+        }
+      }
+    }
+  }
+
+  const MASKS = [
+    (r, c) => (r + c) % 2 === 0,
+    (r, c) => r % 2 === 0,
+    (r, c) => c % 3 === 0,
+    (r, c) => (r + c) % 3 === 0,
+    (r, c) => (Math.floor(r / 2) + Math.floor(c / 3)) % 2 === 0,
+    (r, c) => ((r * c) % 2) + ((r * c) % 3) === 0,
+    (r, c) => (((r * c) % 2) + ((r * c) % 3)) % 2 === 0,
+    (r, c) => (((r + c) % 2) + ((r * c) % 3)) % 2 === 0
+  ];
+
+  function penalty(m, n) {
+    let p = 0;
+    // rule 1: runs of 5+
+    for (let i = 0; i < n; i++) {
+      for (const line of [m[i], m.map(row => row[i])]) {
+        let run = 1;
+        for (let j = 1; j < n; j++) {
+          if (line[j] === line[j - 1]) { run++; if (run === 5) p += 3; else if (run > 5) p++; }
+          else run = 1;
+        }
+      }
+    }
+    // rule 2: 2x2 blocks
+    for (let r = 0; r < n - 1; r++) for (let c = 0; c < n - 1; c++) {
+      const v = m[r][c];
+      if (v === m[r][c+1] && v === m[r+1][c] && v === m[r+1][c+1]) p += 3;
+    }
+    // rule 3: finder-like patterns
+    const pat = [1,0,1,1,1,0,1,0,0,0,0];
+    for (let i = 0; i < n; i++) for (let j = 0; j <= n - 11; j++) {
+      const row = m[i].slice(j, j + 11), col = [];
+      for (let k = 0; k < 11; k++) col.push(m[j + k][i]);
+      if (pat.every((b, k) => b === row[k])) p += 40;
+      if (pat.every((b, k) => b === col[k])) p += 40;
+      const rev = pat.slice().reverse();
+      if (rev.every((b, k) => b === row[k])) p += 40;
+      if (rev.every((b, k) => b === col[k])) p += 40;
+    }
+    // rule 4: dark/light balance
+    let dark = 0;
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) dark += m[r][c];
+    p += Math.floor(Math.abs(dark * 100 / (n * n) - 50) / 5) * 10;
+    return p;
+  }
+
+  // Bit i is the i'th from the TOP of the 15-bit string — (bits >> (14 - i)).
+  // Verified against a reference encoder: reading it the other way, or reading
+  // the two copies differently from each other (which is what this code did
+  // first), produces a structurally perfect code that no reader will touch.
+  function applyFormat(m, n, mask) {
+    const bits = FORMAT_M[mask];
+    const b = i => (bits >> (14 - i)) & 1;
+    for (let i = 0; i <= 5; i++) m[8][i] = b(i);
+    m[8][7] = b(6);
+    m[8][8] = b(7);
+    m[7][8] = b(8);
+    for (let i = 9; i < 15; i++) m[14 - i][8] = b(i);
+    for (let i = 0; i < 8; i++) m[n - 1 - i][8] = b(i);
+    for (let i = 8; i < 15; i++) m[8][n - 15 + i] = b(i);
+    m[n - 8][8] = 1;   // dark module
+  }
+
+  // Returns a square boolean matrix, true = dark.
+  function qrMatrix(text) {
+    const bytes = Array.from(new TextEncoder().encode(text));
+    const v = pickVersion(bytes.length);
+    const cw = codewords(bitStream(bytes, v), v);
+    const { m, fn, n } = buildMatrix(v);
+    placeData(m, fn, n, cw);
+
+    let best = null, bestP = Infinity;
+    for (let mask = 0; mask < 8; mask++) {
+      const t = m.map(r => r.slice());
+      for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
+        if (!fn[r][c] && MASKS[mask](r, c)) t[r][c] ^= 1;
+      }
+      applyFormat(t, n, mask);
+      const p = penalty(t, n);
+      if (p < bestP) { bestP = p; best = t; }
+    }
+    return best.map(r => r.map(Boolean));
+  }
+
+  // ---- channels ----
+  //
+  // A MeshCore channel is identified by a 16-byte secret, and for a "hashtag"
+  // channel that secret is derived from the name: sha256("#" + name)[:16].
+  // Confirmed in meshcore.js (TextEncoder straight into SHA-256) and in
+  // meshcore_py, which auto-derives whenever the name starts with '#'. So the
+  // NAME IS THE KEY — two people who spell it differently are on two channels,
+  // with nothing to tell them so.
+  //
+  // Written out rather than using crypto.subtle, which is undefined in a
+  // non-secure context: this page is one file and people do open it locally.
+  // Sync also keeps render() sync, which is worth more than the 30 lines.
+  function sha256hex(str) {
+    const K = [
+      0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+      0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+      0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+      0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+      0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+      0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+      0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+      0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+    let H = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,
+             0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+    const msg = Array.from(new TextEncoder().encode(str));
+    const bits = msg.length * 8;
+    msg.push(0x80);
+    while (msg.length % 64 !== 56) msg.push(0);
+    for (let i = 7; i >= 0; i--) msg.push((bits / Math.pow(2, i * 8)) & 0xff);
+    const rot = (x, n) => (x >>> n) | (x << (32 - n));
+    for (let b = 0; b < msg.length; b += 64) {
+      const w = new Array(64);
+      for (let t = 0; t < 16; t++) {
+        w[t] = (msg[b+t*4] << 24) | (msg[b+t*4+1] << 16) | (msg[b+t*4+2] << 8) | msg[b+t*4+3];
+      }
+      for (let t = 16; t < 64; t++) {
+        const s0 = rot(w[t-15],7) ^ rot(w[t-15],18) ^ (w[t-15] >>> 3);
+        const s1 = rot(w[t-2],17) ^ rot(w[t-2],19) ^ (w[t-2] >>> 10);
+        w[t] = (w[t-16] + s0 + w[t-7] + s1) | 0;
+      }
+      let [a, c, d, e, f, g, h, k] = H;
+      for (let t = 0; t < 64; t++) {
+        const S1 = rot(f,6) ^ rot(f,11) ^ rot(f,25);
+        const t1 = (k + S1 + ((f & g) ^ (~f & h)) + K[t] + w[t]) | 0;
+        const S0 = rot(a,2) ^ rot(a,13) ^ rot(a,22);
+        const t2 = (S0 + ((a & c) ^ (a & d) ^ (c & d))) | 0;
+        k = h; h = g; g = f; f = (e + t1) | 0; e = d; d = c; c = a; a = (t1 + t2) | 0;
+      }
+      H = [(H[0]+a)|0,(H[1]+c)|0,(H[2]+d)|0,(H[3]+e)|0,
+           (H[4]+f)|0,(H[5]+g)|0,(H[6]+h)|0,(H[7]+k)|0];
+    }
+    return H.map(x => ('00000000' + (x >>> 0).toString(16)).slice(-8)).join('');
+  }
+  const channelSecret = name => sha256hex('#' + name).slice(0, 32);
+
+  // Lowercase a-z 0-9 -, because that is all the MeshCore app accepts in a
+  // hashtag name. The libraries would hash "Bærum" happily; the app will not
+  // let anyone type it, and since the name is the key, the only spelling that
+  // can be agreed on is the one that can be entered. Same o/ae/a
+  // transliteration the region tags already use, so the page carries one
+  // convention rather than two.
+  const chanName = s => s.toLowerCase()
+    .replace(/ø/g, 'o').replace(/æ/g, 'ae').replace(/å/g, 'a')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+
+  // Narrowest scope wins a name collision. Sandvika is 6 km from Oslo, so it
+  // carries no-03 (Oslo the fylke, as a neighbour) AND no-oslo (Oslo the city)
+  // — both naturally called "oslo", and identical names are identical secrets,
+  // so they are one channel with two candidate scopes. It takes the city.
+  const SCOPE_RANK = { city: 0, kommune: 1, fylke: 2, landsdel: 3, country: 4, continent: 5 };
+
+  // The channel list IS the region tree, re-read: same source, so the two can
+  // never disagree about what you are near.
+  function channels() {
+    if (!state.kommune) return [];
+    const out = [];
+    const add = (name, scope, kind, an, nb) => out.push({ name, scope, kind, an, nb: !!nb });
+    // eu and europe are two regions but one channel — `europe` is the
+    // deliberate orphan with nothing nested under it, and a channel for each
+    // would put two identical-looking entries in the app. eu takes the scope
+    // because it is what everything actually hangs off.
+    add('europe', 'eu', 'continent', 'Everyone, everywhere. Quiet by design.');
+    add('norge', 'no', 'country', 'The whole country.');
+    const ld = LANDSDEL[state.fylke];
+    add(chanName(LANDSDEL_NAMES[ld]), 'no-' + ld, 'landsdel', LANDSDEL_NAMES[ld]);
+    add(chanName(FYLKE_NAMES[state.fylke]), 'no-' + state.fylke, 'fylke',
+        `Fylkesnummer ${state.fylke}.`);
+    add(chanName(state.kommuneName), 'no-' + state.kommune, 'kommune',
+        `Kommunenummer ${state.kommune}.`);
+    // City tags are yours, not neighbours': being near a city is what the tag
+    // means in the first place, so they are not behind the neighbour toggle.
+    for (const m of state.metro) {
+      add(chanName(CITIES[m.key]), m.key, 'city', `Within ${Math.round(m.d)} km.`);
+    }
+    // Neighbours come last, so a name they share with a home region loses the
+    // tie and the home row keeps its place — see SCOPE_RANK. They are always
+    // listed, in a section of their own rather than behind a toggle: a
+    // neighbour is worth seeing and then deciding about, not worth hiding.
+    const km = d => `Neighbour — ${Math.round(d)} km away.`;
+    for (const x of state.border.landsdel)
+      add(chanName(LANDSDEL_NAMES[x.nr]), 'no-' + x.nr, 'landsdel', km(x.d), 1);
+    for (const x of state.border.fylke)
+      add(chanName(FYLKE_NAMES[x.nr]), 'no-' + x.nr, 'fylke', km(x.d), 1);
+    for (const x of state.border.kommune)
+      add(chanName(x.name), 'no-' + x.nr, 'kommune', km(x.d), 1);
+    // Keep the best-ranked entry for each name, at its own position.
+    const best = new Map();
+    for (const c of out) {
+      const p = best.get(c.name);
+      if (!p || SCOPE_RANK[c.kind] < SCOPE_RANK[p.kind]) best.set(c.name, c);
+    }
+    return out.filter(c => best.get(c.name) === c);
+  }
+
+  const OTHER = { repeater: 'companion', companion: 'repeater' };
+  // The pin this device actually shows: its own once moved, the other's until
+  // then. Both auto means nothing has been placed anywhere yet, and the x of
+  // an unplaced pin is null, so this reads as "unplaced" without a extra case.
+  const livePin = dev => state.pins[dev].auto ? state.pins[OTHER[dev]] : state.pins[dev];
+
+  // Everything derived from a position. Split out of place() so a device
+  // switch can re-derive without recording a new pin — switching tabs is not
+  // an edit, and must not detach anything.
+  function applyPin(x, y, k, pn, drill) {
     state.x = x; state.y = y;
     state.fylke = k.nr.slice(0, 2);
     state.kommune = k.nr;
@@ -1877,7 +2589,11 @@
     // starts out as "NO-1354 Bærums Verk" until someone changes it. That is a
     // deliberate call: a named node beats an unnamed one, and the field is
     // right there. It is also why the placeholder alone was not enough.
-    if (state.descAuto) {
+    //
+    // Gated on the repeater: `state.desc` is the REPEATER's name, and the
+    // companion has no name convention at all. Moving the companion pin must
+    // never rewrite a repeater that is already set up.
+    if (state.device === 'repeater' && state.descAuto) {
       const p = POST_BY_NR[state.post];
       if (p) state.desc = p[1];
     }
@@ -1887,7 +2603,169 @@
     if (entered) state.drilled = state.fylke;
     render();
     if (entered) zoomToFylke(state.fylke);
+  }
+
+  // `region_scope` is additive routing metadata and does NOT feed the secret —
+  // that is sha256("#" + name) and nothing else. So a scoped and an unscoped
+  // #baerum are THE SAME CHANNEL: anyone who scanned the unscoped code still
+  // hears everyone once the mesh turns scoping on. Nobody re-scans, nothing
+  // orphans. That property is why this can ship defaulting to off.
+  const channelUrl = c => `meshcore://channel/add?name=${encodeURIComponent(c.name)}`
+                        + `&secret=${channelSecret(c.name)}`
+                        + (state.chanScope ? `&region_scope=${encodeURIComponent(c.scope)}` : '');
+
+  // One <rect> per dark module, merged into horizontal runs — a version 6 code
+  // is 41x41, and a rect each would be 1,681 nodes per row on the page.
+  function qrSvg(text) {
+    const m = qrMatrix(text), n = m.length;
+    let d = '';
+    for (let r = 0; r < n; r++) {
+      let c = 0;
+      while (c < n) {
+        if (!m[r][c]) { c++; continue; }
+        let w = 0;
+        while (c + w < n && m[r][c + w]) w++;
+        d += `M${c} ${r}h${w}v1h-${w}z`;
+        c += w;
+      }
+    }
+    // 2-module quiet zone in the viewBox, so the code never sits flush to its
+    // own edge — readers need the margin and the padding alone is not it
+    return `<svg viewBox="-2 -2 ${n + 4} ${n + 4}" shape-rendering="crispEdges" `
+         + `aria-hidden="true"><path d="${d}"/></svg>`;
+  }
+
+  function renderChannels() {
+    const box = $('chans');
+    const list = channels();
+    $('devCom').textContent = list.length ? `${list.length} channels` : 'no channels yet';
+    if (!list.length) {
+      box.innerHTML = '<p class="empty">Place the node on the map and the channels for '
+        + 'that area appear here.</p>';
+      return;
+    }
+    const row = (c, i) => `<div class="chan">
+        <button type="button" class="cqr" data-i="${i}"
+                aria-label="Enlarge the QR code for #${esc(c.name)}">
+          <span class="qr">${qrSvg(channelUrl(c))}</span>
+        </button>
+        <div class="cm">
+          <span class="cn">#${esc(c.name)}</span>
+          <span class="ca"><b>${esc(c.kind)}</b> · ${esc(c.an)}</span>
+        </div>
+        <a class="cadd" href="${esc(channelUrl(c))}">Add &rarr;</a>
+      </div>`;
+    // Neighbours get a section rather than a toggle — visible, and clearly
+    // not the same thing as the regions you are actually in.
+    const home = list.map((c, i) => [c, i]).filter(([c]) => !c.nb);
+    const near = list.map((c, i) => [c, i]).filter(([c]) => c.nb);
+    let html = home.map(([c, i]) => row(c, i)).join('');
+    if (near.length) {
+      html += '<div class="chgroup"><span>Neighbouring regions</span>'
+            + '<p>Close enough that your node relays for them. Worth joining if you want '
+            + 'their traffic too — skip them if you only care about where you are.</p></div>'
+            + near.map(([c, i]) => row(c, i)).join('');
+    }
+    box.innerHTML = html;
+  }
+
+  // The small code is an overview; scanning happens here, where it is big
+  // enough for a phone camera to catch at an angle.
+  // which channel the dialog is showing, so the scope toggle inside it can
+  // redraw the code it is sitting on
+  let qrShown = null;
+  function showQr(c) {
+    qrShown = c;
+    const url = channelUrl(c);
+    $('qrBig').innerHTML = qrSvg(url);
+    $('qrName').textContent = '#' + c.name;
+    $('qrKind').textContent = state.chanScope
+      ? `${c.kind} · scoped to ${c.scope}`
+      : `${c.kind} · unscoped`;
+    $('qrSecret').textContent = channelSecret(c.name);
+    $('qrGo').href = url;
+    $('qrDlg').querySelectorAll('#qrScope button').forEach(x =>
+      x.classList.toggle('on', (x.dataset.sc === 'on') === state.chanScope));
+  }
+  $('chans').addEventListener('click', e => {
+    const b = e.target.closest('.cqr');
+    if (!b) return;
+    showQr(channels()[+b.dataset.i]);
+    $('qrDlg').showModal();
+  });
+  // One setting, surfaced in two places: the list and the code you are about
+  // to scan. Both write state.chanScope, so they can never disagree.
+  function setScope(on) {
+    state.chanScope = on;
+    $('scopeSeg').querySelectorAll('button').forEach(x =>
+      x.classList.toggle('on', (x.dataset.sc === 'on') === on));
+    $('scopeNote').textContent = on
+      ? 'Each channel carries its region, so only repeaters configured with that region pass '
+      + 'its messages on. Local traffic stays local instead of crossing the country and '
+      + 'spending everyone’s airtime. Most repeaters have no regions set up yet, so check '
+      + 'what is around you before relying on it.'
+      : 'A region scope limits how far a message travels: only repeaters configured with that '
+      + 'region repeat it, which keeps local traffic off the rest of the country’s airtime. '
+      + 'Off for now, until more repeaters have regions set up.';
+    render();
+    if (qrShown) showQr(qrShown);
+  }
+  seg($('scopeSeg'), 'sc', v => setScope(v === 'on'));
+  seg($('qrScope'), 'sc', v => setScope(v === 'on'));
+
+  $('qrClose').addEventListener('click', () => $('qrDlg').close());
+  // the dialog element fills only part of its own backdrop, so a click landing
+  // on the element itself is a click on the backdrop
+  $('qrDlg').addEventListener('click', e => { if (e.target === $('qrDlg')) $('qrDlg').close(); });
+
+  // Which pin this tab is showing, in words. Silent until there is something
+  // to say — before anything is placed the two devices cannot differ.
+  function renderPinNote() {
+    const note = $('pinNote');
+    const dev = state.device, oth = OTHER[dev];
+    const mine = state.pins[dev], theirs = state.pins[oth];
+    let html = '';
+    if (mine.auto && theirs.x !== null) {
+      html = `Following the ${oth}'s position. Move the pin to give the `
+           + `${dev} its own.`;
+    } else if (!mine.auto && theirs.auto && theirs.x === null) {
+      html = `The ${oth} starts from this position until you move its pin.`;
+    } else if (!mine.auto && !theirs.auto) {
+      html = `Set separately from the ${oth}. `
+           + `<button type="button">follow it again</button>`;
+    }
+    note.innerHTML = html;
+    note.toggleAttribute('hidden', !html);
+  }
+
+  // Everything the position derives from is blanked together, or a stale value
+  // survives for a node that is no longer placed.
+  function clearPlacement() {
+    state.kommune = null; state.kommuneName = ''; state.fylke = null;
+    state.post = null; state.metro = [];
+    state.border = { landsdel: [], fylke: [], kommune: [] };
+  }
+
+  // A placement is an EDIT: it records against the active device and detaches
+  // that device from the other. Switching tabs goes through applyPin instead.
+  function place(x, y, drill = true, pn = null) {
+    const k = resolve(x, y);
+    if (!k) return false;              // out at sea — ignore the click
+    const p = state.pins[state.device];
+    // set before applying, so the note render() draws sees the new state
+    p.x = x; p.y = y; p.auto = false;
+    applyPin(x, y, k, pn, drill);
+    p.post = state.post;
     return true;
+  }
+
+  // Show a device's pin without recording anything. Falls back to the unplaced
+  // branch when that device has nothing to show.
+  function showPinFor(dev) {
+    const p = livePin(dev);
+    const k = p.x === null ? null : resolve(p.x, p.y);
+    if (k) applyPin(p.x, p.y, k, p.post, false);
+    else { clearPlacement(); render(); }
   }
 
   // Region tags for this node. landsdel, fylke, kommune and metro city are
@@ -2029,6 +2907,13 @@
     // position-derived parts left out rather than guessed.
     const placed = !!state.kommune;
     document.body.classList.toggle('unplaced', !placed);
+    // The switch doubles as a record of what has been done, so setting up the
+    // repeater and then the companion is visible rather than something to
+    // remember. Set before the unplaced branch returns, so it holds in both.
+    $('devRep').textContent = !placed ? 'no node placed'
+      : state.desc.trim() ? nodeName() : 'not named yet';
+    renderPinNote();
+    renderChannels();
     // The name can be written underneath the operator — prefilled on placing,
     // cleared on Reset — so the field has to follow `state.desc`. Guarded on
     // inequality rather than written every pass: an unconditional assignment
@@ -2331,17 +3216,20 @@
   // shows where it came from.
   $('zReset').addEventListener('click', () => {
     state.drilled = null;
-    state.kommune = null; state.kommuneName = ''; state.fylke = null;
-    state.post = null;
-    state.metro = [];
-    state.border = { landsdel: [], fylke: [], kommune: [] };
+    // Reset clears THIS tab's pin only, and puts it back to following the
+    // other one. Clearing both would mean resetting the zoom on the companion
+    // tab threw away a repeater that was already configured.
+    const p = state.pins[state.device];
+    p.x = p.y = p.post = null; p.auto = true;
     view.z = 1; view.rest = 1; view.cx = VBX + W / 2; view.cy = VBY + H / 2;
     // the prefilled name belonged to the position that is now gone; a name the
     // operator typed themselves is theirs and survives. descAuto is left as it
     // is, so a field we manage goes back to being managed and one they own
-    // stays owned.
-    if (state.descAuto) state.desc = '';
-    render();
+    // stays owned. Only the repeater has a name to clear.
+    if (state.device === 'repeater' && state.descAuto) state.desc = '';
+    // if the other device still has a pin, this tab now mirrors it — which is
+    // exactly how this tab opened
+    showPinFor(state.device);
   });
 
   // Ctrl/⌘+wheel zooms. Plain wheel is left alone so the page still scrolls
@@ -2575,6 +3463,31 @@
   $('ownerInfo').addEventListener('input', e => { state.owner = e.target.value; render(); });
   $('guestPw').addEventListener('input',  e => { state.guest = e.target.value; render(); });
 
+  // Deliberately not seg(): that helper is for controls whose value reaches
+  // the config block. This one navigates, and it also has to move `hidden`
+  // and aria-selected, which seg() knows nothing about.
+  $('devSw').querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    state.device = b.dataset.dev;
+    $('devSw').querySelectorAll('button').forEach(x => {
+      const on = x === b;
+      x.classList.toggle('on', on);
+      x.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    $('paneRep').toggleAttribute('hidden', state.device !== 'repeater');
+    $('paneCom').toggleAttribute('hidden', state.device !== 'companion');
+    // the map is shared, so it has to follow the tab to this device's pin
+    showPinFor(state.device);
+  }));
+
+  // "Follow the other device again" — the way back from an accidental detach.
+  // Without it the only escape is Reset, which also throws away the zoom.
+  $('pinNote').addEventListener('click', e => {
+    if (!e.target.closest('button')) return;
+    const p = state.pins[state.device];
+    p.x = p.y = p.post = null; p.auto = true;
+    showPinFor(state.device);
+  });
+
   $('copyBtn').addEventListener('click', async () => {
     const text = plainText();
     try { await navigator.clipboard.writeText(text); }
@@ -2588,7 +3501,7 @@
     setTimeout(() => { b.textContent = 'Copy'; b.classList.remove('done'); }, 1400);
   });
 
-  render();
+  setScope(state.chanScope);
 </script>
 </body>
 </html>
