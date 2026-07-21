@@ -2703,11 +2703,15 @@
     state.chanScope = on;
     $('scopeSeg').querySelectorAll('button').forEach(x =>
       x.classList.toggle('on', (x.dataset.sc === 'on') === on));
-    $('scopeNote').textContent = on
+    // innerHTML rather than textContent so the caveat can carry weight — it is
+    // the sentence that stops someone blaming their radio. Static strings only,
+    // nothing interpolated, so there is nothing here to escape.
+    $('scopeNote').innerHTML = on
       ? 'Each channel carries its region, so only repeaters configured with that region pass '
       + 'its messages on. Local traffic stays local instead of crossing the country and '
-      + 'spending everyone’s airtime. Most repeaters have no regions set up yet, so check '
-      + 'what is around you before relying on it.'
+      + 'spending everyone’s airtime. <b>Most repeaters have no regions set up yet, so check '
+      + 'what is around you before relying on it.</b> Unset region scope in the app if you are '
+      + 'having trouble sending messages.'
       : 'No scope, so a message travels as far as the mesh carries it. Pick this if the '
       + 'repeaters around you have no regions configured yet.';
     render();
