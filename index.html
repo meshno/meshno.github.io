@@ -1769,11 +1769,18 @@
       .sort((a, b) => a.d - b.d);
   }
 
-  // `pn` is set only when the operator named a postnummer outright — by typing
-  // one into the position prompt, or by picking it off the list. Otherwise the
-  // nearest is guessed, but an existing choice survives as long as the node
-  // stays in the kommune it was made for: nudging the pin should not silently
-  // undo a correction the operator made by hand.
+  // `pn` is set only when the operator named a postnummer outright, by typing
+  // one into the position prompt — that placement is exact and the typed value
+  // stands. Every other placement re-derives from where the pin now is.
+  //
+  // THE POSTNUMMER IS A FUNCTION OF POSITION. It briefly was not: an earlier
+  // version kept an existing value while the node stayed inside the kommune it
+  // was chosen in, to protect a hand-made correction from the postnummer
+  // dropdown. That dropdown was removed the same day and the branch outlived
+  // it, so there was nothing left to protect and it only froze the guess —
+  // clicking around inside Gausdal moved the pin and the coordinates while the
+  // postnummer sat on whatever the first click resolved. Do not reintroduce it
+  // unless something can set this by hand again.
   function place(x, y, drill = true, pn = null) {
     const k = resolve(x, y);
     if (!k) return false;              // out at sea — ignore the click
@@ -1782,10 +1789,7 @@
     state.kommune = k.nr;
     state.kommuneName = k.name;
     const near = postNear(k.nr, x, y);
-    state.post = pn && POST_BY_NR[pn] ? pn
-      : (state.post && POST_BY_NR[state.post] && POST_BY_NR[state.post][2] === k.nr)
-        ? state.post
-        : (near[0] ? near[0][0] : null);
+    state.post = pn && POST_BY_NR[pn] ? pn : (near[0] ? near[0][0] : null);
     state.metro = metroAt(x, y);
     state.border = borderAt(x, y, k.nr);
     const entered = drill && state.fylke !== state.drilled;
