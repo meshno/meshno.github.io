@@ -258,8 +258,11 @@
   .pin { pointer-events: none; }
   /* [hidden] is not honoured on SVG elements by the UA stylesheet */
   .pin[hidden] { display: none; }
+  /* The node has to win against every in-range city on the map, so it is the
+     biggest dot and the only solid ring. Weight, not hue — the page has one
+     accent and both of these are it. */
   .pin-dot { fill: var(--accent); }
-  .pin-ring { fill: none; stroke: var(--accent); stroke-width: 1.2; opacity: 0.55; }
+  .pin-ring { fill: none; stroke: var(--accent); stroke-width: 1.5; opacity: 0.9; }
 
   /* mirrors .map-head so the map reads as one panel with a header and footer */
   .map-note { margin-top: 10px; font-size: 14px; }
@@ -340,9 +343,14 @@
   .city:hover .dot, .city:focus-visible .dot { fill: var(--muted); }
   .city:hover .name, .city:focus-visible .name { fill: var(--ink); }
   .city:focus-visible .hit { stroke: var(--accent); stroke-width: 1.5; }
+  /* An in-range city is marked, not announced. It used to carry a halo within
+     a hair of the node's own ring — same accent, same weight — while its dot
+     was actually the LARGER of the two, so the city read as the node and the
+     node as scenery. The halo is now a faint trace and the ring belongs to
+     the node alone: a ring means "this is your node", nothing else. */
   .city.on .dot { fill: var(--accent); }
   .city.on .name { fill: var(--accent); }
-  .city.on .halo { fill: none; stroke: var(--accent); stroke-width: 1; opacity: 0.4; }
+  .city.on .halo { fill: none; stroke: var(--accent); stroke-width: 0.75; opacity: 0.16; }
   .halo { fill: none; stroke: none; }
 
   /* ---- sections ---- */
@@ -668,10 +676,22 @@
   }
   .city .dot  { r: calc(4px * var(--k, 1)); }
   .city .hit  { r: calc(13px * var(--k, 1)); }
-  .city .halo { r: calc(9px * var(--k, 1)); }
+  .city .halo { r: calc(7px * var(--k, 1)); }
   .pin-ring   { r: calc(10px * var(--k, 1)); }
-  .pin-dot    { r: calc(3.5px * var(--k, 1)); }
+  /* deliberately larger than .city .dot (4px) — the node was the smaller of
+     the two until 2026-07-21, which is exactly why it was hard to find */
+  .pin-dot    { r: calc(5px * var(--k, 1)); }
   .terr, .fylke-lines, .kommune { vector-effect: non-scaling-stroke; }
+  /* These two MUST be non-scaling too. Their radii are counter-scaled by --k
+     to hold a constant screen size, but stroke-width is in user units and is
+     not — so as you zoom in, the stroke keeps its user-space width while the
+     radius shrinks, until the "ring" is thicker than it is wide and renders
+     as a filled blob. At the fylke zoom that is a 1.5-unit stroke on a
+     1.03-unit radius: the node and every in-range city both came out as soft
+     discs of the same accent, which is what made them impossible to tell
+     apart. With this, stroke-width reads in screen px and a ring stays a
+     ring at every zoom. */
+  .pin-ring, .city .halo { vector-effect: non-scaling-stroke; }
 
   /* ---- narrow ---- */
   @media (max-width: 900px) {
@@ -2493,8 +2513,10 @@
       if (!place(p[3], p[4], true, raw)) return fail(`${raw} ${p[1]} is not on the map.`);
       box.classList.remove('bad');
       note.className = 'help';
+      // Not "drag the pin" — the pin is pointer-events:none and has never
+      // been draggable; dragging the map pans it.
       note.textContent = `Placed at the centre of ${raw} ${p[1]}. `
-        + 'Drag the pin or type a lat, lon to set the exact spot.';
+        + 'Click the exact spot on the map, or type a lat, lon.';
       return;
     }
     if (!m) return fail('Type a position as latitude, longitude — e.g. 59.91229, '
