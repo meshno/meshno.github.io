@@ -1716,8 +1716,8 @@
             <div class="k">region scope</div>
             <div class="v">
               <div class="seg" id="scopeSeg">
-                <button data-sc="off" class="on">skip</button>
-                <button data-sc="on">include</button>
+                <button data-sc="off">skip</button>
+                <button data-sc="on" class="on">include</button>
               </div>
               <p class="help" id="scopeNote"></p>
             </div>
@@ -1767,8 +1767,8 @@
       <div class="qrd-scope">
         <span class="qrd-lab">region scope</span>
         <div class="seg" id="qrScope">
-          <button data-sc="off" class="on">skip</button>
-          <button data-sc="on">include</button>
+          <button data-sc="off">skip</button>
+          <button data-sc="on" class="on">include</button>
         </div>
       </div>
       <p class="qrd-lab">secret</p>
@@ -1962,11 +1962,13 @@
       repeater:  { x: null, y: null, post: null, auto: true },
       companion: { x: null, y: null, post: null, auto: true }
     },
-    // Companion-only: reaches the channel URLs, never buildLines(). Starts OFF
-    // because a scoped channel only routes properly where the repeaters around
-    // you have regions configured, and almost none do yet (open question 2).
-    // Turning it on later is safe — see channelUrl().
-    chanScope: false,
+    // Companion-only: reaches the channel URLs, never buildLines(). Defaults ON
+    // as of 2026-07-22, reversing the earlier default — scoping is the whole
+    // convention this page exists to spread, and leaving it off made the page
+    // argue for something it did not hand out. Safe to have on because
+    // region_scope never feeds the secret, so a scoped channel is the same
+    // channel as an unscoped one either way.
+    chanScope: true,
     fw: 'new', profile: 'neighborhood',
     cr: '8', hash: '1', loop: 'minimal', regionDefault: 'none',
     owner: '', guest: '', desc: '', location: false,
@@ -2706,9 +2708,8 @@
       + 'its messages on. Local traffic stays local instead of crossing the country and '
       + 'spending everyone’s airtime. Most repeaters have no regions set up yet, so check '
       + 'what is around you before relying on it.'
-      : 'A region scope limits how far a message travels: only repeaters configured with that '
-      + 'region repeat it, which keeps local traffic off the rest of the country’s airtime. '
-      + 'Off for now, until more repeaters have regions set up.';
+      : 'No scope, so a message travels as far as the mesh carries it. Pick this if the '
+      + 'repeaters around you have no regions configured yet.';
     render();
     if (qrShown) showQr(qrShown);
   }
