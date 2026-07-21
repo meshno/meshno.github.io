@@ -1650,12 +1650,12 @@
           <div class="k">region default</div>
           <div class="v">
             <div class="seg" id="defSeg">
-              <button data-d="no">no</button>
+              <button data-d="no" class="on">no</button>
               <button data-d="landsdel">landsdel</button>
               <button data-d="fylke">fylke</button>
               <button data-d="kommune">kommune</button>
               <button data-d="city">city</button>
-              <button data-d="none" class="on">off</button>
+              <button data-d="none">off</button>
             </div>
           </div>
         </div>
@@ -1970,7 +1970,12 @@
     // channel as an unscoped one either way.
     chanScope: true,
     fw: 'new', profile: 'neighborhood',
-    cr: '8', hash: '1', loop: 'minimal', regionDefault: 'none',
+    // Country-level, changed from 'none' on 2026-07-22. This is the MeshCore
+    // firmware dev's own guidance — a default broad enough that a DM between
+    // two people anywhere in the scoped area still routes — and it is what
+    // gets the region convention moving: a node that tags nothing gives the
+    // rest of the mesh nothing to filter on.
+    cr: '8', hash: '1', loop: 'minimal', regionDefault: 'no',
     owner: '', guest: '', desc: '', location: false,
     // Whether the name field is still ours to manage. Starts true — the empty
     // field the page opens with is ours, not a name the operator chose — and
