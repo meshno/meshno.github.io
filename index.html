@@ -1643,7 +1643,12 @@
     drilled: null,             // fylke the map is currently zoomed into
     fw: 'new', profile: 'neighborhood',
     cr: '8', hash: '1', loop: 'minimal', regionDefault: 'none',
-    owner: '', guest: '', desc: '', location: false
+    owner: '', guest: '', desc: '', location: false,
+    // Whether the name field is still ours to manage. Starts true — the empty
+    // field the page opens with is ours, not a name the operator chose — and
+    // goes false the moment they type in it, INCLUDING typing it empty. So
+    // clearing the name is a decision the pin moving will not undo.
+    descAuto: true
   };
 
   const $ = id => document.getElementById(id);
@@ -1827,6 +1832,18 @@
     state.kommuneName = k.name;
     const near = postNear(k.nr, x, y);
     state.post = pn && POST_BY_NR[pn] ? pn : (near[0] ? near[0][0] : null);
+    // Prefill the name with the poststed, so a node is named the moment it is
+    // placed. Only ever overwrites a name we put there ourselves, or an empty
+    // field — moving the pin must not rewrite what the operator typed.
+    //
+    // Note this makes the default name the POSTAL AREA, so every node in 1354
+    // starts out as "NO-1354 Bærums Verk" until someone changes it. That is a
+    // deliberate call: a named node beats an unnamed one, and the field is
+    // right there. It is also why the placeholder alone was not enough.
+    if (state.descAuto) {
+      const p = POST_BY_NR[state.post];
+      if (p) state.desc = p[1];
+    }
     state.metro = metroAt(x, y);
     state.border = borderAt(x, y, k.nr);
     const entered = drill && state.fylke !== state.drilled;
@@ -1975,6 +1992,11 @@
     // position-derived parts left out rather than guessed.
     const placed = !!state.kommune;
     document.body.classList.toggle('unplaced', !placed);
+    // The name can be written underneath the operator — prefilled on placing,
+    // cleared on Reset — so the field has to follow `state.desc`. Guarded on
+    // inequality rather than written every pass: an unconditional assignment
+    // moves the caret to the end on every keystroke.
+    if ($('nodeDesc').value !== state.desc) $('nodeDesc').value = state.desc;
     // the two controls that need a position say so instead of going missing
     $('locSeg').querySelector('[data-loc="on"]').disabled = !placed;
     $('nodeDesc').disabled = !placed;
@@ -2177,7 +2199,19 @@
   const map = $('map');
   const VBX = 4.0, VBY = 4.0;
   const W = 470.3, H = 550.5, MAXZ = 32;  // ~130 m/px, enough to place a pin; see note in CLAUDE.md
-  const view = { z: 1, cx: VBX + W / 2, cy: VBY + H / 2 };
+  // `rest` is the zoom of the current RESTING view: 1 for the whole country,
+  // the fit zoom for a fylke once drilled in. At or below it the map is
+  // "zoomed out" and yields every gesture to the page; above it there is
+  // genuinely more sheet than frame, so the map takes them to pan.
+  //
+  // Without this, drilling into a fylke — which happens automatically when a
+  // postnummer is typed — left `touch-action: none` over a big part of a
+  // phone screen, so a swipe starting on the map could not scroll the page
+  // and the map was a dead zone the reader had to swipe around.
+  const view = { z: 1, rest: 1, cx: VBX + W / 2, cy: VBY + H / 2 };
+  // A hair above rest, so floating-point noise in the fit zoom cannot make
+  // the resting view read as panned.
+  const pannable = () => view.z > view.rest * 1.001;
 
   function applyView() {
     const w = W / view.z, h = H / view.z;
@@ -2186,7 +2220,7 @@
     view.cy = Math.min(VBY + H - h / 2, Math.max(VBY + h / 2, view.cy));
     map.setAttribute('viewBox',
       `${view.cx - w / 2} ${view.cy - h / 2} ${w} ${h}`);
-    map.classList.toggle('zoomed', view.z > 1.001);
+    map.classList.toggle('zoomed', pannable());
     map.style.setProperty('--k', 1 / view.z);   // keep text and dots readable
     for (const k of KOMMUNER) {
       k.el.classList.toggle('shown', k.nr.slice(0, 2) === state.drilled);
@@ -2229,6 +2263,8 @@
     if (!b) return;
     const w = (b[2] - b[0]) * 1.25, h = (b[3] - b[1]) * 1.25;
     view.z = Math.min(MAXZ, Math.max(1, Math.min(W / w, H / h)));
+    // this framing is now the resting view — zoomed out, not pannable
+    view.rest = view.z;
     view.cx = (b[0] + b[2]) / 2;
     view.cy = (b[1] + b[3]) / 2;
     applyView();
@@ -2245,7 +2281,12 @@
     state.post = null;
     state.metro = [];
     state.border = { landsdel: [], fylke: [], kommune: [] };
-    view.z = 1; view.cx = VBX + W / 2; view.cy = VBY + H / 2;
+    view.z = 1; view.rest = 1; view.cx = VBX + W / 2; view.cy = VBY + H / 2;
+    // the prefilled name belonged to the position that is now gone; a name the
+    // operator typed themselves is theirs and survives. descAuto is left as it
+    // is, so a field we manage goes back to being managed and one they own
+    // stays owned.
+    if (state.descAuto) state.desc = '';
     render();
   });
 
@@ -2287,10 +2328,14 @@
     const p = mapPoint(e);
     const dx = p[0] - last[0], dy = p[1] - last[1];
     if (!dragged && Math.hypot(dx, dy) * view.z < 1.5) return;   // still a click
+    // Still counts as a drag even where there is nothing to pan, so a dragged
+    // pointer never places a node — that has always been the behaviour at 1x.
     dragged = true;
-    map.classList.add('panning');
-    view.cx -= dx; view.cy -= dy;
-    applyView();
+    if (pannable()) {
+      map.classList.add('panning');
+      view.cx -= dx; view.cy -= dy;
+      applyView();
+    }
     last = mapPoint(e);
   });
 
@@ -2306,7 +2351,7 @@
   // on inline SVG, which lets the page scroll instead of the map panning.
   // Only swallow the gesture when there is actually something to pan.
   map.addEventListener('touchmove', e => {
-    if (view.z > 1.001 && pointers.size > 0) e.preventDefault();
+    if (pannable() && pointers.size > 0) e.preventDefault();
   }, { passive: false });
 
   // A click all but on a marker snaps to its exact coordinates: at 1x the map
@@ -2464,7 +2509,13 @@
   $('posRead').addEventListener('input', positionEdited);
   $('posRead').addEventListener('blur', () => { $('posRead').classList.remove('bad'); render(); });
 
-  $('nodeDesc').addEventListener('input', e => { state.desc = e.target.value; render(); });
+  // Typing makes the name theirs, so the pin moving will not overwrite it
+  // again — including typing it empty, which is a deliberate "leave it blank".
+  $('nodeDesc').addEventListener('input', e => {
+    state.desc = e.target.value;
+    state.descAuto = false;
+    render();
+  });
   $('ownerInfo').addEventListener('input', e => { state.owner = e.target.value; render(); });
   $('guestPw').addEventListener('input',  e => { state.guest = e.target.value; render(); });
 
