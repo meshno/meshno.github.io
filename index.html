@@ -288,19 +288,13 @@
   /* the drilled fylke's kommuner step up to the fylke lines' own colour and a
      heavier stroke, so "which fylke is open" still reads at a glance */
   .kommune.shown { stroke: var(--line-k); stroke-width: 0.45; }
-  /* Coverage areas take the drilled fylke's line treatment — BOTH the darker
-     colour and the wider stroke. Colour alone was not enough and it is worth
-     knowing why: these strokes are `vector-effect: non-scaling-stroke`, so
-     0.3 is 0.3 SCREEN pixels at every zoom. Sub-pixel renders as a faint grey
-     smear however dark you make it, and a whole neighbouring fylke still read
-     as one flat block with no kommuner in it. Width is the dial that matters
-     below 0.5; colour only helps once the line covers a pixel. */
-  .kommune.nb-1, .kommune.nb-2, .kommune.nb-3 {
-    stroke: var(--line-k); stroke-width: 0.45;
-  }
-  /* the selected fylke is tinted rather than outlined: fills tile cleanly,
-     so there is no shared-edge overpainting to work around */
-  /* FILL says which region containing this kommune we relay for. */
+  /* FILL says which region containing this kommune we relay for.
+     EACH CARRIES ITS OWN STROKE WIDTH, and that is not decoration: these
+     strokes are `vector-effect: non-scaling-stroke`, so 0.3 is 0.3 SCREEN
+     pixels at every zoom. Sub-pixel renders as a faint grey smear however
+     dark you make it, and a whole neighbouring fylke read as one flat block
+     with no kommuner in it. Below half a pixel width is the dial; colour only
+     helps once the line covers a pixel. */
   .kommune.t-own { fill: var(--own-fill); stroke: var(--own-line); stroke-width: 0.5; }
   .kommune.t-nbf { fill: var(--nbf-fill); stroke: var(--nbf-line); stroke-width: 0.45; }
   .kommune.t-ownl { fill: var(--ownl-fill); stroke: var(--ownl-line); stroke-width: 0.42; }
@@ -2185,6 +2179,19 @@
   const REACH_MAX = 300;   // clamp: beyond this the pass slows and every
                             // node ends up tagged for most of the country
 
+  // THE TIER CLASSES, NAMED ONCE. render() paints these in its placed branch
+  // and scrubs them in its unplaced one, and those were two hand-written lists
+  // of the same names — so when the two-hue rework renamed `nb-1/2/3` and
+  // `in-fylke` to `t-*`, only the painting side was updated. The scrub went on
+  // removing classes nothing had added, silently, and Reset left the country
+  // lit for a node that no longer existed. One list, both directions.
+  //
+  // FILL and OUTLINE are two independent channels — a kommune can be inside a
+  // region we relay for AND be individually tagged — so a kommune takes at
+  // most one FILL_TIER but may carry `t-nbk` as well.
+  const FILL_TIERS = ['t-own', 't-nbf', 't-ownl', 't-nbl'];
+  const TIERS = [...FILL_TIERS, 't-nbk'];
+
   const state = {
     x: null, y: null,          // node position in map units
     fylke: null, kommune: null, kommuneName: null, metro: [],
@@ -3356,8 +3363,16 @@
       $('cmdOut').innerHTML = renderLines();
       // Reset can land here from a placed state, so clear the map overlays too
       $('selKomm').setAttribute('d', '');
-      KOMMUNER.forEach(k =>
-        k.el.classList.remove('in-fylke', 'nb-1', 'nb-2', 'nb-3'));
+      // From the SAME list the placed branch paints, not a second copy of the
+      // names. This line said 'in-fylke', 'nb-1', 'nb-2', 'nb-3' until
+      // 2026-07-22 — every one of them a class the two-hue rework had renamed
+      // months earlier — so it scrubbed nothing and Reset left the whole
+      // country lit for a node that was gone.
+      KOMMUNER.forEach(k => k.el.classList.remove(...TIERS));
+      // The position note outlived Reset the same way: it still read "Placed
+      // at the centre of 1337 Sandvika" with no pin anywhere on the map.
+      $('coordNote').textContent = '';
+      $('coordNote').className = 'help';
       CITY_PTS.forEach(c => c.el.classList.remove('on'));
       document.querySelectorAll('#profiles .profile').forEach(el =>
         el.classList.toggle('on', el.dataset.p === state.profile));
@@ -3523,10 +3538,7 @@
         : LANDSDEL[fy] === ourLd ? 'ownl'
         : nbL.has(LANDSDEL[fy]) ? 'nbl' : null;
       if (fill) present.add(fill);
-      k.el.classList.toggle('t-own', fill === 'own');
-      k.el.classList.toggle('t-nbf', fill === 'nbf');
-      k.el.classList.toggle('t-ownl', fill === 'ownl');
-      k.el.classList.toggle('t-nbl', fill === 'nbl');
+      for (const t of FILL_TIERS) k.el.classList.toggle(t, 't-' + fill === t);
       // independent of the fill, and true inside our own fylke too
       const tagged = nbK.has(k.nr);
       if (tagged) present.add('nbk');
