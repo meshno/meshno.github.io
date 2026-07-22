@@ -86,9 +86,12 @@
        Each fill carries a matching line one step darker, so a fill can never
        swallow the boundary inside it. */
     --own-fill: #cfe8d9;  --own-line: #3f8f6b;
-    --nb1-fill: #cdd4f2;  --nb1-line: #5468b8;
-    --nb2-fill: #dadff6;  --nb2-line: #7c8ccb;
-    --nb3-fill: #e3e6f9;  --nb3-line: #9fabdb;
+    --nbf-fill: #dadff6;  --nbf-line: #7c8ccb;
+    --nbl-fill: #e3e6f9;  --nbl-line: #9fabdb;
+    /* the kommune tag is an OUTLINE ONLY, so it can sit on any fill above —
+       including our own green. Darker than either blue fill's line, because
+       it has to win against them and against --own-line. */
+    --nbk-line: #3f51a8;
     --slot:    rgba(10,108,98,0.34);
     --slot-b:  rgba(10,108,98,0.50);
     /* the floating map furniture reads as glass over whatever is beneath */
@@ -132,9 +135,9 @@
     /* Same split, solved for near-black. Dark starts with land and water only
        dE 7.8 apart, so every tier needs more absolute separation than light. */
     --own-fill: #1b3a33;  --own-line: #55a184;
-    --nb1-fill: #27436f;  --nb1-line: #7f92d2;
-    --nb2-fill: #1e3358;  --nb2-line: #6376b4;
-    --nb3-fill: #182945;  --nb3-line: #4c5c8c;
+    --nbf-fill: #1e3358;  --nbf-line: #6376b4;
+    --nbl-fill: #182945;  --nbl-line: #4c5c8c;
+    --nbk-line: #97a8ec;
     --slot:    rgba(94,234,212,0.30);
     --slot-b:  rgba(94,234,212,0.45);
     --glass:   rgba(10,18,32,0.80);
@@ -278,15 +281,16 @@
   }
   /* the selected fylke is tinted rather than outlined: fills tile cleanly,
      so there is no shared-edge overpainting to work around */
-  /* Ours. Painted as one region: a kommune in the fylke we stand in stays
-     OURS even when it also borders a neighbour, or our own fylke fragments
-     into patches of coverage colour and stops reading as a place. */
-  .kommune.in-fylke { fill: var(--own-fill); stroke: var(--own-line); stroke-width: 0.5; }
-  /* Neighbours we relay for, nearest relationship first. Each takes its own
-     line as well as its own fill — see the note on stroke width below. */
-  .kommune.nb-1 { fill: var(--nb1-fill); stroke: var(--nb1-line); stroke-width: 0.5; }
-  .kommune.nb-2 { fill: var(--nb2-fill); stroke: var(--nb2-line); stroke-width: 0.45; }
-  .kommune.nb-3 { fill: var(--nb3-fill); stroke: var(--nb3-line); stroke-width: 0.42; }
+  /* FILL says which region containing this kommune we relay for. */
+  .kommune.t-own { fill: var(--own-fill); stroke: var(--own-line); stroke-width: 0.5; }
+  .kommune.t-nbf { fill: var(--nbf-fill); stroke: var(--nbf-line); stroke-width: 0.45; }
+  .kommune.t-nbl { fill: var(--nbl-fill); stroke: var(--nbl-line); stroke-width: 0.42; }
+  /* OUTLINE says this kommune is itself tagged. Last, so it wins the stroke
+     against every fill above AND against .shown — a kommune can be our own
+     ground and a tagged neighbour at the same time, and usually is: your
+     nearest kommuner are mostly inside your own fylke. Heavier than any fill's
+     own border so it reads as a mark rather than a shade. */
+  .kommune.t-nbk { stroke: var(--nbk-line); stroke-width: 0.8; }
 
   .terr {
     fill: none; stroke: var(--line-t); stroke-width: 0.7;
@@ -529,9 +533,11 @@
   .mk-no { width: 9px; height: 9px; }
   .mk-sel { background: var(--wash-2); border-color: var(--accent); }
   .mk-own { background: var(--own-fill); border-color: var(--own-line); }
-  .mk-nb1 { background: var(--nb1-fill); border-color: var(--nb1-line); }
-  .mk-nb2 { background: var(--nb2-fill); border-color: var(--nb2-line); }
-  .mk-nb3 { background: var(--nb3-fill); border-color: var(--nb3-line); }
+  /* the kommune tag swatch is an OUTLINE on plain land, because that is what
+     it is on the map: a mark that sits on whatever fill is underneath */
+  .mk-nbk { background: var(--land); border-color: var(--nbk-line); }
+  .mk-nbf { background: var(--nbf-fill); border-color: var(--nbf-line); }
+  .mk-nbl { background: var(--nbl-fill); border-color: var(--nbl-line); }
 
   /* Which device's pin the shared map is showing. Sits with the map, not with
      the tabs, because it is a fact about the pin. */
@@ -2989,22 +2995,22 @@
   // default radii most of the country has no neighbours at all.
   function renderMapKey(present) {
     const key = $('mapKey');
-    if (!present.has('own')) { key.setAttribute('hidden', ''); return; }
+    if (!present.has('sel')) { key.setAttribute('hidden', ''); return; }
     // Columns are LEVELS, rows are ownership, so the same level lines up under
     // itself and the two labels are written once instead of per swatch. The
     // landsdel column appears only when there is landsdel ground on screen —
     // "own" has no landsdel cell at all, and that hole is informative.
     const cols = ['kommune', 'fylke'];
-    if (present.has('nb3')) cols.push('landsdel');
-    const near = present.has('nb1') || present.has('nb2') || present.has('nb3');
+    if (present.has('nbl')) cols.push('landsdel');
+    const near = present.has('nbk') || present.has('nbf') || present.has('nbl');
     const cell = on => on ? `<i class="mk-sw mk-${on}"></i>` : '<i class="mk-no"></i>';
     let h = '<span></span>' + cols.map(c => `<span class="mk-c">${c}</span>`).join('');
     h += '<span class="mk-h">own</span>'
        + cell('sel') + cell('own') + (cols.length > 2 ? cell(null) : '');
     if (near) {
       h += '<span class="mk-h">neighbour</span>'
-         + cell(present.has('nb1') && 'nb1') + cell(present.has('nb2') && 'nb2')
-         + (cols.length > 2 ? cell(present.has('nb3') && 'nb3') : '');
+         + cell(present.has('nbk') && 'nbk') + cell(present.has('nbf') && 'nbf')
+         + (cols.length > 2 ? cell(present.has('nbl') && 'nbl') : '');
     }
     key.style.setProperty('--mk-cols', cols.length);
     key.innerHTML = h;
@@ -3444,28 +3450,34 @@
     // kommuner it borders, then the rest of a bordering fylke, then a
     // bordering landsdel. Each kommune takes at most ONE tier — the most
     // specific that applies — so the washes never stack into mud.
-    const present = new Set(['sel', 'own']);   // always true once placed
+    const present = new Set(['sel']);
     const nbK = new Set(state.border.kommune.map(x => x.nr));
     const nbF = new Set(state.border.fylke.map(x => x.nr));
     const nbL = new Set(state.border.landsdel.map(x => x.nr));
     KOMMUNER.forEach(k => {
       const fy = k.nr.slice(0, 2);
-      // OUR OWN FYLKE OUTRANKS COVERAGE. A kommune inside the fylke we stand
-      // in is ours, even where it also borders a neighbour — otherwise our
-      // fylke fragments into patches of neighbour colour and stops reading as
-      // one place. The tag and the tree row are unaffected; this is only how
-      // the ground is painted.
-      const tier = k.nr === state.kommune ? 0      // the selection overlay owns it
-        : fy === state.fylke ? 0                   // ours
-        : nbK.has(k.nr) ? 1
-        : nbF.has(fy) ? 2
-        : nbL.has(LANDSDEL[fy]) ? 3 : 0;
-      k.el.classList.toggle('nb-1', tier === 1);
-      k.el.classList.toggle('nb-2', tier === 2);
-      k.el.classList.toggle('nb-3', tier === 3);
-      if (tier) present.add('nb' + tier);
-      k.el.classList.toggle('in-fylke',
-        tier === 0 && k.nr !== state.kommune && fy === state.fylke);
+      // TWO INDEPENDENT CHANNELS, because a kommune can be two things at once.
+      //
+      //   FILL    = which region containing it we relay for (own fylke,
+      //             a neighbouring fylke, a neighbouring landsdel)
+      //   OUTLINE = whether this kommune ITSELF is a tagged neighbour
+      //
+      // These were one ladder until 2026-07-22, and it hid the kommune tier
+      // exactly when someone turned it on: your kommune's own neighbours are
+      // usually inside your own fylke, so "our fylke" swallowed them. A tag it
+      // emits and the map does not show is the worst kind of missing.
+      const fill = k.nr === state.kommune ? null      // the overlay owns it
+        : fy === state.fylke ? 'own'
+        : nbF.has(fy) ? 'nbf'
+        : nbL.has(LANDSDEL[fy]) ? 'nbl' : null;
+      if (fill) present.add(fill);
+      k.el.classList.toggle('t-own', fill === 'own');
+      k.el.classList.toggle('t-nbf', fill === 'nbf');
+      k.el.classList.toggle('t-nbl', fill === 'nbl');
+      // independent of the fill, and true inside our own fylke too
+      const tagged = nbK.has(k.nr);
+      if (tagged) present.add('nbk');
+      k.el.classList.toggle('t-nbk', tagged);
     });
     renderMapKey(present);
     const metroKeys = state.metro.map(m => m.key);
