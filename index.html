@@ -858,7 +858,11 @@
   .scope .t { white-space: pre; }
   .scope .br { color: var(--dim); }
 
-  .scope .an { color: var(--dim); }
+  /* One step down from the tag, because the tag is the thing you copy and the
+     annotation only explains it. It also buys back the width the own/neighbour
+     wording costs — the alignment padding is emitted OUTSIDE .an, so the
+     annotation column still lines up at a different size. */
+  .scope .an { color: var(--dim); font-size: 12px; }
   .scope .an b { color: var(--accent); font-weight: 400; }
 
   /* ---- controls ---- */
@@ -3423,23 +3427,35 @@
     // Only the no-* rows are annotated — eu / no / europe speak for themselves.
     // The two administrative-code terms carry the accent, since those are the
     // ones people read as a postcode.
+    // OWN AND NEIGHBOUR ARE THE MAP KEY'S OWN WORDS, reused here so the tree
+    // and the key describe the ground the same way. Before this the rows said
+    // only "within N km of X", and at 1337 three of them read *identically* —
+    // `no-03`, `no-0301` and `no-oslo` all "within 6 km of Oslo", a fylke, a
+    // kommune and a city with nothing to tell them apart.
+    //
+    // THE LEVEL IS NAMED ON THE `own` ROW ONLY, and the neighbours beneath it
+    // inherit it. tags() emits each level as own-then-neighbours, so the row
+    // that introduces the level always sits directly above them. Repeating it
+    // ran the annotations past the panel and into a horizontal scrollbar,
+    // which is the whole reason these are kept short.
     const ann = {};
+    const dist = d => `${Math.round(d)} km`;
     ann['no-' + LANDSDEL[state.fylke]] =
-      `landsdel — ${esc(LANDSDEL_NAMES[LANDSDEL[state.fylke]])}`;
-    // Border rows borrow the city tags' phrasing on purpose: "within N km of X"
-    // already reads as "relays for", which is exactly what these mean.
+      `own landsdel — ${esc(LANDSDEL_NAMES[LANDSDEL[state.fylke]])}`;
     for (const x of state.border.landsdel)
-      ann['no-' + x.nr] = `within ${Math.round(x.d)} km of ${esc(LANDSDEL_NAMES[x.nr])}`;
+      ann['no-' + x.nr] = `neighbour — ${esc(LANDSDEL_NAMES[x.nr])} ${dist(x.d)}`;
     for (const x of state.border.fylke)
-      ann['no-' + x.nr] = `within ${Math.round(x.d)} km of ${esc(FYLKE_NAMES[x.nr])}`;
+      ann['no-' + x.nr] = `neighbour — ${esc(FYLKE_NAMES[x.nr])} ${dist(x.d)}`;
     for (const x of state.border.kommune)
-      ann['no-' + x.nr] = `within ${Math.round(x.d)} km of ${esc(x.name)}`;
+      ann['no-' + x.nr] = `neighbour — ${esc(x.name)} ${dist(x.d)}`;
     ann['no-' + state.fylke] =
-      `<b>fylkesnummer</b> for ${esc(FYLKE_NAMES[state.fylke])}`;
+      `own <b>fylkesnummer</b> — ${esc(FYLKE_NAMES[state.fylke])}`;
     ann['no-' + state.kommune] =
-      `<b>kommunenummer</b> for ${esc(state.kommuneName)}`;
+      `own <b>kommunenummer</b> — ${esc(state.kommuneName)}`;
+    // A city has no home — it measures to an anchor point, not to a region's
+    // edge — so it is neither own nor neighbour and says neither.
     for (const m of state.metro)
-      ann[m.key] = `within ${Math.round(m.d)} km of ${esc(CITIES[m.key])}`;
+      ann[m.key] = `city — ${esc(CITIES[m.key])} ${dist(m.d)}`;
 
     // the tree describes the map, which shows the ACTIVE device — unlike the
     // CLI block below it, which is always the repeater's
