@@ -1716,8 +1716,8 @@
             <div class="k">region scope</div>
             <div class="v">
               <div class="seg" id="scopeSeg">
-                <button data-sc="off">skip</button>
-                <button data-sc="on" class="on">include</button>
+                <button data-sc="off" class="on">skip</button>
+                <button data-sc="on">include</button>
               </div>
               <p class="help" id="scopeNote"></p>
             </div>
@@ -1767,8 +1767,8 @@
       <div class="qrd-scope">
         <span class="qrd-lab">region scope</span>
         <div class="seg" id="qrScope">
-          <button data-sc="off">skip</button>
-          <button data-sc="on" class="on">include</button>
+          <button data-sc="off" class="on">skip</button>
+          <button data-sc="on">include</button>
         </div>
       </div>
       <p class="qrd-lab">secret</p>
@@ -1962,13 +1962,16 @@
       repeater:  { x: null, y: null, post: null, auto: true },
       companion: { x: null, y: null, post: null, auto: true }
     },
-    // Companion-only: reaches the channel URLs, never buildLines(). Defaults ON
-    // as of 2026-07-22, reversing the earlier default — scoping is the whole
-    // convention this page exists to spread, and leaving it off made the page
-    // argue for something it did not hand out. Safe to have on because
-    // region_scope never feeds the secret, so a scoped channel is the same
-    // channel as an unscoped one either way.
-    chanScope: true,
+    // Companion-only: reaches the channel URLs, never buildLines(). OFF, and
+    // that is deliberately the opposite of the repeater's `region default no`.
+    // The two build the convention in the right order: repeaters start
+    // advertising the regions they cover, which costs nothing and gives the
+    // mesh something to filter on, while companion traffic stays unscoped so
+    // it still crosses the repeaters that have not caught up yet. Turn this on
+    // once the repeaters around you carry regions.
+    //
+    // Briefly defaulted ON earlier on 2026-07-22 and reverted the same day.
+    chanScope: false,
     fw: 'new', profile: 'neighborhood',
     // Country-level, changed from 'none' on 2026-07-22. This is the MeshCore
     // firmware dev's own guidance — a default broad enough that a DM between
@@ -2717,8 +2720,9 @@
       + 'spending everyone’s airtime. <b>Most repeaters have no regions set up yet, so check '
       + 'what is around you before relying on it.</b> Unset region scope in the app if you are '
       + 'having trouble sending messages.'
-      : 'No scope, so a message travels as far as the mesh carries it. Pick this if the '
-      + 'repeaters around you have no regions configured yet.';
+      : 'No scope, so a message travels as far as the mesh carries it and crosses repeaters '
+      + 'that have no regions set up. <b>Skipped by default while that is still most of them.</b> '
+      + 'Turn it on once the repeaters around you carry regions.';
     render();
     if (qrShown) showQr(qrShown);
   }
