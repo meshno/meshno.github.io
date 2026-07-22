@@ -65,16 +65,30 @@
        be a brighter, more chromatic teal than --accent: the accent tinted at
        low alpha over pale land comes out a muddy sage, not a selection */
     --wash-2:  rgba(0,150,136,0.28);
-    /* Relay coverage, fading outward. GREEN, not the teal accent: on light the
-       land is near-white and the water is pale blue only dE 9.9 away, so a
-       teal tint walks the land straight into the water colour — nb-2 landed
-       6.7 from it and read as sea. Green leaves that path. It also separates
-       roles: the accent marks what you selected, this marks what you also
-       cover. Alphas are solved per theme for equal perceptual steps
-       (dE 20 / 12.5 / 7.5 off the land), not shared numbers. */
-    --nb-1:    rgba(20,149,98,0.287);
-    --nb-2:    rgba(20,149,98,0.18);
-    --nb-3:    rgba(20,149,98,0.108);
+    /* ---- who owns this ground ----
+       TWO HUES, TWO QUESTIONS. Green is OURS, blue is a NEIGHBOUR we relay
+       for. Within each family the weight says how much. Encoding both in one
+       hue at five strengths is what made this unreadable for months: you
+       could not tell "mine" from "near me" without counting shades.
+
+       The blues are PERIWINKLE, not the water's cyan-leaning grey-blue. That
+       is deliberate and measured: a pale cyan blue lands dE 4.5-5.8 from
+       --water and simply reads as sea, and going paler makes it worse. The
+       separation here is by HUE. Every tier below clears the water by more
+       than the land does (9.9), so nothing on land can be mistaken for it.
+
+         fill            dE off land   dE off water
+         --own-fill      13.8          12.7
+         --nb1-fill      21.7          13.5
+         --nb2-fill      16.4           8.9
+         --nb3-fill      13.2           7.0
+
+       Each fill carries a matching line one step darker, so a fill can never
+       swallow the boundary inside it. */
+    --own-fill: #cfe8d9;  --own-line: #3f8f6b;
+    --nb1-fill: #cdd4f2;  --nb1-line: #5468b8;
+    --nb2-fill: #dadff6;  --nb2-line: #7c8ccb;
+    --nb3-fill: #e3e6f9;  --nb3-line: #9fabdb;
     --slot:    rgba(10,108,98,0.34);
     --slot-b:  rgba(10,108,98,0.50);
     /* the floating map furniture reads as glass over whatever is beneath */
@@ -88,7 +102,6 @@
        put the teal selection wash on sand and turned it a muddy sage. */
     --water:   #dbe6ed;
     --land:    #fafaf7;
-    --land-on: #f2efe8;
     --line-k:  #a9b4ba;
     /* kommune borders, drawn everywhere at rest. Half the perceptual weight of
        the fylke lines off the land colour (dE 13.3 against 26.3), so the two
@@ -116,11 +129,12 @@
     --on-accent: #062621;
     --wash:    rgba(94,234,212,0.08);
     --wash-2:  rgba(94,234,212,0.20);
-    /* dark needs its own alphas: the same numbers that read on paper vanish
-       on near-black, where land and water are only dE 7.8 apart to begin with */
-    --nb-1:    rgba(110,231,183,0.182);
-    --nb-2:    rgba(110,231,183,0.11);
-    --nb-3:    rgba(110,231,183,0.065);
+    /* Same split, solved for near-black. Dark starts with land and water only
+       dE 7.8 apart, so every tier needs more absolute separation than light. */
+    --own-fill: #1b3a33;  --own-line: #55a184;
+    --nb1-fill: #27436f;  --nb1-line: #7f92d2;
+    --nb2-fill: #1e3358;  --nb2-line: #6376b4;
+    --nb3-fill: #182945;  --nb3-line: #4c5c8c;
     --slot:    rgba(94,234,212,0.30);
     --slot-b:  rgba(94,234,212,0.45);
     --glass:   rgba(10,18,32,0.80);
@@ -129,7 +143,6 @@
     --placeholder: rgba(160,185,215,0.32);
     --water:   #0a1220;
     --land:    #131e33;
-    --land-on: #1b2f4c;
     --line-k:  #35507a;
     /* dark carries a slightly higher ratio (dE 15.7 against 25.3) because it
        starts with less separation to spend — the same reason --nb-* differ */
@@ -253,15 +266,27 @@
   /* the drilled fylke's kommuner step up to the fylke lines' own colour and a
      heavier stroke, so "which fylke is open" still reads at a glance */
   .kommune.shown { stroke: var(--line-k); stroke-width: 0.45; }
+  /* Coverage areas take the drilled fylke's line treatment — BOTH the darker
+     colour and the wider stroke. Colour alone was not enough and it is worth
+     knowing why: these strokes are `vector-effect: non-scaling-stroke`, so
+     0.3 is 0.3 SCREEN pixels at every zoom. Sub-pixel renders as a faint grey
+     smear however dark you make it, and a whole neighbouring fylke still read
+     as one flat block with no kommuner in it. Width is the dial that matters
+     below 0.5; colour only helps once the line covers a pixel. */
+  .kommune.nb-1, .kommune.nb-2, .kommune.nb-3 {
+    stroke: var(--line-k); stroke-width: 0.45;
+  }
   /* the selected fylke is tinted rather than outlined: fills tile cleanly,
      so there is no shared-edge overpainting to work around */
-  .kommune.in-fylke { fill: var(--land-on); }
-  /* Painted over the land fill, and after .in-fylke so relay coverage wins
-     over the drill-down tint — what the node relays for matters more than
-     which fylke happens to be open. A kommune carries at most one of these. */
-  .kommune.nb-3 { fill: var(--nb-3); }
-  .kommune.nb-2 { fill: var(--nb-2); }
-  .kommune.nb-1 { fill: var(--nb-1); }
+  /* Ours. Painted as one region: a kommune in the fylke we stand in stays
+     OURS even when it also borders a neighbour, or our own fylke fragments
+     into patches of coverage colour and stops reading as a place. */
+  .kommune.in-fylke { fill: var(--own-fill); stroke: var(--own-line); stroke-width: 0.5; }
+  /* Neighbours we relay for, nearest relationship first. Each takes its own
+     line as well as its own fill — see the note on stroke width below. */
+  .kommune.nb-1 { fill: var(--nb1-fill); stroke: var(--nb1-line); stroke-width: 0.5; }
+  .kommune.nb-2 { fill: var(--nb2-fill); stroke: var(--nb2-line); stroke-width: 0.45; }
+  .kommune.nb-3 { fill: var(--nb3-fill); stroke: var(--nb3-line); stroke-width: 0.42; }
 
   .terr {
     fill: none; stroke: var(--line-t); stroke-width: 0.7;
@@ -479,6 +504,34 @@
   }
   .cadd:hover { border-color: var(--accent); background: var(--wash); }
   .cadd:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---- map key ----
+     Floating furniture, like .zoomctl and .maptag: same glass, same hairline,
+     parked above the map tag. Smaller than body mono because it is a key, not
+     a control — you read it once and then stop seeing it. */
+  .mapkey {
+    position: absolute; left: 8px; bottom: 44px; z-index: 2;
+    font-family: var(--mono); font-size: 9.5px; line-height: 1.4;
+    color: var(--dim); letter-spacing: 0.01em;
+    background: var(--glass); backdrop-filter: blur(3px);
+    border: 1px solid var(--rule-2); padding: 4px 6px;
+    display: grid; grid-template-columns: auto repeat(var(--mk-cols, 2), 1fr);
+    gap: 2px 7px; align-items: center; justify-items: center;
+    pointer-events: none;
+  }
+  .mapkey[hidden] { display: none; }
+  /* the two row labels are the only left-aligned things in the grid */
+  .mk-h { justify-self: start; color: var(--muted); }
+  .mk-c { color: var(--dim); }
+  .mk-sw { width: 9px; height: 9px; border: 1px solid; }
+  /* an empty cell still has to hold its column open — "yours" has no
+     landsdel, and that gap is part of what the key says */
+  .mk-no { width: 9px; height: 9px; }
+  .mk-sel { background: var(--wash-2); border-color: var(--accent); }
+  .mk-own { background: var(--own-fill); border-color: var(--own-line); }
+  .mk-nb1 { background: var(--nb1-fill); border-color: var(--nb1-line); }
+  .mk-nb2 { background: var(--nb2-fill); border-color: var(--nb2-line); }
+  .mk-nb3 { background: var(--nb3-fill); border-color: var(--nb3-line); }
 
   /* Which device's pin the shared map is showing. Sits with the map, not with
      the tabs, because it is a fact about the pin. */
@@ -1494,6 +1547,11 @@
              is how it gets set; a map click leaves it a guess, since resolving
              a click to a postnummer would need geometry five times the weight
              of the page. -->
+        <!-- Floats over the map like the zoom controls, not under it: a key
+             belongs on the thing it describes. Built from the tiers actually
+             present, so a tier with no ground on screen gets no swatch and it
+             stays to two short lines at the default radii. -->
+        <div class="mapkey" id="mapKey" aria-hidden="true" hidden></div>
         <div class="maptag" aria-hidden="true">
           <span class="mt-tag" id="kommTag"></span>
           <span class="mt-nm" id="kommName"></span>
@@ -2770,7 +2828,7 @@
 
   // Split out of place() so a device switch can re-derive without recording a
   // new pin — switching tabs is not an edit, and must not detach anything.
-  function applyPin(d, drill) {
+  function applyPin(d, drill, reframe = true) {
     const { x, y } = d;
     state.x = x; state.y = y;
     state.fylke = d.fylke;
@@ -2798,7 +2856,11 @@
     const entered = drill && state.fylke !== state.drilled;
     if (entered) state.drilled = state.fylke;
     render();
-    if (entered) zoomToFylke(state.fylke);
+    // Drilling still happens — that fylke's kommuner take their heavier
+    // stroke — but the map only RE-FRAMES from the resting country view.
+    // Clicking near a fylke border while zoomed in used to throw the view
+    // across the country; a click is already somewhere you can see.
+    if (entered && reframe) zoomToFylke(state.fylke);
   }
 
   // `region_scope` is additive routing metadata and does NOT feed the secret —
@@ -2922,6 +2984,33 @@
   // on the element itself is a click on the backdrop
   $('qrDlg').addEventListener('click', e => { if (e.target === $('qrDlg')) $('qrDlg').close(); });
 
+  // The map key. Built from the tiers actually present, so it says what is on
+  // screen rather than listing every colour the map can produce — at the
+  // default radii most of the country has no neighbours at all.
+  function renderMapKey(present) {
+    const key = $('mapKey');
+    if (!present.has('own')) { key.setAttribute('hidden', ''); return; }
+    // Columns are LEVELS, rows are ownership, so the same level lines up under
+    // itself and the two labels are written once instead of per swatch. The
+    // landsdel column appears only when there is landsdel ground on screen —
+    // "own" has no landsdel cell at all, and that hole is informative.
+    const cols = ['kommune', 'fylke'];
+    if (present.has('nb3')) cols.push('landsdel');
+    const near = present.has('nb1') || present.has('nb2') || present.has('nb3');
+    const cell = on => on ? `<i class="mk-sw mk-${on}"></i>` : '<i class="mk-no"></i>';
+    let h = '<span></span>' + cols.map(c => `<span class="mk-c">${c}</span>`).join('');
+    h += '<span class="mk-h">own</span>'
+       + cell('sel') + cell('own') + (cols.length > 2 ? cell(null) : '');
+    if (near) {
+      h += '<span class="mk-h">neighbour</span>'
+         + cell(present.has('nb1') && 'nb1') + cell(present.has('nb2') && 'nb2')
+         + (cols.length > 2 ? cell(present.has('nb3') && 'nb3') : '');
+    }
+    key.style.setProperty('--mk-cols', cols.length);
+    key.innerHTML = h;
+    key.removeAttribute('hidden');
+  }
+
   // Which pin this tab is showing, in words. Silent until there is something
   // to say — before anything is placed the two devices cannot differ.
   function renderPinNote() {
@@ -2952,13 +3041,13 @@
 
   // A placement is an EDIT: it records against the active device and detaches
   // that device from the other. Switching tabs goes through applyPin instead.
-  function place(x, y, drill = true, pn = null) {
+  function place(x, y, drill = true, pn = null, reframe = true) {
     const d = deriveAt(x, y, pn);
     if (!d) return false;              // out at sea — ignore the click
     const p = state.pins[state.device];
     // set before applying, so the note render() draws sees the new state
     p.x = x; p.y = y; p.auto = false;
-    applyPin(d, drill);
+    applyPin(d, drill, reframe);
     p.post = state.post;
     // the other device's cached context may now be stale — this pin moved
     otherCtx = { key: null, ctx: null };
@@ -3187,6 +3276,7 @@
         x.classList.toggle('on', x.dataset.loc === 'off'));
       $('posRead').value = '';
       $('pin').setAttribute('hidden', '');
+      renderMapKey(new Set());
       // the name is built from where the node stands, so there is no prefix yet
       $('namePrefix').textContent = 'NO-…';
       // nothing to point a bracket at yet; the prose below it still stands.
@@ -3354,21 +3444,30 @@
     // kommuner it borders, then the rest of a bordering fylke, then a
     // bordering landsdel. Each kommune takes at most ONE tier — the most
     // specific that applies — so the washes never stack into mud.
+    const present = new Set(['sel', 'own']);   // always true once placed
     const nbK = new Set(state.border.kommune.map(x => x.nr));
     const nbF = new Set(state.border.fylke.map(x => x.nr));
     const nbL = new Set(state.border.landsdel.map(x => x.nr));
     KOMMUNER.forEach(k => {
       const fy = k.nr.slice(0, 2);
+      // OUR OWN FYLKE OUTRANKS COVERAGE. A kommune inside the fylke we stand
+      // in is ours, even where it also borders a neighbour — otherwise our
+      // fylke fragments into patches of neighbour colour and stops reading as
+      // one place. The tag and the tree row are unaffected; this is only how
+      // the ground is painted.
       const tier = k.nr === state.kommune ? 0      // the selection overlay owns it
+        : fy === state.fylke ? 0                   // ours
         : nbK.has(k.nr) ? 1
         : nbF.has(fy) ? 2
         : nbL.has(LANDSDEL[fy]) ? 3 : 0;
       k.el.classList.toggle('nb-1', tier === 1);
       k.el.classList.toggle('nb-2', tier === 2);
       k.el.classList.toggle('nb-3', tier === 3);
+      if (tier) present.add('nb' + tier);
       k.el.classList.toggle('in-fylke',
         tier === 0 && k.nr !== state.kommune && fy === state.fylke);
     });
+    renderMapKey(present);
     const metroKeys = state.metro.map(m => m.key);
     CITY_PTS.forEach(c => c.el.classList.toggle('on', metroKeys.includes(c.key)));
 
@@ -3505,9 +3604,13 @@
     applyView();
   }
 
-  // Anchor button zooms on the placed node, not the view centre — Norway is a
-  // diagonal sliver, so the centre of its bounding box is open sea.
-  const anchor = () => (state.x == null ? null : [state.x, state.y]);
+  // The +/- buttons zoom on the VIEW CENTRE, so what you are looking at stays
+  // where it is. They anchored on the placed node until 2026-07-22, on the
+  // argument that the centre of Norway's bounding box is open sea — true at
+  // the country view, but once zoomed in it meant every press dragged the map
+  // back toward the pin. At the country view an anchorless zoom is still fine:
+  // applyView() clamps the sheet inside the frame, so it cannot land at sea.
+  const anchor = () => null;
   // frame a fylke: fit its bounding box with a margin, clamped to MAXZ
   function zoomToFylke(nr) {
     const b = FYLKE_BB[nr];
@@ -3626,7 +3729,8 @@
       if (d <= snap && (!best || d < best.d)) best = { c, d };
     }
     if (best) { x = best.c.x; y = best.c.y; }
-    place(x, y);
+    // reframe only from the country view — see place()
+    place(x, y, true, null, view.z <= 1.001);
   });
 
   applyView();
