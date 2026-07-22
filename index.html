@@ -90,6 +90,10 @@
     --land:    #fafaf7;
     --land-on: #f2efe8;
     --line-k:  #a9b4ba;
+    /* kommune borders, drawn everywhere at rest. Half the perceptual weight of
+       the fylke lines off the land colour (dE 13.3 against 26.3), so the two
+       levels read as a hierarchy rather than as one busy mesh. */
+    --line-k2: #d0d7da;
     --line-t:  #b9c8d3;
     --cmd-ink: #12403a;
     /* a QR must stay dark-on-light in both themes; an inverted code
@@ -127,6 +131,9 @@
     --land:    #131e33;
     --land-on: #1b2f4c;
     --line-k:  #35507a;
+    /* dark carries a slightly higher ratio (dE 15.7 against 25.3) because it
+       starts with less separation to spend — the same reason --nb-* differ */
+    --line-k2: #243a5e;
     --line-t:  #22385c;
     --cmd-ink: #cfe7e0;
     /* a QR must stay dark-on-light in both themes; an inverted code
@@ -229,15 +236,23 @@
 
   /* Two layers showing two different things.
      Kommuner are clipped to the coastline and carry the fill, so together they
-     ARE the landmass — at rest they have no stroke, so they merge seamlessly.
+     ARE the landmass. Since 2026-07-22 they carry a hairline everywhere rather
+     than only inside the drilled fylke — the whole country reads as divided,
+     and the coast gets an edge for free, since a coastline-clipped polygon's
+     seaward side is the coast. Three weights, lightest first: every kommune,
+     then the drilled fylke's kommuner, then the fylke lines themselves.
      Fylke outlines come from the territorial-limit data and run out into the
      sea, which is the real administrative extent, drawn over the top. */
   .kommune {
-    fill: var(--land); stroke: var(--line-k); stroke-width: 0;
+    fill: var(--land); stroke: var(--line-k2); stroke-width: 0.3;
     stroke-linejoin: round; pointer-events: none;
-    transition: stroke-width 0.18s linear;
+    /* stroke as well as width, or drilling in snaps the colour while the
+       weight eases */
+    transition: stroke-width 0.18s linear, stroke 0.18s linear;
   }
-  .kommune.shown { stroke-width: 0.45; }
+  /* the drilled fylke's kommuner step up to the fylke lines' own colour and a
+     heavier stroke, so "which fylke is open" still reads at a glance */
+  .kommune.shown { stroke: var(--line-k); stroke-width: 0.45; }
   /* the selected fylke is tinted rather than outlined: fills tile cleanly,
      so there is no shared-edge overpainting to work around */
   .kommune.in-fylke { fill: var(--land-on); }
@@ -2533,8 +2548,8 @@
 
   // The channel list IS the region tree, re-read: same source, so the two can
   // never disagree about what you are near.
-  function channels() {
-    if (!state.kommune) return [];
+  function channels(d) {
+    if (!d) return [];
     const out = [];
     const add = (name, scope, kind, an, nb) => out.push({ name, scope, kind, an, nb: !!nb });
     // eu and europe are two regions but one channel — `europe` is the
@@ -2543,15 +2558,15 @@
     // because it is what everything actually hangs off.
     add('europe', 'eu', 'continent', 'Everyone, everywhere. Quiet by design.');
     add('norge', 'no', 'country', 'The whole country.');
-    const ld = LANDSDEL[state.fylke];
+    const ld = LANDSDEL[d.fylke];
     add(chanName(LANDSDEL_NAMES[ld]), 'no-' + ld, 'landsdel', LANDSDEL_NAMES[ld]);
-    add(chanName(FYLKE_NAMES[state.fylke]), 'no-' + state.fylke, 'fylke',
-        `Fylkesnummer ${state.fylke}.`);
-    add(chanName(state.kommuneName), 'no-' + state.kommune, 'kommune',
-        `Kommunenummer ${state.kommune}.`);
+    add(chanName(FYLKE_NAMES[d.fylke]), 'no-' + d.fylke, 'fylke',
+        `Fylkesnummer ${d.fylke}.`);
+    add(chanName(d.kommuneName), 'no-' + d.kommune, 'kommune',
+        `Kommunenummer ${d.kommune}.`);
     // City tags are yours, not neighbours': being near a city is what the tag
     // means in the first place, so they are not behind the neighbour toggle.
-    for (const m of state.metro) {
+    for (const m of d.metro) {
       add(chanName(CITIES[m.key]), m.key, 'city', `Within ${Math.round(m.d)} km.`);
     }
     // Neighbours come last, so a name they share with a home region loses the
@@ -2559,11 +2574,11 @@
     // listed, in a section of their own rather than behind a toggle: a
     // neighbour is worth seeing and then deciding about, not worth hiding.
     const km = d => `Neighbour — ${Math.round(d)} km away.`;
-    for (const x of state.border.landsdel)
+    for (const x of d.border.landsdel)
       add(chanName(LANDSDEL_NAMES[x.nr]), 'no-' + x.nr, 'landsdel', km(x.d), 1);
-    for (const x of state.border.fylke)
+    for (const x of d.border.fylke)
       add(chanName(FYLKE_NAMES[x.nr]), 'no-' + x.nr, 'fylke', km(x.d), 1);
-    for (const x of state.border.kommune)
+    for (const x of d.border.kommune)
       add(chanName(x.name), 'no-' + x.nr, 'kommune', km(x.d), 1);
     // Keep the best-ranked entry for each name, at its own position.
     const best = new Map();
@@ -2580,16 +2595,53 @@
   // an unplaced pin is null, so this reads as "unplaced" without a extra case.
   const livePin = dev => state.pins[dev].auto ? state.pins[OTHER[dev]] : state.pins[dev];
 
-  // Everything derived from a position. Split out of place() so a device
-  // switch can re-derive without recording a new pin — switching tabs is not
-  // an edit, and must not detach anything.
-  function applyPin(x, y, k, pn, drill) {
-    state.x = x; state.y = y;
-    state.fylke = k.nr.slice(0, 2);
-    state.kommune = k.nr;
-    state.kommuneName = k.name;
+  // Everything a position implies, with no reference to which tab is open.
+  // Both the live view and the *other* device's summary come from this, so a
+  // pane can never quietly describe the wrong pin.
+  function deriveAt(x, y, pn) {
+    const k = resolve(x, y);
+    if (!k) return null;
     const near = postNear(k.nr, x, y);
-    state.post = pn && POST_BY_NR[pn] ? pn : (near[0] ? near[0][0] : null);
+    return {
+      x, y,
+      kommune: k.nr, fylke: k.nr.slice(0, 2), kommuneName: k.name,
+      post: pn && POST_BY_NR[pn] ? pn : (near[0] ? near[0][0] : null),
+      metro: metroAt(x, y),
+      border: borderAt(x, y, k.nr)
+    };
+  }
+
+  // The active device, straight off the live state.
+  const liveCtx = () => state.kommune ? {
+    x: state.x, y: state.y,
+    kommune: state.kommune, fylke: state.fylke, kommuneName: state.kommuneName,
+    post: state.post, metro: state.metro, border: state.border
+  } : null;
+
+  // The context for either device, whichever tab is open. ONE SLOT IS ENOUGH:
+  // exactly one device is inactive at a time. Keyed on the pin and the radii,
+  // so a keystroke in the name field re-renders for free rather than paying
+  // for a border sweep.
+  let otherCtx = { key: null, ctx: null };
+  function ctxFor(dev) {
+    if (dev === state.device) return liveCtx();
+    const p = livePin(dev);
+    if (p.x === null) return null;
+    const r = state.reach;
+    const key = `${p.x},${p.y},${p.post},${r.landsdel},${r.fylke},${r.kommune},${r.city}`;
+    if (otherCtx.key !== key) otherCtx = { key, ctx: deriveAt(p.x, p.y, p.post) };
+    return otherCtx.ctx;
+  }
+
+  // Split out of place() so a device switch can re-derive without recording a
+  // new pin — switching tabs is not an edit, and must not detach anything.
+  function applyPin(d, drill) {
+    const { x, y } = d;
+    state.x = x; state.y = y;
+    state.fylke = d.fylke;
+    state.kommune = d.kommune;
+    state.kommuneName = d.kommuneName;
+    state.post = d.post;
     // Prefill the name with the poststed, so a node is named the moment it is
     // placed. Only ever overwrites a name we put there ourselves, or an empty
     // field — moving the pin must not rewrite what the operator typed.
@@ -2606,8 +2658,8 @@
       const p = POST_BY_NR[state.post];
       if (p) state.desc = p[1];
     }
-    state.metro = metroAt(x, y);
-    state.border = borderAt(x, y, k.nr);
+    state.metro = d.metro;
+    state.border = d.border;
     const entered = drill && state.fylke !== state.drilled;
     if (entered) state.drilled = state.fylke;
     render();
@@ -2651,8 +2703,9 @@
 
   function renderChannels() {
     const box = $('chans');
-    const list = channels();
-    $('devCom').textContent = list.length ? `${list.length} channels` : 'no channels yet';
+    // the pane shows the ACTIVE device; the switch label above is set in
+    // render() from the companion's own pin, so the two do not fight
+    const list = channels(liveCtx());
     if (!list.length) {
       box.innerHTML = '<p class="empty">Place the node on the map and the channels for '
         + 'that area appear here.</p>';
@@ -2704,7 +2757,7 @@
   $('chans').addEventListener('click', e => {
     const b = e.target.closest('.cqr');
     if (!b) return;
-    showQr(channels()[+b.dataset.i]);
+    showQr(channels(liveCtx())[+b.dataset.i]);
     $('qrDlg').showModal();
   });
   // One setting, surfaced in two places: the list and the code you are about
@@ -2767,13 +2820,15 @@
   // A placement is an EDIT: it records against the active device and detaches
   // that device from the other. Switching tabs goes through applyPin instead.
   function place(x, y, drill = true, pn = null) {
-    const k = resolve(x, y);
-    if (!k) return false;              // out at sea — ignore the click
+    const d = deriveAt(x, y, pn);
+    if (!d) return false;              // out at sea — ignore the click
     const p = state.pins[state.device];
     // set before applying, so the note render() draws sees the new state
     p.x = x; p.y = y; p.auto = false;
-    applyPin(x, y, k, pn, drill);
+    applyPin(d, drill);
     p.post = state.post;
+    // the other device's cached context may now be stale — this pin moved
+    otherCtx = { key: null, ctx: null };
     return true;
   }
 
@@ -2781,22 +2836,23 @@
   // branch when that device has nothing to show.
   function showPinFor(dev) {
     const p = livePin(dev);
-    const k = p.x === null ? null : resolve(p.x, p.y);
-    if (k) applyPin(p.x, p.y, k, p.post, false);
+    const d = p.x === null ? null : deriveAt(p.x, p.y, p.post);
+    otherCtx = { key: null, ctx: null };   // the active device just changed
+    if (d) applyPin(d, false);
     else { clearPlacement(); render(); }
   }
 
   // Region tags for this node. landsdel, fylke, kommune and metro city are
   // independent overlays, so all four sit directly under `no` rather than
   // nesting. Ordered broadest first, which is also how the tree reads.
-  function tags() {
-    const b = state.border;
+  function tags(d) {
+    const b = d.border;
     return [
-      'no-' + LANDSDEL[state.fylke], ...b.landsdel.map(x => 'no-' + x.nr),
-      'no-' + state.fylke,            ...b.fylke.map(x => 'no-' + x.nr),
-      'no-' + state.kommune,
+      'no-' + LANDSDEL[d.fylke], ...b.landsdel.map(x => 'no-' + x.nr),
+      'no-' + d.fylke,           ...b.fylke.map(x => 'no-' + x.nr),
+      'no-' + d.kommune,
       ...b.kommune.map(x => 'no-' + x.nr),
-      ...state.metro.map(m => m.key)
+      ...d.metro.map(m => m.key)
     ];
   }
 
@@ -2805,7 +2861,11 @@
     // Radio, timing and routing hygiene do not depend on where the node
     // stands, so an unplaced node still gets a usable config — it just has no
     // name, no coordinates and no region scope.
-    const placed = !!state.kommune;
+    // POSITION COMES FROM THE REPEATER'S PIN, not the active tab. The pane is
+    // hidden while the companion is open, so this was invisible rather than
+    // harmless: the block described wherever the companion had wandered to.
+    const d = ctxFor('repeater');
+    const placed = !!d;
     const L = [];
     L.push(['c', '# radio — EU/UK Narrow, CR per node']);
     L.push(['k', 'set radio', `869.618,62.5,8,${state.cr}`]);
@@ -2823,9 +2883,9 @@
     L.push(['c', '# identity']);
     // no name unless a place has been given — NO-0301 alone says nothing,
     // and without a map click there is no kommune number to build it from
-    if (placed && state.desc.trim()) L.push(['k', 'set name', nodeName()]);
+    if (placed && state.desc.trim()) L.push(['k', 'set name', nodeName(d)]);
     if (placed && state.location) {
-      const ll = unproject(state.x, state.y);
+      const ll = unproject(d.x, d.y);
       L.push(['k', 'set lat', ll[0].toFixed(5)]);
       L.push(['k', 'set lon', ll[1].toFixed(5)]);
     }
@@ -2840,7 +2900,7 @@
     L.push(['c', '# landsdel, fylke, kommune and city all scope down from no']);
     L.push(['c', '# allowf * is the default, restated in case this node had it denied']);
     L.push(['k', 'region allowf', '*']);
-    const t = tags();
+    const t = tags(d);
     const chain = t.map((x, i) => (i === t.length - 1 ? x : `${x}|no`)).join(' ');
     const defLine = `region def eu|* europe|eu no ${chain}`;
     // The CLI takes at most 160 characters per serial line. Border tags can push
@@ -2868,11 +2928,11 @@
     // always the CONTAINING region — defaulting to a neighbour you merely
     // relay for would scope your own traffic to somewhere you are not
     if (state.regionDefault === 'landsdel')
-      L.push(['k', 'region default', 'no-' + LANDSDEL[state.fylke]]);
-    if (state.regionDefault === 'fylke') L.push(['k', 'region default', 'no-' + state.fylke]);
-    if (state.regionDefault === 'kommune') L.push(['k', 'region default', 'no-' + state.kommune]);
-    if (state.regionDefault === 'city' && state.metro.length)
-      L.push(['k', 'region default', state.metro[0].key]);   // nearest
+      L.push(['k', 'region default', 'no-' + LANDSDEL[d.fylke]]);
+    if (state.regionDefault === 'fylke') L.push(['k', 'region default', 'no-' + d.fylke]);
+    if (state.regionDefault === 'kommune') L.push(['k', 'region default', 'no-' + d.kommune]);
+    if (state.regionDefault === 'city' && d.metro.length)
+      L.push(['k', 'region default', d.metro[0].key]);   // nearest
     L.push(['k', 'region save', '']);
     for (const w of rangeWarnings(L)) L.unshift(['c', w]);
     return L;
@@ -2912,10 +2972,12 @@
   // also one byte, so this costs nothing either. Note the place itself may
   // already contain spaces — "Mo i Rana" — so a space here is not a delimiter
   // anything can split on; it is purely how the name reads.
-  const nodeName = () => {
-    const base = 'NO-' + (state.post || state.kommune);
-    const d = state.desc.trim().replace(/\s+/g, ' ');
-    return d ? `${base} ${d}` : base;
+  // Takes a context so it can name the REPEATER while the companion tab is
+  // open — defaulting to the live one keeps every existing caller correct.
+  const nodeName = (ctx = liveCtx()) => {
+    const base = 'NO-' + (ctx.post || ctx.kommune);
+    const desc = state.desc.trim().replace(/\s+/g, ' ');
+    return desc ? `${base} ${desc}` : base;
   };
   const byteLen = s => new TextEncoder().encode(s).length;
 
@@ -2928,8 +2990,16 @@
     // The switch doubles as a record of what has been done, so setting up the
     // repeater and then the companion is visible rather than something to
     // remember. Set before the unplaced branch returns, so it holds in both.
-    $('devRep').textContent = !placed ? 'no node placed'
-      : state.desc.trim() ? nodeName() : 'not named yet';
+    // EACH LABEL DESCRIBES ITS OWN DEVICE, not the active one. These two are
+    // the only parts of the switch visible from both tabs, so reading them off
+    // live state made the repeater's name follow the companion's pin — it read
+    // NO-<companion postnummer> <repeater place>, which is a name that never
+    // existed anywhere.
+    const rd = ctxFor('repeater'), cd = ctxFor('companion');
+    $('devRep').textContent = !rd ? 'no node placed'
+      : state.desc.trim() ? nodeName(rd) : 'not named yet';
+    const nch = cd ? channels(cd).length : 0;
+    $('devCom').textContent = nch ? `${nch} channels` : 'no channels yet';
     renderPinNote();
     renderChannels();
     // The name can be written underneath the operator — prefilled on placing,
@@ -3025,7 +3095,9 @@
     for (const m of state.metro)
       ann[m.key] = `within ${Math.round(m.d)} km of ${esc(CITIES[m.key])}`;
 
-    const t = tags();
+    // the tree describes the map, which shows the ACTIVE device — unlike the
+    // CLI block below it, which is always the repeater's
+    const t = tags(liveCtx());
     const rows = [['', 'eu', ''], ['└─ ', 'no', '']]
       .concat(t.map((x, i) => [i === t.length - 1 ? '   └─ ' : '   ├─ ', x, ann[x]]))
       .concat([['', 'europe', '']]);
