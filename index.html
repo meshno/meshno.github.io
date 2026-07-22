@@ -3650,10 +3650,49 @@
   // switching between two devices in the same street should not shift the map
   // under the reader. The test is the middle 80% of the frame, so a pin near
   // the edge still gets centred rather than left half under the map furniture.
+  // ---- the safe area ----
+  //
+  // THE MAP FURNITURE FLOATS OVER THE MAP, so part of the frame is not a place
+  // you can put anything. The zoom controls cover the top-left and the key and
+  // tag cover the bottom, and framing a fylke into the *whole* frame put the
+  // pin underneath them: reported at 4515 Mandal, where Lindesnes sits at the
+  // southern tip of Agder and the node marker landed completely behind the
+  // key. The one mark the map exists to show.
+  //
+  // MEASURED, not hardcoded. The tag grows to two lines for a long kommune or
+  // poststed, the key gains a column near a landsdel border and disappears
+  // entirely before a node is placed, and the mobile block sizes all of it
+  // differently. A constant here would be wrong in most of those states.
+  //
+  // Returned in PIXELS: the furniture keeps a constant screen size, so its
+  // extent in user units changes with the zoom. Callers convert.
+  const FURN_GAP = 6;   // breathing room between the furniture and the content
+  function furniture() {
+    const r = map.getBoundingClientRect();
+    if (!r.height) return { top: 0, bottom: 0, h: 0, w: 0 };
+    const box = el => {
+      const e = document.querySelector(el);
+      if (!e) return null;
+      const b = e.getBoundingClientRect();
+      return b.height ? b : null;
+    };
+    const zc = box('.zoomctl'), ft = box('.mapfoot');
+    return {
+      top: zc ? Math.max(0, zc.bottom - r.top + FURN_GAP) : 0,
+      bottom: ft ? Math.max(0, r.bottom - ft.top + FURN_GAP) : 0,
+      h: r.height, w: r.width,
+    };
+  }
+
   function ensureVisible(x, y) {
     const w = W / view.z, h = H / view.z;
-    if (Math.abs(x - view.cx) > w * 0.4 || Math.abs(y - view.cy) > h * 0.4) {
-      view.cx = x; view.cy = y;
+    // Against the SAFE band rather than the raw frame, or "already comfortably
+    // in view" counts a pin that is sitting behind the key.
+    const f = furniture(), u = f.h ? (h / f.h) : 0;
+    const cy = view.cy + (f.top - f.bottom) / 2 * u;   // centre of the safe band
+    const sh = Math.max(h * 0.2, h - (f.top + f.bottom) * u);
+    if (Math.abs(x - view.cx) > w * 0.4 || Math.abs(y - cy) > sh * 0.4) {
+      view.cx = x; view.cy = y - (f.top - f.bottom) / 2 * u;
       applyView();
     }
   }
@@ -3670,9 +3709,16 @@
 
   function applyView() {
     const w = W / view.z, h = H / view.z;
-    // keep the sheet inside the frame
+    // Keep the sheet inside the frame — but let it overshoot vertically by
+    // whatever the furniture covers. Without that slack the south coast
+    // cannot be lifted clear of the key: there is no sheet below Lindesnes to
+    // pull up, so the clamp would undo the offset and put the pin straight
+    // back underneath. The overshoot shows water, which is what .mapbox is
+    // painted anyway, and it is behind the key where nothing is legible.
+    const f = furniture(), u = f.h ? (h / f.h) : 0;
     view.cx = Math.min(VBX + W - w / 2, Math.max(VBX + w / 2, view.cx));
-    view.cy = Math.min(VBY + H - h / 2, Math.max(VBY + h / 2, view.cy));
+    view.cy = Math.min(VBY + H - h / 2 + f.bottom * u,
+              Math.max(VBY + h / 2 - f.top * u, view.cy));
     map.setAttribute('viewBox',
       `${view.cx - w / 2} ${view.cy - h / 2} ${w} ${h}`);
     renderGhost();   // the merge threshold is a screen distance, so zoom moves it
@@ -3714,13 +3760,26 @@
     const b = FYLKE_BB[nr];
     if (!b) return;
     const w = (b[2] - b[0]) * 1.25, h = (b[3] - b[1]) * 1.25;
-    view.z = Math.min(MAXZ, Math.max(1, Math.min(W / w, H / h)));
+    // Fit into the SAFE BAND, not the whole frame. The scale is uniform, so
+    // the height term is just H/h scaled by the fraction of the frame the
+    // furniture leaves — no unit conversion needed, which is why this is done
+    // in the fraction rather than in user units.
+    const f = furniture();
+    const frac = f.h ? Math.max(0.2, (f.h - f.top - f.bottom) / f.h) : 1;
+    view.z = Math.min(MAXZ, Math.max(1, Math.min(W / w, H / h * frac)));
     // This framing is now the RESTING view. Its one remaining job: a click
     // that selects a different fylke re-frames from here, and stops doing so
     // once the reader has zoomed in past it.
     view.rest = view.z;
     view.cx = (b[0] + b[2]) / 2;
-    view.cy = (b[1] + b[3]) / 2;
+    // Centre it in the safe band rather than in the frame. The band sits ABOVE
+    // the frame's middle (the footer is taller than the toolbar), so the
+    // content has to move UP the screen, which means `cy` moves DOWN the
+    // sheet — hence `bottom - top` and not the other way round. Getting this
+    // backwards shifts the pin further under the key, which is how it was
+    // caught: the fix halved the overlap instead of removing it.
+    view.cy = (b[1] + b[3]) / 2
+            + (f.h ? (f.bottom - f.top) / 2 * (H / view.z / f.h) : 0);
     applyView();
   }
 
