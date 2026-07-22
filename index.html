@@ -3824,7 +3824,9 @@
 
   // drag to pan, pinch to zoom; a drag must not also place a node
   const pointers = new Map();
-  let dragged = false, last = null, pinch0 = null;
+  // `pinched` = this gesture has had two fingers on it at some point, and so
+  // stays a pinch until the glass is empty. See the guard in pointermove.
+  let dragged = false, last = null, pinch0 = null, pinched = false;
 
   map.addEventListener('pointerdown', e => {
     pointers.set(e.pointerId, e);
@@ -3838,6 +3840,7 @@
       const [a, b] = [...pointers.values()];
       pinch0 = { d: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), z: view.z };
       dragged = true;
+      pinched = true;
     }
   });
 
@@ -3857,6 +3860,17 @@
       if (pinch0.d > 0) zoomTo(pinch0.z * (d / pinch0.d), mid);
       return;
     }
+    // A PINCH NEVER DEGRADES INTO A PAN. Fingers rarely leave the glass
+    // together, and the one still down is usually still travelling at pinch
+    // speed — so the moment the count drops to 1 that residual motion was read
+    // as a drag and threw the map across the screen. Measured at 60px for a
+    // release mid-pinch. It matched the report exactly: pause before letting
+    // go and there is no residual motion, so there was no jump.
+    //
+    // Re-seating `last` on the way down does not fix this. The coordinates
+    // were right; the movement was real and simply not a pan. The gesture
+    // stays a pinch until every finger is off.
+    if (pinched) return;
     if (pointers.size !== 1 || !last) return;
     const p = mapPoint(e);
     const dx = p[0] - last[0], dy = p[1] - last[1];
@@ -3877,16 +3891,14 @@
   function endPointer(e) {
     pointers.delete(e.pointerId);
     if (pointers.size < 2) pinch0 = null;
-    // LIFTING ONE FINGER OF A PINCH LEAVES `last` STALE, and that is what made
-    // the map jump when a zoom gesture ended. `last` is a MAP-UNIT position,
-    // set when that finger went down and never touched during the pinch — but
-    // the pinch rewrites the viewBox, so those units now mean somewhere else
-    // entirely, and the finger still down may not even be the one it came
-    // from. The next pointermove then panned by the difference between two
-    // unrelated coordinate spaces. Resync from the finger that is actually
-    // still down, in the viewBox as it now is.
-    if (pointers.size === 1) last = mapPoint([...pointers.values()][0]);
-    if (pointers.size === 0) { last = null; map.classList.remove('panning'); }
+    // `pinched` clears only when the glass is empty, which is what makes the
+    // guard above hold across a staggered release. It also replaces an earlier
+    // attempt that resynced `last` here: two mechanisms for one thing, and the
+    // weaker of the two — it fixed a stale coordinate but still let real
+    // residual motion pan the map.
+    if (pointers.size === 0) {
+      last = null; pinched = false; map.classList.remove('panning');
+    }
   }
   map.addEventListener('pointerup', endPointer);
   map.addEventListener('pointercancel', endPointer);
