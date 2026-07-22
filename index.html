@@ -3828,7 +3828,11 @@
 
   map.addEventListener('pointerdown', e => {
     pointers.set(e.pointerId, e);
-    map.setPointerCapture(e.pointerId);
+    // Throws NotFoundError if the pointer is no longer active — a touch that
+    // ends between the event being queued and this handler running. Uncaught
+    // it aborts the rest of the handler, so `last` is never set and `pinch0`
+    // is never established, and the gesture that follows misbehaves.
+    try { map.setPointerCapture(e.pointerId); } catch {}
     if (pointers.size === 1) { dragged = false; last = mapPoint(e); }
     else if (pointers.size === 2) {
       const [a, b] = [...pointers.values()];
@@ -3843,7 +3847,14 @@
     if (pointers.size === 2 && pinch0) {
       const [a, b] = [...pointers.values()];
       const d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
-      if (pinch0.d > 0) zoomTo(pinch0.z * (d / pinch0.d));
+      // ANCHOR ON THE PINCH MIDPOINT, so the map stays under the fingers.
+      // Anchorless, this zoomed about the view centre, and pinching anywhere
+      // else dragged the ground out from under the gesture — the further from
+      // centre, the worse. Read before zooming, so it is the map point
+      // currently beneath the fingers.
+      const mid = mapPoint({ clientX: (a.clientX + b.clientX) / 2,
+                             clientY: (a.clientY + b.clientY) / 2 });
+      if (pinch0.d > 0) zoomTo(pinch0.z * (d / pinch0.d), mid);
       return;
     }
     if (pointers.size !== 1 || !last) return;
@@ -3866,6 +3877,15 @@
   function endPointer(e) {
     pointers.delete(e.pointerId);
     if (pointers.size < 2) pinch0 = null;
+    // LIFTING ONE FINGER OF A PINCH LEAVES `last` STALE, and that is what made
+    // the map jump when a zoom gesture ended. `last` is a MAP-UNIT position,
+    // set when that finger went down and never touched during the pinch — but
+    // the pinch rewrites the viewBox, so those units now mean somewhere else
+    // entirely, and the finger still down may not even be the one it came
+    // from. The next pointermove then panned by the difference between two
+    // unrelated coordinate spaces. Resync from the finger that is actually
+    // still down, in the viewBox as it now is.
+    if (pointers.size === 1) last = mapPoint([...pointers.values()][0]);
     if (pointers.size === 0) { last = null; map.classList.remove('panning'); }
   }
   map.addEventListener('pointerup', endPointer);
