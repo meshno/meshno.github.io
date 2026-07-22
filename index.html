@@ -3535,6 +3535,19 @@
   // while a phone at the same zoom still scrolls: `touch-action: pan-y` keeps
   // vertical swipes with the browser, so the drag handler never sees them.
   const ownsTouch = () => view.z > view.rest * 1.001;
+  //
+  // Could the reader get there themselves? A mouse can drag the map wherever
+  // there is slack. Touch can only do it ABOVE the resting zoom, because at or
+  // below rest the map yields its gestures to the page so the reader can
+  // scroll past it — which means a phone that has just selected a fylke it
+  // cannot pan to has no way of seeing it.
+  //
+  // `(pointer: fine)` is an INPUT-CAPABILITY query, not a screen-size one.
+  // That is the same argument as the touch-action split: what matters is how
+  // you are pointing, not how wide the window is, and a width breakpoint here
+  // would be a second copy of the CSS one, free to drift.
+  const canPan = () =>
+    matchMedia('(pointer: fine)').matches ? hasSlack() : ownsTouch();
   // where the inactive device's marker belongs, or null — set by render(),
   // read by renderGhost() on every view change
   let ghostAt = null;
@@ -3741,8 +3754,12 @@
       if (d <= snap && (!best || d < best.d)) best = { c, d };
     }
     if (best) { x = best.c.x; y = best.c.y; }
-    // reframe only from the country view — see place()
-    place(x, y, true, null, view.z <= 1.001);
+    // Re-frame only when the reader could not have got there themselves.
+    // This is one expression covering three cases: the country view (no slack,
+    // so nobody can pan), a desktop drilled in (a mouse can, so leave the view
+    // alone — clicking near a border used to throw it across the country), and
+    // a phone at its resting zoom (touch cannot, so take it there).
+    place(x, y, true, null, !canPan());
   });
 
   applyView();
