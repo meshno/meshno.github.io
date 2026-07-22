@@ -86,6 +86,11 @@
        Each fill carries a matching line one step darker, so a fill can never
        swallow the boundary inside it. */
     --own-fill: #cfe8d9;  --own-line: #3f8f6b;
+    /* our own landsdel — the broadest thing that is still OURS, so the
+       lightest green. dE 6.4 off the land, well under our fylke's 13.8, and
+       9.0 off the water. It covers enormous ground (Østlandet is 121
+       kommuner), so it has to whisper or it becomes the map. */
+    --ownl-fill: #e6f4ec; --ownl-line: #86bda4;
     --nbf-fill: #dadff6;  --nbf-line: #7c8ccb;
     --nbl-fill: #e3e6f9;  --nbl-line: #9fabdb;
     /* the kommune tag is an OUTLINE ONLY, so it can sit on any fill above —
@@ -135,6 +140,7 @@
     /* Same split, solved for near-black. Dark starts with land and water only
        dE 7.8 apart, so every tier needs more absolute separation than light. */
     --own-fill: #1b3a33;  --own-line: #55a184;
+    --ownl-fill: #1c3240; --ownl-line: #3f6f5f;
     --nbf-fill: #1e3358;  --nbf-line: #6376b4;
     --nbl-fill: #182945;  --nbl-line: #4c5c8c;
     --nbk-line: #97a8ec;
@@ -284,6 +290,7 @@
   /* FILL says which region containing this kommune we relay for. */
   .kommune.t-own { fill: var(--own-fill); stroke: var(--own-line); stroke-width: 0.5; }
   .kommune.t-nbf { fill: var(--nbf-fill); stroke: var(--nbf-line); stroke-width: 0.45; }
+  .kommune.t-ownl { fill: var(--ownl-fill); stroke: var(--ownl-line); stroke-width: 0.42; }
   .kommune.t-nbl { fill: var(--nbl-fill); stroke: var(--nbl-line); stroke-width: 0.42; }
   /* OUTLINE says this kommune is itself tagged. Last, so it wins the stroke
      against every fill above AND against .shown — a kommune can be our own
@@ -541,6 +548,7 @@
   .mk-no { width: 9px; height: 9px; }
   .mk-sel { background: var(--wash-2); border-color: var(--accent); }
   .mk-own { background: var(--own-fill); border-color: var(--own-line); }
+  .mk-ownl { background: var(--ownl-fill); border-color: var(--ownl-line); }
   /* the kommune tag swatch is an OUTLINE on plain land, because that is what
      it is on the map: a mark that sits on whatever fill is underneath */
   .mk-nbk { background: var(--land); border-color: var(--nbk-line); }
@@ -3015,12 +3023,13 @@
     // landsdel column appears only when there is landsdel ground on screen —
     // "own" has no landsdel cell at all, and that hole is informative.
     const cols = ['kommune', 'fylke'];
-    if (present.has('nbl')) cols.push('landsdel');
+    if (present.has('ownl') || present.has('nbl')) cols.push('landsdel');
     const near = present.has('nbk') || present.has('nbf') || present.has('nbl');
     const cell = on => on ? `<i class="mk-sw mk-${on}"></i>` : '<i class="mk-no"></i>';
     let h = '<span></span>' + cols.map(c => `<span class="mk-c">${c}</span>`).join('');
     h += '<span class="mk-h">own</span>'
-       + cell('sel') + cell('own') + (cols.length > 2 ? cell(null) : '');
+       + cell('sel') + cell('own')
+       + (cols.length > 2 ? cell(present.has('ownl') && 'ownl') : '');
     if (near) {
       h += '<span class="mk-h">neighbour</span>'
          + cell(present.has('nbk') && 'nbk') + cell(present.has('nbf') && 'nbf')
@@ -3465,6 +3474,7 @@
     // bordering landsdel. Each kommune takes at most ONE tier — the most
     // specific that applies — so the washes never stack into mud.
     const present = new Set(['sel']);
+    const ourLd = LANDSDEL[state.fylke];
     const nbK = new Set(state.border.kommune.map(x => x.nr));
     const nbF = new Set(state.border.fylke.map(x => x.nr));
     const nbL = new Set(state.border.landsdel.map(x => x.nr));
@@ -3480,13 +3490,19 @@
       // exactly when someone turned it on: your kommune's own neighbours are
       // usually inside your own fylke, so "our fylke" swallowed them. A tag it
       // emits and the map does not show is the worst kind of missing.
+      // MORE SPECIFIC WINS, AND WITHIN A LEVEL OURS BEATS NEIGHBOUR. Fylke
+      // relationships are decided before landsdel ones, so a neighbouring
+      // fylke stays visible even when it sits inside our own landsdel — which
+      // it usually does. Painting the landsdel first would swallow it.
       const fill = k.nr === state.kommune ? null      // the overlay owns it
         : fy === state.fylke ? 'own'
         : nbF.has(fy) ? 'nbf'
+        : LANDSDEL[fy] === ourLd ? 'ownl'
         : nbL.has(LANDSDEL[fy]) ? 'nbl' : null;
       if (fill) present.add(fill);
       k.el.classList.toggle('t-own', fill === 'own');
       k.el.classList.toggle('t-nbf', fill === 'nbf');
+      k.el.classList.toggle('t-ownl', fill === 'ownl');
       k.el.classList.toggle('t-nbl', fill === 'nbl');
       // independent of the fill, and true inside our own fylke too
       const tagged = nbK.has(k.nr);
