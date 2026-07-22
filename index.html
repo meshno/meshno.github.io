@@ -205,9 +205,11 @@
     color: var(--muted); padding-bottom: 9px; border-bottom: 1px solid var(--rule-2);
     margin-bottom: 10px;
   }
-  /* At 1x there is nothing to pan, so let the page scroll normally when the
-     swipe starts on the map — pan-y still withholds pinch, so zooming reaches
-     our handler. Once zoomed in the map owns every gesture. */
+  /* TOUCH ownership only. At or below the resting zoom the page keeps vertical
+     swipes, so a reader can scroll past the map — pan-y still withholds pinch,
+     so zooming reaches our handler. Above rest the map owns every gesture.
+     `.zoomed` follows ownsTouch(), NOT whether a drag can pan: a mouse never
+     scrolls the page, so it drags freely wherever there is slack. */
   svg.map { display: block; width: 100%; height: auto; touch-action: pan-y; }
   svg.map.zoomed { touch-action: none; }
   svg.map.panning { cursor: grabbing; }
@@ -3155,18 +3157,32 @@
   const VBX = 4.0, VBY = 4.0;
   const W = 470.3, H = 550.5, MAXZ = 32;  // ~130 m/px, enough to place a pin; see note in CLAUDE.md
   // `rest` is the zoom of the current RESTING view: 1 for the whole country,
-  // the fit zoom for a fylke once drilled in. At or below it the map is
-  // "zoomed out" and yields every gesture to the page; above it there is
-  // genuinely more sheet than frame, so the map takes them to pan.
-  //
-  // Without this, drilling into a fylke — which happens automatically when a
-  // postnummer is typed — left `touch-action: none` over a big part of a
-  // phone screen, so a swipe starting on the map could not scroll the page
-  // and the map was a dead zone the reader had to swipe around.
+  // the fit zoom for a fylke once drilled in.
   const view = { z: 1, rest: 1, cx: VBX + W / 2, cy: VBY + H / 2 };
-  // A hair above rest, so floating-point noise in the fit zoom cannot make
-  // the resting view read as panned.
-  const pannable = () => view.z > view.rest * 1.001;
+
+  // THESE ARE TWO DIFFERENT QUESTIONS and were one function until 2026-07-22,
+  // which is what locked desktop panning at the fylke zoom.
+  //
+  // Can a drag move the view? Only about geometry: is there more sheet than
+  // frame. A mouse drag never scrolls the page, so nothing here needs to be
+  // conceded to the reader. Both are a hair above the threshold, so
+  // floating-point noise in the fit zoom cannot read as panned.
+  const hasSlack = () => view.z > 1.001;
+  //
+  // Does the map claim TOUCH gestures? Only where the reader might have to
+  // scroll the page through it. At or below the resting zoom it yields, so a
+  // swipe starting on the map scrolls as normal; above it there is genuinely
+  // more sheet than frame and the map takes the gesture.
+  //
+  // Measured against `rest`, not against 1x: drilling into a fylke happens
+  // automatically whenever a postnummer is typed, and testing 1x left
+  // `touch-action: none` over a big part of a phone screen, so the map was a
+  // dead zone the reader had to swipe around. Do not put 1x back here.
+  //
+  // Splitting the two is what lets a desktop mouse pan a drilled-in fylke
+  // while a phone at the same zoom still scrolls: `touch-action: pan-y` keeps
+  // vertical swipes with the browser, so the drag handler never sees them.
+  const ownsTouch = () => view.z > view.rest * 1.001;
 
   function applyView() {
     const w = W / view.z, h = H / view.z;
@@ -3175,7 +3191,7 @@
     view.cy = Math.min(VBY + H - h / 2, Math.max(VBY + h / 2, view.cy));
     map.setAttribute('viewBox',
       `${view.cx - w / 2} ${view.cy - h / 2} ${w} ${h}`);
-    map.classList.toggle('zoomed', pannable());
+    map.classList.toggle('zoomed', ownsTouch());
     map.style.setProperty('--k', 1 / view.z);   // keep text and dots readable
     for (const k of KOMMUNER) {
       k.el.classList.toggle('shown', k.nr.slice(0, 2) === state.drilled);
@@ -3218,7 +3234,8 @@
     if (!b) return;
     const w = (b[2] - b[0]) * 1.25, h = (b[3] - b[1]) * 1.25;
     view.z = Math.min(MAXZ, Math.max(1, Math.min(W / w, H / h)));
-    // this framing is now the resting view — zoomed out, not pannable
+    // This framing is now the RESTING view: touch yields to the page here,
+    // though a mouse can still drag it around (see hasSlack / ownsTouch).
     view.rest = view.z;
     view.cx = (b[0] + b[2]) / 2;
     view.cy = (b[1] + b[3]) / 2;
@@ -3289,7 +3306,7 @@
     // Still counts as a drag even where there is nothing to pan, so a dragged
     // pointer never places a node — that has always been the behaviour at 1x.
     dragged = true;
-    if (pannable()) {
+    if (hasSlack()) {
       map.classList.add('panning');
       view.cx -= dx; view.cy -= dy;
       applyView();
@@ -3309,7 +3326,7 @@
   // on inline SVG, which lets the page scroll instead of the map panning.
   // Only swallow the gesture when there is actually something to pan.
   map.addEventListener('touchmove', e => {
-    if (pannable() && pointers.size > 0) e.preventDefault();
+    if (ownsTouch() && pointers.size > 0) e.preventDefault();
   }, { passive: false });
 
   // A click all but on a marker snaps to its exact coordinates: at 1x the map
