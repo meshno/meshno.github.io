@@ -595,7 +595,10 @@
   }
   .explain > summary::-webkit-details-marker { display: none; }
   .explain > summary::before { content: '+ '; color: var(--accent); }
-  .explain[open] > summary::before { content: '\2212 '; }
+  /* the literal character, NOT '\2212 ' — a space after a hex escape is
+     consumed as the escape terminator, so that renders as "-Region settings"
+     with no gap while the '+ ' beside it looks fine */
+  .explain[open] > summary::before { content: '− '; }
   .explain > summary:hover { color: var(--muted); }
   .explain > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   .explain[open] > summary { margin-bottom: 9px; }
@@ -711,11 +714,50 @@
     color: var(--dim); padding: 7px 12px; border-bottom: 1px solid var(--rule);
   }
 
+  /* ---- the tree's own settings footer ----
+     The radii shape the tree directly above them, so they live INSIDE the
+     panel rather than beside it: header, content, disclosure footer, one
+     object. Overrides .explain's margin-note treatment — that left rule means
+     "commentary you can skip", and a control that changes the emitted config
+     is not commentary. */
+  .treefoot {
+    border-left: none; border-top: 1px solid var(--rule);
+    margin: 0; padding: 0;
+  }
+  /* the closed state is a footer bar, matching .treehead's padding so the
+     panel reads as symmetrical top and bottom */
+  .treefoot > summary { padding: 7px 12px; }
+  .treefoot[open] > summary { margin-bottom: 0; border-bottom: 1px solid var(--rule-2); }
+  .treefoot > *:not(summary) { padding-left: 12px; padding-right: 12px; }
+  .treefoot > p:first-of-type { padding-top: 11px; }
+  .treefoot > p:last-child { padding-bottom: 12px; }
+  /* controls first, prose after — act, then understand. The rule separates
+     the two without a heading, which would be a fourth tier in a panel that
+     only needs three. */
+  .kmsbox {
+    padding: 12px; border-bottom: 1px solid var(--rule-2);
+  }
+  /* the lede sits above the dial and the note below it: what it does, the
+     dial, then the one rule you need. Same 68ch measure as .help. */
+  .kmslede {
+    color: var(--muted); font-size: 13.5px; line-height: 1.55;
+    margin: 0 0 12px; max-width: 68ch;
+  }
+  .kmslede b { color: var(--ink); font-weight: 500; }
+  .kmsbox .help { margin-top: 11px; font-size: 13px; }
+  /* Inside an inset panel the fields have to come FORWARD to read as fields.
+     --inset on --inset is invisible; this is the same recessed/raised logic
+     the themes use, applied one level in. */
+  .kmsbox .kms input { background: var(--bg); }
+
   .scope {
     display: flex; flex-direction: column;
     font-family: var(--mono); font-size: 13px; line-height: 1.7;
     color: var(--muted); padding: 11px 12px; overflow-x: auto;
   }
+  /* the nested-bracket device is prose-side furniture, so it takes the same
+     horizontal padding as the paragraphs it explains */
+  .treefoot .nmbars { padding-left: 12px; padding-right: 12px; }
   .scope .t { white-space: pre; }
   .scope .br { color: var(--dim); }
 
@@ -989,7 +1031,7 @@
           <span class="wordmark">Mesh<b>NO</b></span>
         </div>
         <h1>MeshCore node configurator</h1>
-        <p class="lede">A configurator for setting up Norwegian MeshCore nodes, following conventions similar to those used by Sweden and Denmark. It targets the <code>EU/UK Narrow</code> preset already running across the mesh — 869.618&nbsp;MHz at 62.5&nbsp;kHz — Set up a <b>repeater</b> with the regions it relays for, or a <b>companion</b> with the channels for where you are.</p>
+        <p class="lede">Config for Norwegian MeshCore nodes, following the conventions Denmark and the Netherlands use. It targets the <code>EU/UK Narrow</code> preset already running here — 869.618&nbsp;MHz at 62.5&nbsp;kHz. Set up a <b>repeater</b> with the regions it relays for, or a <b>companion</b> with the channels for where you are.</p>
       </div>
       <div class="theme">
         <div class="seg" id="themeSeg" role="group" aria-label="Colour theme">
@@ -1465,17 +1507,51 @@
       <p class="pinnote" id="pinNote" hidden></p>
       <p class="help" id="coordNote"></p>
       <section class="needs-node">
+        <!-- The tree and the dial that shapes it are one object, so the
+             settings live INSIDE the panel as a disclosure footer rather than
+             beside it as an .explain. That device is a left-ruled margin note
+             meaning "commentary you can skip", and these radii are not
+             commentary: they decide what the repeater relays AND which
+             neighbouring channels the companion is offered.
+
+             It sits in the map column because it is GLOBAL. It was in the
+             repeater pane until 2026-07-22, where a companion operator could
+             not reach the control that shapes their own channel list. -->
         <div class="treebox">
           <div class="treehead">Region tree</div>
           <div class="scope" id="scope"></div>
-        </div>
-
-        <details class="explain">
-          <summary>What these regions do, and what the numbers mean</summary>
-          <p >Setting a region tells the repeater which floods to pass on. <b>It does not limit who you can reach</b> — every node carries <code>eu</code> and <code>no</code>, so wide-scope traffic still crosses the whole mesh. The narrower tags stop a local city chat channel from being relayed across all of Norway.</p>
-          <p><b>A kommunenummer is not a postcode.</b> Both are four digits in Norway, which makes them easy to mix up, but they are unrelated systems. A <b>kommunenummer</b> is the official code Kartverket and SSB use for each of Norway's 357 municipalities — Oslo is <code>0301</code>, Bergen is <code>4601</code>. A <b>postnummer</b> identifies a postal delivery area, and a single kommune contains many of them. Never derive one from the other.</p>
-          <p><b>This is why your node name and your region tags carry different numbers.</b> The name uses the <b>postnummer</b>, because that is the number you know without looking it up. The regions use the <b>kommunenummer</b>, because that is the one with real boundaries behind it and a fylke in its first two digits. A node named <code>NO-1354 Skuiåsen</code> tagged <code>no-3201</code> is correct, not a mismatch.</p>
-          <p><b>The first two digits are the fylke.</b> <code>4601</code> is kommune 01 in fylke <code>46</code> (Vestland); <code>0301</code> is in fylke <code>03</code> (Oslo). That is what makes the region tags useful: a node tagged <code>no-4601</code> is inside <code>no-46</code> by construction, so you can scope a flood to one kommune or widen it to the whole fylke without any lookup table, and the two can never contradict each other.</p>
+          <details class="explain treefoot">
+          <summary>Region settings, and what the numbers mean</summary>
+          <div class="kmsbox">
+            <!-- The controls carried the label "neighbour assistance" and no
+                 explanation at all, which told nobody anything. Lead with the
+                 EFFECT — a node near a border serves both sides — then the
+                 dial, then the escape hatch. -->
+            <p class="kmslede"><b>Neighbour reach.</b> A node near a border serves both sides of
+               it. These say how near counts: a repeater 5&nbsp;km from the next fylke relays for
+               that fylke too, and a companion that close is offered its channels. Your node always
+               keeps the regions it actually stands in — this only ever adds.</p>
+            <div class="kms">
+              <label for="kmLd">landsdel</label><input type="number" id="kmLd" inputmode="numeric" min="0" max="300" step="5" value="50"><i>km</i><button type="button" data-lvl="landsdel">disable</button>
+              <label for="kmFy">fylke</label><input type="number" id="kmFy" inputmode="numeric" min="0" max="300" step="5" value="25"><i>km</i><button type="button" data-lvl="fylke">disable</button>
+              <label for="kmKo">kommune</label><input type="number" id="kmKo" inputmode="numeric" min="0" max="300" step="5" value="0"><i>km</i><button type="button" data-lvl="kommune">enable</button>
+              <label for="kmCi">city</label><input type="number" id="kmCi" inputmode="numeric" min="0" max="300" step="5" value="25"><i>km</i><button type="button" data-lvl="city">disable</button>
+            </div>
+            <p class="help"><b>0 turns a level off.</b> Kommune starts there: at this mesh size a
+               kommune region has almost no members to filter, and its tags are the longest.</p>
+          </div>
+          <p>A region tells repeaters which floods to pass on. <b>It does not limit who you can
+             reach</b> — every node carries <code>eu</code> and <code>no</code>, so wide traffic
+             still crosses the whole mesh. Narrow tags stop a local channel flooding the country.</p>
+          <p><b>Nothing here cuts anyone off.</b> This page never emits <code>region denyf *</code>,
+             the command that makes a repeater reject packets with no region. Tags only ever add.</p>
+          <p><b>A kommunenummer is not a postnummer.</b> Both are four digits and they are unrelated.
+             Your node <b>name</b> uses the postnummer, because that is the number you know. Your
+             region <b>tags</b> use the kommunenummer, because that is the one with real borders
+             behind it. <code>NO-1354 Skuiåsen</code> tagged <code>no-3201</code> is correct.</p>
+          <p><b>The first two digits are the fylke.</b> So a node tagged <code>no-3201</code> is
+             inside <code>no-32</code> by construction, and you can widen a flood from kommune to
+             fylke without a lookup table.</p>
           <!-- The brackets are open-topped boxes, so both ends turn up toward
                the digits above; 3ch clears the "no-" and the kommune bracket
                runs two characters further than the fylke one, which is what
@@ -1489,12 +1565,18 @@
             <i class="br k" aria-hidden="true"></i>
             <span class="tm k">kommunenummer</span><span class="vl" id="nmKm"></span>
           </div>
-          <p><b>A city tag does not mean the node is in the city.</b> It means the node is within the city radius of it — 25&nbsp;km by default — close enough to carry that city's traffic. A repeater on a ridge outside town is often exactly what makes routing <em>inside</em> the town work, so it should carry the city tag even though its address is somewhere else. It is also why a node can carry more than one: sitting between two cities, it relays for both.</p>
-          <p><b>The same goes for a border.</b> A repeater near the edge of its fylke serves both sides of it, so it carries the neighbour's region too — a node in Asker stands in Akershus but is 5&nbsp;km from Buskerud, and relays for it. How far each level reaches is set under Regions; neighbouring kommuner start switched off. Expect to see a neighbour across water, too — an over-water path is usually the <em>best</em> one a radio gets.</p>
-          <p>Landsdel, fylke, kommune and city sit side by side under <code>no</code> — they are independent overlays, not a nesting, since a city's 25&nbsp;km radius crosses fylke borders. Region membership is not inherited from position in the tree, so every tag the node should relay is listed explicitly.</p>
-          <p>All these codes come from the map — place the node and they follow. They are the current numbers, in use since the county reform of January 2024.</p>
-        </details>
-
+          <p><b>A tag means "relays for", not "is in".</b> A node inside the city radius of Oslo
+             carries <code>no-oslo</code> even if it sits well outside the city — a repeater on a
+             ridge is often exactly what makes routing <em>inside</em> town work. Sit between two
+             cities and it carries both.</p>
+          <p>A border works the same way: 5&nbsp;km from Buskerud and the node carries
+             <code>no-33</code> too. The numbers above set how close counts. Expect neighbours
+             across water — over water is the best path a radio gets.</p>
+          <p>Landsdel, fylke, kommune and city are independent overlays under <code>no</code>, not a
+             nesting, so every tag is listed in full. The codes come from the map and are current
+             since the county reform of January 2024.</p>
+          </details>
+        </div>
       </section>
     </div>
 
@@ -1565,10 +1647,19 @@
         <details class="explain">
           <summary>About the name and location</summary>
           <p id="locNote"></p>
-          <p>Convention: <code>NO-&lt;postnummer&gt; &lt;place&gt;</code>, so a node on Skuiåsen in Bærums Verk is <code>NO-1354 Skuiåsen</code>. <b>Max 24 bytes if the node has a location set, 32 if not</b> — Norwegian letters cost two bytes each, so <code>å</code> and <code>ø</code> count double. Takes effect after a reboot.</p>
-          <p><b>Type your postnummer into the position field</b> and the node lands in the middle of that area — usually the quickest way to place it, and the only way to set the postnummer exactly. Clicking the map works the other way round: it pins the exact spot and works out the kommune from the real border, but it cannot know which postnummer you are in, so it takes the nearest as a guess. <b>Check the bar under the map</b> — that guess is right about two times in three. Type the postnummer instead if it is wrong.</p>
+          <p>Convention: <code>NO-&lt;postnummer&gt; &lt;place&gt;</code> — a node on Skuiåsen in
+             Bærums Verk is <code>NO-1354 Skuiåsen</code>. <b>32 bytes, or 24 if you publish a
+             location.</b> Norwegian letters cost two each. Takes effect after a reboot.</p>
+          <p><b>Type your postnummer into the position field</b> and the node lands in the middle of
+             that area — the only way to set it exactly. A map click pins the exact spot but has to
+             guess the postnummer, and is right about two times in three: check the bar under the
+             map, and type the number instead if it is wrong.</p>
           <p></p>
-          <p>Sent as two commands, <code>set lat</code> and <code>set lon</code> — MeshCore has no combined location command. <b>Off by default,</b> because a map click is only accurate to a hundred metres or so and a wrong published position is worse than none. Turn it on once you have typed a real GPS reading above. Publishing is normal for a repeater and puts it on mesh maps, but it is public, and <b>it drops the name limit from 32 bytes to 24</b>.</p>
+          <p><code>set lat</code> and <code>set lon</code> — MeshCore has no combined location
+             command. <b>Off by default:</b> a map click is only accurate to about a hundred metres,
+             and a wrong published position is worse than none. Turn it on once you have typed a real
+             GPS reading. Publishing puts the node on mesh maps and <b>drops the name limit to 24
+             bytes</b>.</p>
           <p>Contact, antenna, power, mount. Visible to anyone who queries the node — no personal info.</p>
           <p>Lets members query node status.</p>
         </details>
@@ -1651,11 +1742,20 @@
         </div>
         <details class="explain">
           <summary>How the back-off works, and how to choose</summary>
-          <p><code>rxdelay 3</code> is set on every profile. It works from the receiving side — a packet that arrived weakly is held back briefly so a repeater that heard it clearly gets there first, and the weak copy is dropped as a duplicate.</p>
-          <p>When several repeaters hear the same flood, each waits a random moment before repeating it so they don't transmit over each other. The profile scales how wide that random window is: <b>the more repeaters around you, the wider it needs to be</b>. A wider window costs a little latency and nothing else — it does not change what your node repeats, or who can reach it.</p>
-          <p><b>A repeater should not move.</b> There is no mobile profile on purpose. A repeater that travels keeps changing which nodes it can hear, so routes through it break as fast as they form, and it drags traffic into areas that gain nothing from it. If you want to carry a node with you, run it as a companion rather than a repeater — you still get the mesh, without adding an unstable relay to it.</p>
-          <p>Run <code>neighbors</code> on the node and count how many have SNR above 0. Reported examples: 16 neighbours with only 4 above 0 is sparse; 50 with 19 above 0 is dense.</p>
-          <p>Two things here are firmware behaviour rather than opinion. <code>txdelay</code> only moves in steps of <b>0.2</b> — it is multiplied by five and truncated, so 0.3 does nothing that 0.2 does not — and both delays are <b>capped at 2</b>. Beyond that these values are a local convention: MeshCore's own tuning work is unresolved, and its simulations were contradicted by field tests, so nothing here is taken from them.</p>
+          <p><b>Several repeaters hear the same flood.</b> Each waits a random moment before
+             repeating it so they do not transmit over each other. The profile scales that window:
+             the more repeaters around you, the wider it needs to be. It costs a little latency and
+             nothing else — it does not change what your node repeats, or who can reach it.</p>
+          <p><code>rxdelay 3</code> is on every profile. It works from the receiving side: a packet
+             that arrived weakly is held back briefly so a repeater that heard it clearly gets there
+             first, and the weak copy is dropped as a duplicate.</p>
+          <p><b>A repeater should not move.</b> One that travels keeps changing which nodes it can
+             hear, so routes through it break as fast as they form. Set one up on the <b>Companion</b> tab instead — you
+             still get the mesh, without adding an unstable relay to it.</p>
+          <p>Run <code>neighbors</code> on the node and count how many have SNR above 0. Reported:
+             16 neighbours with 4 above 0 is sparse; 50 with 19 above 0 is dense.</p>
+          <p><code>txdelay</code> moves in steps of <b>0.2</b> and both delays cap at <b>2</b> —
+             that is firmware behaviour, not opinion. Everything else here is local convention.</p>
         </details>
       </section>
 
@@ -1663,33 +1763,12 @@
 
       <section>
         <h2>Regions</h2>
-        <p class="sub">Only change if using an outdated firmware. Default region config for experts.</p>
-        <div class="row">
-          <div class="k">repeater firmware</div>
-          <div class="v">
-            <div class="seg" id="fwSeg">
-              <button data-f="new" class="on">1.16.0+</button>
-              <button data-f="old">1.12.0 – 1.15.0</button>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="k">neighbour assistance</div>
-          <div class="v">
-            <div class="kms">
-              <label for="kmLd">landsdel</label><input type="number" id="kmLd" inputmode="numeric" min="0" max="300" step="5" value="50"><i>km</i><button type="button" data-lvl="landsdel">disable</button>
-              <label for="kmFy">fylke</label><input type="number" id="kmFy" inputmode="numeric" min="0" max="300" step="5" value="25"><i>km</i><button type="button" data-lvl="fylke">disable</button>
-              <label for="kmKo">kommune</label><input type="number" id="kmKo" inputmode="numeric" min="0" max="300" step="5" value="0"><i>km</i><button type="button" data-lvl="kommune">enable</button>
-              <label for="kmCi">city</label><input type="number" id="kmCi" inputmode="numeric" min="0" max="300" step="5" value="25"><i>km</i><button type="button" data-lvl="city">disable</button>
-            </div>
-            <p class="help">How close before the node relays for a neighbouring place. <b>0 turns a level off</b> — the node always keeps the regions it stands in.</p>
-          </div>
-        </div>
+        <p class="sub">How far this node announces itself. Country-level while the mesh has few regions.</p>
         <div class="row">
           <div class="k">region default</div>
           <div class="v">
             <div class="seg" id="defSeg">
-              <button data-d="no" class="on">no</button>
+              <button data-d="no" class="on">country</button>
               <button data-d="landsdel">landsdel</button>
               <button data-d="fylke">fylke</button>
               <button data-d="kommune">kommune</button>
@@ -1700,7 +1779,16 @@
         </div>
         <details class="explain">
           <summary>What default scope changes</summary>
-          <p>Default scope tags all self-originated traffic (adverts, DMs without a known path) so it can travel through repeaters that cap unscoped flood. <b>off</b> leaves that traffic untagged — fine while few repeaters filter, but it won't cross one that caps unscoped flood. Country-level <b>no</b> keeps a DM between two people anywhere in Norway routing; scope down to the city only if you're sure all your traffic is local. Needs firmware 1.15+.</p>
+          <p><b>Tags what this node sends on its own</b> — for a repeater, mostly its adverts. It
+             does not change which regions the node <em>relays</em> for; that is the tree on the
+             left.</p>
+          <p><b>Narrowing it does not make you unreachable.</b> Messages still cross region borders
+             through the repeaters on either side. It only limits how far this node announces
+             <em>itself</em>.</p>
+          <p><b>country</b> (<code>no</code>) is the default while most Norwegian repeaters carry no
+             regions: announce yourself narrowly today and almost nobody hears it. Narrow it once
+             they do. <b>off</b> works now and stops working on any repeater set to drop unscoped
+             packets.</p>
         </details>
       </section>
 
@@ -1714,10 +1802,30 @@
           <button class="copy" id="copyBtn">Copy</button>
         </div>
         <p class="sub">Paste the whole block into the node over USB serial.</p>
+        <!-- Firmware decides the SHAPE of the block below, not anything about
+             regions, so it belongs here rather than in the Regions section
+             where it sat until 2026-07-22. Above the output, because it
+             changes what you are about to read. -->
+        <div class="row">
+          <div class="k">firmware</div>
+          <div class="v">
+            <div class="seg" id="fwSeg">
+              <button data-f="new" class="on">1.16.0+</button>
+              <button data-f="old">1.12.0 – 1.15.0</button>
+            </div>
+            <p class="help">1.16.0 added the one-line <code>region def</code> syntax. Older
+               firmware gets the same tree, built one <code>region put</code> at a time. Run
+               <code>ver</code> on the node if you are not sure.</p>
+          </div>
+        </div>
         <pre class="cmd" id="cmdOut"></pre>
         <details class="explain">
           <summary>Before you paste this</summary>
-          <p>Run over USB/serial, or via the companion app's admin CLI. <code>set dutycycle 10</code> is the legal EU maximum on this sub-band — the EU/UK Narrow preset ships with 50, so it must be set explicitly. <b>Norway is EEA/EFTA, not EU</b> — nesting <code>no</code> under <code>eu</code> follows the existing convention, not geopolitics. Reboot after radio changes.</p>
+          <p>Run over USB/serial, or the companion app's admin CLI. <code>set dutycycle 10</code>
+             is the legal maximum on this sub-band and the preset ships with 50, so it has to be set
+             explicitly. <b>Norway is EEA/EFTA, not EU</b> — nesting <code>no</code> under
+             <code>eu</code> follows the existing convention, not geopolitics. Reboot after radio
+             changes.</p>
         </details>
       </section>
 
@@ -1764,19 +1872,15 @@
           <details class="explain">
             <summary>How these channels work, and who else is on them</summary>
             <p><b>The name is the channel.</b> A channel starting with <code>#</code> derives its
-               own key from its name — <code>sha256("#" + name)</code>, cut to 16 bytes — so
-               everyone who types <code>#baerum</code> lands on the same channel without anyone
-               sending anyone a key. That is what makes a regional channel joinable at all.</p>
-            <p><b>Which also means they are not private.</b> Anyone who knows the name can work out
-               the key, so treat these as an open calling frequency — the mesh equivalent of a
-               published repeater output. For something private, make your own channel with a
-               random secret and hand it out yourself.</p>
-            <p><b>Spelling is exact and unforgiving.</b> The key comes from the name character for
-               character, so <code>#norge</code> and <code>#Norge</code> are two different channels
-               that cannot hear each other. The app only accepts <code>a-z</code>,
-               <code>0-9</code> and <code>-</code>, which is why these are written
-               <code>ostlandet</code> and <code>baerum</code> rather than with ø and æ — the same
-               transliteration the region tags use.</p>
+               own key from its name, so everyone who types <code>#baerum</code> lands on the same
+               one. There is no key to send anybody.</p>
+            <p><b>Which is why they are not private.</b> Anyone who knows the name can work out the
+               key. Treat them as an open calling frequency; for something private, make a channel
+               with a random secret and hand it out yourself.</p>
+            <p><b>Spelling is exact.</b> <code>#norge</code> and <code>#Norge</code> are two
+               different channels that cannot hear each other. The app accepts only
+               <code>a-z</code>, <code>0-9</code> and <code>-</code>, which is why these are written
+               <code>ostlandet</code> and <code>baerum</code>.</p>
           </details>
         </section>
 
