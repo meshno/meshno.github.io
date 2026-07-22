@@ -288,6 +288,13 @@
      accent and both of these are it. */
   .pin-dot { fill: var(--accent); }
   .pin-ring { fill: none; stroke: var(--accent); stroke-width: 1.5; opacity: 0.9; }
+  /* The inactive device: present, findable, and clearly not the thing you are
+     editing. Hollow and --dim rather than a second accent — one accent, and
+     the ring stays unique to the node you are configuring. */
+  .ghost-dot {
+    fill: var(--bg); stroke: var(--dim); stroke-width: 1.25; opacity: 0.85;
+    vector-effect: non-scaling-stroke;
+  }
 
   /* mirrors .map-head so the map reads as one panel with a header and footer */
   .map-note { margin-top: 10px; font-size: 14px; }
@@ -868,6 +875,10 @@
   /* deliberately larger than .city .dot (4px) — the node was the smaller of
      the two until 2026-07-21, which is exactly why it was hard to find */
   .pin-dot    { r: calc(5px * var(--k, 1)); }
+  /* smaller than the live pin, larger than a city dot would be confusing —
+     3.5px reads as "a marker, not yours". Counter-scaled like the rest, and
+     its stroke is non-scaling above or it blooms into a disc when zoomed. */
+  .ghost-dot  { r: calc(3.5px * var(--k, 1)); }
   .terr, .fylke-lines, .kommune { vector-effect: non-scaling-stroke; }
   /* These two MUST be non-scaling too. Their radii are counter-scaled by --k
      to hold a constant screen size, but stroke-width is in user units and is
@@ -978,7 +989,7 @@
           <span class="wordmark">Mesh<b>NO</b></span>
         </div>
         <h1>MeshCore node configurator</h1>
-        <p class="lede">A configurator for setting up Norwegian MeshCore nodes, following conventions similar to those used by Sweden and Denmark. It targets the <code>EU/UK Narrow</code> preset already running across the mesh — 869.618&nbsp;MHz at 62.5&nbsp;kHz — and tags each node with the regions it relays for.</p>
+        <p class="lede">A configurator for setting up Norwegian MeshCore nodes, following conventions similar to those used by Sweden and Denmark. It targets the <code>EU/UK Narrow</code> preset already running across the mesh — 869.618&nbsp;MHz at 62.5&nbsp;kHz — Set up a <b>repeater</b> with the regions it relays for, or a <b>companion</b> with the channels for where you are.</p>
       </div>
       <div class="theme">
         <div class="seg" id="themeSeg" role="group" aria-label="Colour theme">
@@ -992,8 +1003,11 @@
 
   <main id="main">
     <div class="map-col">
-      <h2>Region</h2>
-      <p class="sub">Where the node stands decides which regions it relays for.</p>
+      <!-- Both filled by render(): the map is shared, so it has to say which
+           device it is showing. "relays for" is repeater language and is
+           simply untrue of a companion, which relays nothing. -->
+      <h2 id="mapHead">Region</h2>
+      <p class="sub" id="mapSub">Where the node stands decides which regions it relays for.</p>
       <div class="map-head">
         <label for="posRead">Position</label>
         <!-- The readout is typeable, and nothing about a right-aligned line of
@@ -1014,7 +1028,8 @@
       <div class="zoomctl">
         <button type="button" id="zOut" aria-label="Zoom out">&minus;</button>
         <button type="button" id="zIn" aria-label="Zoom in">+</button>
-        <button type="button" id="zReset">Reset</button>
+        <button type="button" id="zReset"
+                title="Clear this tab's pin and zoom. The other device keeps its own.">Reset</button>
       </div>
       <svg class="map" id="map" viewBox="4.0 4.0 470.3 550.5" style="--k:1" role="application" aria-label="Map of Norway. Click to place your node, or use the city buttons.">
         <!-- territorial-limit outlines sit under the land, so only the part
@@ -1420,6 +1435,13 @@
       <g class="city" data-key="no-tromso" data-minz="1" transform="translate(282.1,82.5)" tabindex="0" role="button" aria-label="Tromsø"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Tromsø</text></g>
       <g class="city" data-key="no-alta" data-minz="1" transform="translate(341.7,64.6)" tabindex="0" role="button" aria-label="Alta"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Alta</text></g>
       <g class="city" data-key="no-kirkenes" data-minz="1" transform="translate(437.1,58.4)" tabindex="0" role="button" aria-label="Kirkenes"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:0.0;--dy:-6.0" text-anchor="middle">Kirkenes</text></g>
+        <!-- The OTHER device's position, so "which pin is which" is a thing
+             you can see rather than infer from the tab. No ring: a ring means
+             the node you are configuring, and it is the one mark on this page
+             that may never be borrowed. -->
+        <g class="pin ghost" id="pinGhost" aria-hidden="true" hidden>
+          <circle class="ghost-dot"></circle>
+        </g>
         <g class="pin" id="pin" aria-hidden="true" hidden>
           <circle class="pin-ring" r="10"></circle>
           <circle class="pin-dot" r="3.5"></circle>
@@ -2834,12 +2856,19 @@
 
   // Show a device's pin without recording anything. Falls back to the unplaced
   // branch when that device has nothing to show.
-  function showPinFor(dev) {
+  // `jump` brings the device into view: it drills when the fylke differs (the
+  // same path typing a postnummer takes) and otherwise pans only if the pin is
+  // not comfortably on screen already.
+  //
+  // OFF BY DEFAULT, because Reset also comes through here — it has just zoomed
+  // out to the whole country, and drilling straight back in would undo it.
+  function showPinFor(dev, jump = false) {
     const p = livePin(dev);
     const d = p.x === null ? null : deriveAt(p.x, p.y, p.post);
     otherCtx = { key: null, ctx: null };   // the active device just changed
-    if (d) applyPin(d, false);
-    else { clearPlacement(); render(); }
+    if (!d) { clearPlacement(); render(); return; }
+    applyPin(d, jump);
+    if (jump) ensureVisible(d.x, d.y);
   }
 
   // Region tags for this node. landsdel, fylke, kommune and metro city are
@@ -2996,6 +3025,35 @@
     // NO-<companion postnummer> <repeater place>, which is a name that never
     // existed anywhere.
     const rd = ctxFor('repeater'), cd = ctxFor('companion');
+    // The map is shared, so it says which device it is showing. "relays for"
+    // is repeater language and is untrue of a companion, which relays nothing.
+    const isRep = state.device === 'repeater';
+    $('mapHead').textContent = isRep ? 'Region' : 'Home';
+    $('mapSub').textContent = isRep
+      ? 'Where the node stands decides which regions it relays for.'
+      : 'Roughly where you are. Decides which channels you are offered.';
+    // The other device's pin, so which-is-which is visible rather than
+    // inferred from the tab.
+    //
+    // MERGED WHILE THEY WOULD OVERLAP ON SCREEN, not only while they are
+    // equal. The common path is a repeater and then a companion in the same
+    // postnummer — one clicked on a roof, the other typed, so they land metres
+    // apart and never compare equal. Two markers a few pixels apart read as a
+    // rendering fault rather than as two devices. The threshold is in user
+    // units scaled by 1/z, the same counter-scaling the markers themselves
+    // use, so it is really "about 14 screen px" at every zoom: they merge when
+    // indistinguishable and separate as soon as zooming can tell them apart.
+    //
+    // `placed` as well: Reset leaves state.x/y stale, and a ghost measured
+    // against a stale live position would flicker on for a node that is gone.
+    // Where it sits is a fact about the pins, so it is settled here; WHETHER
+    // it shows depends on zoom, so that is settled in applyView(). Deciding
+    // both here froze the merge at whatever the zoom was when the pin last
+    // moved, and zooming out then left two markers sitting on top of each
+    // other — render() does not run on zoom.
+    const other = state.device === 'repeater' ? cd : rd;
+    ghostAt = placed && other ? [other.x, other.y] : null;
+    renderGhost();
     $('devRep').textContent = !rd ? 'no node placed'
       : state.desc.trim() ? nodeName(rd) : 'not named yet';
     const nch = cd ? channels(cd).length : 0;
@@ -3255,6 +3313,44 @@
   // while a phone at the same zoom still scrolls: `touch-action: pan-y` keeps
   // vertical swipes with the browser, so the drag handler never sees them.
   const ownsTouch = () => view.z > view.rest * 1.001;
+  // where the inactive device's marker belongs, or null — set by render(),
+  // read by renderGhost() on every view change
+  let ghostAt = null;
+
+  // The inactive device's marker. Merged while it would overlap the live pin:
+  // the common path is a repeater and then a companion in the same postnummer,
+  // one clicked on a roof and the other typed, so they land metres apart and
+  // never compare equal. Two markers a few pixels apart read as a rendering
+  // fault rather than as two devices.
+  //
+  // 14 / z is in USER UNITS, which is the same space the markers are sized in:
+  // the ring is `r: 10px * --k` and the ghost `3.5px * --k`, so 13.5 units is
+  // exactly touching and 14 is a hair clear. Do NOT read the constant as
+  // screen pixels — a `px` in this SVG's CSS is a user unit, which renders to
+  // about 0.84 real px on a desktop map and less on a phone. Expressing the
+  // threshold in the markers' own units is what makes it hold at any element
+  // width without a second measurement.
+  // Pan the pin into view, but only when it is not already comfortably there:
+  // switching between two devices in the same street should not shift the map
+  // under the reader. The test is the middle 80% of the frame, so a pin near
+  // the edge still gets centred rather than left half under the map furniture.
+  function ensureVisible(x, y) {
+    const w = W / view.z, h = H / view.z;
+    if (Math.abs(x - view.cx) > w * 0.4 || Math.abs(y - view.cy) > h * 0.4) {
+      view.cx = x; view.cy = y;
+      applyView();
+    }
+  }
+
+  function renderGhost() {
+    const gh = $('pinGhost');
+    if (ghostAt && Math.hypot(ghostAt[0] - state.x, ghostAt[1] - state.y) > 14 / view.z) {
+      gh.setAttribute('transform', `translate(${ghostAt[0]},${ghostAt[1]})`);
+      gh.removeAttribute('hidden');
+    } else {
+      gh.setAttribute('hidden', '');
+    }
+  }
 
   function applyView() {
     const w = W / view.z, h = H / view.z;
@@ -3264,6 +3360,7 @@
     map.setAttribute('viewBox',
       `${view.cx - w / 2} ${view.cy - h / 2} ${w} ${h}`);
     map.classList.toggle('zoomed', ownsTouch());
+    renderGhost();   // the merge threshold is a screen distance, so zoom moves it
     map.style.setProperty('--k', 1 / view.z);   // keep text and dots readable
     for (const k of KOMMUNER) {
       k.el.classList.toggle('shown', k.nr.slice(0, 2) === state.drilled);
@@ -3580,8 +3677,9 @@
     });
     $('paneRep').toggleAttribute('hidden', state.device !== 'repeater');
     $('paneCom').toggleAttribute('hidden', state.device !== 'companion');
-    // the map is shared, so it has to follow the tab to this device's pin
-    showPinFor(state.device);
+    // the map is shared, so it has to follow the tab to this device's pin —
+    // and actually go there, or the other device can sit off-screen entirely
+    showPinFor(state.device, true);
   }));
 
   // "Follow the other device again" — the way back from an accidental detach.
@@ -3590,7 +3688,7 @@
     if (!e.target.closest('button')) return;
     const p = state.pins[state.device];
     p.x = p.y = p.post = null; p.auto = true;
-    showPinFor(state.device);
+    showPinFor(state.device, true);
   });
 
   $('copyBtn').addEventListener('click', async () => {
