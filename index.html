@@ -1763,7 +1763,7 @@
 
       <section>
         <h2>Regions</h2>
-        <p class="sub">How far this node announces itself. Country-level while the mesh has few regions.</p>
+        <p class="sub">The region tag on this node's own traffic. Country-level, and most nodes stay there.</p>
         <div class="row">
           <div class="k">region default</div>
           <div class="v">
@@ -1782,12 +1782,9 @@
           <p><b>Tags what this node sends on its own</b> — for a repeater, mostly its adverts. It
              does not change which regions the node <em>relays</em> for; that is the tree on the
              left.</p>
-          <p><b>Narrowing it does not make you unreachable.</b> Messages still cross region borders
-             through the repeaters on either side. It only limits how far this node announces
-             <em>itself</em>.</p>
-          <p><b>country</b> (<code>no</code>) is the default region while most Norwegian repeaters
-             don't carry any regions — a starting point, to get the convention moving. Narrow it once
-             the repeaters around you have them.</p>
+          <p><b>country</b> (<code>no</code>) is the default, and where a repeater or companion
+             should stay. Narrower scopes belong to individual channels — a local chat scoped to its
+             kommune — and to special-purpose nodes.</p>
           <p><b>off</b> works today and stops working on any repeater set to drop unscoped packets.</p>
         </details>
       </section>
@@ -1879,8 +1876,8 @@
             <div class="v">
               <p class="help">In the app: <b>Experimental Settings → Default Region → <code>no</code></b>.
                  Direct messages and
-                 unscoped channels get this tag. It does nothing until nearby
-                 repeaters carry the <code>no</code> region — ask your local operators to add it.</p>
+                 unscoped channels go out carrying this tag. Only repeaters that carry
+                 <code>no</code> will repeat them — ask your local operators to add it.</p>
             </div>
           </div>
           <details class="explain">
