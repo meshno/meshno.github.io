@@ -218,6 +218,12 @@
   main {
     display: grid; grid-template-columns: 380px minmax(0, 1fr);
     gap: 40px; align-items: start; padding-bottom: 60px;
+    /* How many columns the layout is in, published for app.js to read. The
+       map's pan lock starts on in the two-column view and off in the one-
+       column one, and this is how it knows which it is WITHOUT a second copy
+       of the breakpoint in JS. One source of truth; do not add a matchMedia
+       with the same number in it. */
+    --cols: 2;
   }
   /* grid items default to min-width:auto and refuse to shrink below their
      content, so they burst out of the track and past the page padding */
@@ -234,13 +240,16 @@
     color: var(--muted); padding-bottom: 9px; border-bottom: 1px solid var(--rule-2);
     margin-bottom: 10px;
   }
-  /* TOUCH ownership only. At or below the resting zoom the page keeps vertical
-     swipes, so a reader can scroll past the map — pan-y still withholds pinch,
-     so zooming reaches our handler. Above rest the map owns every gesture.
-     `.zoomed` follows ownsTouch(), NOT whether a drag can pan: a mouse never
-     scrolls the page, so it drags freely wherever there is slack. */
-  svg.map { display: block; width: 100%; height: auto; touch-action: pan-y; }
-  svg.map.zoomed { touch-action: none; }
+  /* ONE class, following the pan lock, and nothing else decides either of
+     these. Locked, the map claims no gesture it does not need: `pan-y` leaves
+     vertical swipes to the page so a reader can scroll straight past the map,
+     while still withholding pinch so zooming reaches our handler. Unlocked,
+     the map owns the gesture, drags pan it, and the cursor says so. */
+  svg.map {
+    display: block; width: 100%; height: auto;
+    touch-action: pan-y; cursor: crosshair;
+  }
+  svg.map.pan { touch-action: none; cursor: grab; }
   svg.map.panning { cursor: grabbing; }
 
 
@@ -252,8 +261,12 @@
   }
   .zoomctl button:hover { border-color: var(--muted); color: var(--ink); }
   .zoomctl button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-
-  svg.map { cursor: crosshair; }
+  /* The pan lock is the one MODE in this group — the others are actions that
+     happen and are over. It carries its state the way the segmented controls
+     do, so "lit" means the same thing here as everywhere else on the page. */
+  .zoomctl button[aria-pressed="true"] {
+    color: var(--accent); border-color: var(--accent); background: var(--wash);
+  }
 
 
   /* Two layers showing two different things.
@@ -1011,7 +1024,7 @@
 
   /* ---- narrow ---- */
   @media (max-width: 900px) {
-    main { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+    main { grid-template-columns: minmax(0, 1fr); gap: 28px; --cols: 1; }
     /* the columns stack here, so the left one must not be its own scroll
        area inside the page scroll — release the sticky sizing entirely */
     .map-col { position: static; max-height: none; overflow-y: visible; }
@@ -1148,6 +1161,8 @@
         <button type="button" id="zIn" aria-label="Zoom in">+</button>
         <button type="button" id="zReset"
                 title="Clear this tab's pin and zoom. The other device keeps its own.">Reset</button>
+        <button type="button" id="zPan" aria-pressed="false"
+                title="Drag the map to move it. Off, the page scrolls through it instead.">Pan</button>
       </div>
       <svg class="map" id="map" viewBox="4.0 4.0 470.3 550.5" style="--k:1" role="application" aria-label="Map of Norway. Click to place your node, or use the city buttons.">
         <!-- territorial-limit outlines sit under the land, so only the part
@@ -3019,21 +3034,29 @@
     const key = $('mapKey');
     if (!present.has('sel')) { key.setAttribute('hidden', ''); return; }
     // Columns are LEVELS, rows are ownership, so the same level lines up under
-    // itself and the two labels are written once instead of per swatch. The
-    // landsdel column appears only when there is landsdel ground on screen —
-    // "own" has no landsdel cell at all, and that hole is informative.
-    const cols = ['kommune', 'fylke'];
-    if (present.has('ownl') || present.has('nbl')) cols.push('landsdel');
-    const near = present.has('nbk') || present.has('nbf') || present.has('nbl');
-    const cell = on => on ? `<i class="mk-sw mk-${on}"></i>` : '<i class="mk-no"></i>';
-    let h = '<span></span>' + cols.map(c => `<span class="mk-c">${c}</span>`).join('');
-    h += '<span class="mk-h">own</span>'
-       + cell('sel') + cell('own')
-       + (cols.length > 2 ? cell(present.has('ownl') && 'ownl') : '');
+    // itself and the two labels are written once instead of per swatch.
+    //
+    // EVERY CELL IS GUARDED BY THE GROUND IT POINTS AT, and a column appears
+    // only where that level has any. `own`/`fylke` used to be drawn
+    // unconditionally, which was wrong in exactly one place: OSLO IS THE ONLY
+    // FYLKE WITH ONE KOMMUNE, so 0301 *is* 03, the home kommune is
+    // deliberately tier 0 (the #selKomm overlay owns it), and no kommune
+    // anywhere takes `t-own`. The key drew a green fylke swatch over a map
+    // that had no green fylke on it. Same identity as the landsdel rule below
+    // it — Sørlandet *is* Agder — one level further down.
+    const LEVELS = [
+      ['kommune',  'sel',  'nbk'],
+      ['fylke',    'own',  'nbf'],
+      ['landsdel', 'ownl', 'nbl'],
+    ];
+    const cols = LEVELS.filter(([, own, nb]) => present.has(own) || present.has(nb));
+    const near = cols.some(([, , nb]) => present.has(nb));
+    const cell = t => present.has(t) ? `<i class="mk-sw mk-${t}"></i>` : '<i class="mk-no"></i>';
+    let h = '<span></span>' + cols.map(([n]) => `<span class="mk-c">${n}</span>`).join('');
+    h += '<span class="mk-h">own</span>' + cols.map(([, own]) => cell(own)).join('');
     if (near) {
       h += '<span class="mk-h">neighbour</span>'
-         + cell(present.has('nbk') && 'nbk') + cell(present.has('nbf') && 'nbf')
-         + (cols.length > 2 ? cell(present.has('nbl') && 'nbl') : '');
+         + cols.map(([, , nb]) => cell(nb)).join('');
     }
     key.style.setProperty('--mk-cols', cols.length);
     key.innerHTML = h;
@@ -3542,42 +3565,29 @@
   // the fit zoom for a fylke once drilled in.
   const view = { z: 1, rest: 1, cx: VBX + W / 2, cy: VBY + H / 2 };
 
-  // THESE ARE TWO DIFFERENT QUESTIONS and were one function until 2026-07-22,
-  // which is what locked desktop panning at the fylke zoom.
+  // ---- the pan lock ----
   //
-  // Can a drag move the view? Only about geometry: is there more sheet than
-  // frame. A mouse drag never scrolls the page, so nothing here needs to be
-  // conceded to the reader. Both are a hair above the threshold, so
-  // floating-point noise in the fit zoom cannot read as panned.
-  const hasSlack = () => view.z > 1.001;
+  // WHETHER A DRAG PANS IS A SETTING THE READER OWNS, not something inferred.
+  // Three predicates used to derive it from zoom, resting zoom and pointer
+  // type, and they contradicted each other: zooming OUT of a drilled-in fylke
+  // took panning away while there was obviously slack in the map, because the
+  // test was against the resting zoom and not against the geometry. Inferring
+  // this was the whole bug.
   //
-  // Does the map claim TOUCH gestures? Only where the reader might have to
-  // scroll the page through it. At or below the resting zoom it yields, so a
-  // swipe starting on the map scrolls as normal; above it there is genuinely
-  // more sheet than frame and the map takes the gesture.
-  //
-  // Measured against `rest`, not against 1x: drilling into a fylke happens
-  // automatically whenever a postnummer is typed, and testing 1x left
-  // `touch-action: none` over a big part of a phone screen, so the map was a
-  // dead zone the reader had to swipe around. Do not put 1x back here.
-  //
-  // Splitting the two is what lets a desktop mouse pan a drilled-in fylke
-  // while a phone at the same zoom still scrolls: `touch-action: pan-y` keeps
-  // vertical swipes with the browser, so the drag handler never sees them.
-  const ownsTouch = () => view.z > view.rest * 1.001;
-  //
-  // Could the reader get there themselves? A mouse can drag the map wherever
-  // there is slack. Touch can only do it ABOVE the resting zoom, because at or
-  // below rest the map yields its gestures to the page so the reader can
-  // scroll past it — which means a phone that has just selected a fylke it
-  // cannot pan to has no way of seeing it.
-  //
-  // `(pointer: fine)` is an INPUT-CAPABILITY query, not a screen-size one.
-  // That is the same argument as the touch-action split: what matters is how
-  // you are pointing, not how wide the window is, and a width breakpoint here
-  // would be a second copy of the CSS one, free to drift.
-  const canPan = () =>
-    matchMedia('(pointer: fine)').matches ? hasSlack() : ownsTouch();
+  // It still has to DEFAULT somewhere, because a map that owns drag gestures
+  // on a phone is a dead zone the reader has to swipe around. It defaults to
+  // the layout: two columns and the map sits beside the page, one column and
+  // it spans the scroll path, so it starts locked. Read from `--cols` so the
+  // breakpoint lives in the CSS once — a number copied into a second language
+  // is a number free to drift.
+  let panOn = parseInt(getComputedStyle(document.querySelector('main'))
+                         .getPropertyValue('--cols'), 10) > 1;
+
+  function setPan(on) {
+    panOn = on;
+    map.classList.toggle('pan', on);
+    $('zPan').setAttribute('aria-pressed', String(on));
+  }
   // where the inactive device's marker belongs, or null — set by render(),
   // read by renderGhost() on every view change
   let ghostAt = null;
@@ -3624,7 +3634,6 @@
     view.cy = Math.min(VBY + H - h / 2, Math.max(VBY + h / 2, view.cy));
     map.setAttribute('viewBox',
       `${view.cx - w / 2} ${view.cy - h / 2} ${w} ${h}`);
-    map.classList.toggle('zoomed', ownsTouch());
     renderGhost();   // the merge threshold is a screen distance, so zoom moves it
     map.style.setProperty('--k', 1 / view.z);   // keep text and dots readable
     for (const k of KOMMUNER) {
@@ -3659,29 +3668,29 @@
     applyView();
   }
 
-  // The +/- buttons zoom on the VIEW CENTRE, so what you are looking at stays
-  // where it is. They anchored on the placed node until 2026-07-22, on the
-  // argument that the centre of Norway's bounding box is open sea — true at
-  // the country view, but once zoomed in it meant every press dragged the map
-  // back toward the pin. At the country view an anchorless zoom is still fine:
-  // applyView() clamps the sheet inside the frame, so it cannot land at sea.
-  const anchor = () => null;
   // frame a fylke: fit its bounding box with a margin, clamped to MAXZ
   function zoomToFylke(nr) {
     const b = FYLKE_BB[nr];
     if (!b) return;
     const w = (b[2] - b[0]) * 1.25, h = (b[3] - b[1]) * 1.25;
     view.z = Math.min(MAXZ, Math.max(1, Math.min(W / w, H / h)));
-    // This framing is now the RESTING view: touch yields to the page here,
-    // though a mouse can still drag it around (see hasSlack / ownsTouch).
+    // This framing is now the RESTING view. Its one remaining job: a click
+    // that selects a different fylke re-frames from here, and stops doing so
+    // once the reader has zoomed in past it.
     view.rest = view.z;
     view.cx = (b[0] + b[2]) / 2;
     view.cy = (b[1] + b[3]) / 2;
     applyView();
   }
 
-  $('zIn').addEventListener('click', () => zoomTo(view.z * 1.6, anchor()));
-  $('zOut').addEventListener('click', () => zoomTo(view.z / 1.6, anchor()));
+  // +/- zoom on the VIEW CENTRE — no anchor. They anchored on the placed node
+  // until 2026-07-22, on the argument that the centre of Norway's bounding box
+  // is open sea; true at the country view, but once zoomed in every press
+  // dragged the map back toward the pin. Anchorless is safe at the country
+  // view too, because applyView() clamps the sheet inside the frame.
+  $('zPan').addEventListener('click', () => setPan(!panOn));
+  $('zIn').addEventListener('click', () => zoomTo(view.z * 1.6));
+  $('zOut').addEventListener('click', () => zoomTo(view.z / 1.6));
   // Reset returns the map to how it opened, which means dropping the selection
   // too — otherwise the region banner keeps floating over a view that no longer
   // shows where it came from.
@@ -3741,11 +3750,13 @@
     const p = mapPoint(e);
     const dx = p[0] - last[0], dy = p[1] - last[1];
     if (!dragged && Math.hypot(dx, dy) * view.z < 1.5) return;   // still a click
-    // Still counts as a drag even where there is nothing to pan, so a dragged
-    // pointer never places a node — that has always been the behaviour at 1x.
+    // Set before the pan guard, not inside it, so a dragged pointer never
+    // places a node even where the drag moved nothing.
     dragged = true;
-    if (hasSlack()) {
+    if (panOn) {
       map.classList.add('panning');
+      // No slack test: at 1x there is nothing to move and applyView() clamps
+      // the sheet inside the frame, so the drag is its own no-op.
       view.cx -= dx; view.cy -= dy;
       applyView();
     }
@@ -3762,9 +3773,9 @@
 
   // Belt and braces for touch: iOS Safari has not always honoured touch-action
   // on inline SVG, which lets the page scroll instead of the map panning.
-  // Only swallow the gesture when there is actually something to pan.
+  // Only swallow the gesture where the reader has asked the map to take it.
   map.addEventListener('touchmove', e => {
-    if (ownsTouch() && pointers.size > 0) e.preventDefault();
+    if (panOn && pointers.size > 0) e.preventDefault();
   }, { passive: false });
 
   // A click all but on a marker snaps to its exact coordinates: at 1x the map
@@ -3784,14 +3795,20 @@
       if (d <= snap && (!best || d < best.d)) best = { c, d };
     }
     if (best) { x = best.c.x; y = best.c.y; }
-    // Re-frame only when the reader could not have got there themselves.
-    // This is one expression covering three cases: the country view (no slack,
-    // so nobody can pan), a desktop drilled in (a mouse can, so leave the view
-    // alone — clicking near a border used to throw it across the country), and
-    // a phone at its resting zoom (touch cannot, so take it there).
-    place(x, y, true, null, !canPan());
+    // RE-FRAMING NO LONGER ASKS ANYTHING ABOUT PANNING, which is most of what
+    // this simplification bought. It only ever consulted the pointer type to
+    // work out whether the reader could reach a fylke they had just selected;
+    // with the lock that question is theirs to answer, so the only thing left
+    // to respect is a zoom they set themselves.
+    //
+    // At rest — the country view, or a fylke the map framed for them — a click
+    // that enters a new fylke frames it. Past the resting zoom the reader has
+    // deliberately gone in closer, and throwing that away is the bug that made
+    // clicking near a fylke border fling the view across the country.
+    place(x, y, true, null, view.z <= view.rest * 1.001);
   });
 
+  setPan(panOn);
   applyView();
 
   // city markers stay as keyboard-reachable shortcuts to a known point
