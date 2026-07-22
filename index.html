@@ -513,8 +513,16 @@
      Floating furniture, like .zoomctl and .maptag: same glass, same hairline,
      parked above the map tag. Smaller than body mono because it is a key, not
      a control — you read it once and then stop seeing it. */
+  /* One bottom-anchored column for the key and the tag, so the key is pushed
+     up by however tall the tag turns out to be. They were positioned
+     independently, and a long kommune or poststed wrapping the tag to two
+     lines put it straight over the key. */
+  .mapfoot {
+    position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 2;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+    pointer-events: none;
+  }
   .mapkey {
-    position: absolute; left: 8px; bottom: 44px; z-index: 2;
     font-family: var(--mono); font-size: 9.5px; line-height: 1.4;
     color: var(--dim); letter-spacing: 0.01em;
     background: var(--glass); backdrop-filter: blur(3px);
@@ -744,7 +752,8 @@
 
   /* the region tag rides on the map, mirroring the zoom controls opposite */
   .maptag {
-    position: absolute; bottom: 8px; left: 8px; right: 8px; z-index: 2;
+    /* laid out by .mapfoot; stretches the column's full width */
+    align-self: stretch;
     display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
     background: var(--glass); backdrop-filter: blur(3px);
     border: 1px solid var(--rule); padding: 6px 10px; pointer-events: none;
@@ -1557,12 +1566,17 @@
              belongs on the thing it describes. Built from the tiers actually
              present, so a tier with no ground on screen gets no swatch and it
              stays to two short lines at the default radii. -->
+        <!-- Key and tag stack in one bottom-anchored column. Apart, the tag
+             was pinned to the bottom and grew UPWARD when a long kommune or
+             poststed wrapped it to two lines, straight over the key. -->
+        <div class="mapfoot">
         <div class="mapkey" id="mapKey" aria-hidden="true" hidden></div>
         <div class="maptag" aria-hidden="true">
           <span class="mt-tag" id="kommTag"></span>
           <span class="mt-nm" id="kommName"></span>
           <span class="mt-fy" id="fylkeLabel"></span>
           <span class="mt-pn" id="mtPost"></span>
+        </div>
         </div>
       </div>
       <!-- Says whether this tab's pin is its own or the other device's. The
