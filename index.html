@@ -681,6 +681,9 @@
      value is bare text or a link needs the label back at the top */
   .row.plain > .k { padding-top: 0; }
   .help { color: var(--muted); font-size: 14px; line-height: 1.55; margin: 9px 0 0; max-width: 68ch; }
+  /* the unscoped `deny` warning — the one control that cuts other nodes off.
+     Out-specifies `.help b` (0,2,1 vs 0,1,1); the words carry the warning too. */
+  .help b.bad { color: var(--bad); }
   .explain {
     border-left: 2px solid var(--rule); padding: 2px 0 2px 14px;
     margin: 14px 0 0;
@@ -960,6 +963,32 @@
   .kms button:hover { border-color: var(--muted); color: var(--ink); }
   .kms button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
+  /* a single number field with a trailing unit — tx power. Same recessed
+     inset and suppressed spinners as the radius inputs, just outside the
+     ladder grid, so the two number controls on the page read the same. */
+  .numf { display: flex; align-items: center; gap: 8px; }
+  /* display:flex out-specifies the UA [hidden] rule, same trap as .nmbars and
+     the SVG pin — the hops field is cap-only and must actually hide in deny. */
+  .numf[hidden] { display: none; }
+  /* when the field sits under a segmented control (unscoped floods: the hops
+     box below allow/cap/deny) it needs the same breathing room the help line
+     gets, or it reads as stuck to the buttons. The standalone tx-power field
+     is the only child of its .v and keeps its own spacing. */
+  .seg + .numf { margin-top: 10px; }
+  .numf input {
+    font-family: var(--mono); font-size: 13.5px; color: var(--ink);
+    background: var(--inset); border: 1px solid var(--rule); border-radius: 0;
+    padding: 6px 9px; width: 6.5em; min-height: 34px; text-align: right;
+    -moz-appearance: textfield; appearance: textfield;
+  }
+  .numf input::-webkit-outer-spin-button,
+  .numf input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .numf input:focus { outline: none; border-color: var(--accent); }
+  .numf input::placeholder { color: var(--placeholder); font-style: italic; }
+  .numf i {
+    font-style: normal; font-family: var(--mono); font-size: 12.5px; color: var(--dim);
+  }
+
   input[type="text"] {
     font-family: var(--mono); font-size: 13.5px; color: var(--ink);
     background: var(--inset); border: 1px solid var(--rule); border-radius: 0;
@@ -1075,6 +1104,7 @@
     .caret { left: 8px; }
     /* the ladder needs no reflow on a phone, only real tap targets */
     .kms input, .kms button { min-height: 44px; }
+    .numf input { min-height: 44px; }
     /* centred, not stretched: the field is a 44px tap target here and a
        stretched label would render its text at the top of that height,
        leaving "Position" floating above the prompt beside it */
@@ -1661,8 +1691,10 @@
           <p>A region tells repeaters which floods to pass on. <b>It does not limit who you can
              reach</b> — every node carries <code>eu</code> and <code>no</code>, so wide traffic
              still crosses the whole mesh. Narrow tags stop a local channel flooding the country.</p>
-          <p><b>Nothing here cuts anyone off.</b> This page never emits <code>region denyf *</code>,
-             the command that makes a repeater reject packets with no region. Tags only ever add.</p>
+          <p><b>By default, nothing here cuts anyone off.</b> Tags only add, and this node keeps
+             passing untagged traffic. The one command that stops that, <code>region denyf *</code>,
+             stays off unless you pick it under <b>unscoped floods</b>. Save it for the end of the
+             switch, once the mesh around you carries regions.</p>
           <p><b>A kommunenummer is not a postnummer.</b> Both are four digits and they are unrelated.
              Your node <b>name</b> uses the postnummer, because that is the number you know. Your
              region <b>tags</b> use the kommunenummer, because that is the one with real borders
@@ -1751,6 +1783,16 @@
           </div>
         </div>
         <div class="row">
+          <div class="k">gps</div>
+          <div class="v">
+            <div class="seg" id="gpsSeg">
+              <button data-g="off" class="on">off</button>
+              <button data-g="on">on</button>
+            </div>
+            <p class="help">If the node has a GPS, turn this on and it finds and shares its own position, so you can skip placing it precisely on the map. GPS builds only. Publishing a location drops the name limit to 24 bytes.</p>
+          </div>
+        </div>
+        <div class="row">
           <div class="k">owner.info</div>
           <div class="v">
             <input type="text" id="ownerInfo" placeholder="e.g. LA1ABC / 6dBi omni @9m / solar+batt / roof" maxlength="90" aria-label="owner.info — contact, antenna, power, mount">
@@ -1760,6 +1802,13 @@
           <div class="k">guest.password</div>
           <div class="v">
             <input type="text" id="guestPw" placeholder="leave blank for none" maxlength="30" aria-label="guest.password">
+          </div>
+        </div>
+        <div class="row">
+          <div class="k">admin password</div>
+          <div class="v">
+            <input type="text" id="adminPw" placeholder="leave blank to keep current" maxlength="30" aria-label="admin password">
+            <p class="help">The factory admin password is <code>password</code>, so anyone can reconfigure the node. Set your own. It appears in the config below in the clear, so keep that copy to yourself.</p>
           </div>
         </div>
         <details class="explain">
@@ -1775,8 +1824,9 @@
           <p></p>
           <p><code>set lat</code> and <code>set lon</code> — MeshCore has no combined location
              command. <b>Off by default:</b> a map click is only accurate to about a hundred metres,
-             and a wrong published position is worse than none. Turn it on once you have typed a real
-             GPS reading. Publishing puts the node on mesh maps and <b>drops the name limit to 24
+             and a wrong published position is worse than none. Type a real GPS reading before turning
+             it on, or use the <b>gps</b> toggle above and let the node place itself. Either way,
+             publishing a location puts the node on mesh maps and <b>drops the name limit to 24
              bytes</b>.</p>
           <p>Contact, antenna, power, mount. Visible to anyone who queries the node — no personal info.</p>
           <p>Lets members query node status.</p>
@@ -1822,6 +1872,40 @@
           <p>CR is the one radio parameter that may differ between nodes — receivers decode any CR. Higher = more redundancy, better survival through noise, but slower and more channel load. <b>Well-connected repeater: consider 5.</b> Frequency, bandwidth, and SF must match the mesh and are fixed here.</p>
           <p>1-byte hashes collide quickly as repeater count grows; 2-byte (65 536 values) makes collisions practically impossible at this mesh's scale and makes network debugging far easier. 3-byte only matters at millions of nodes.</p>
         </details>
+      </section>
+
+      <section>
+        <h2>Expert settings</h2>
+        <p class="sub">Opt-in tuning most nodes never need. They change nothing until you set them.</p>
+        <div class="row">
+          <div class="k">tx power</div>
+          <div class="v">
+            <div class="numf">
+              <input type="number" id="txPow" inputmode="numeric" min="1" max="22" step="1" placeholder="default" aria-label="transmit power, dBm"><i>dBm</i>
+            </div>
+            <p class="help">The LoRa chip's transmit power. Boards with an amplifier put out more, so check the manual. Blank keeps the default. <b>Staying inside your local legal limit is on you.</b></p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="k">multi.acks</div>
+          <div class="v">
+            <div class="seg" id="ackSeg">
+              <button data-ma="off" class="on">off</button>
+              <button data-ma="on">on</button>
+            </div>
+            <p class="help">Sends a spare copy of each acknowledgement so it survives a collision. Steadier on a weak link, at the cost of a little more airtime.</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="k">powersaving</div>
+          <div class="v">
+            <div class="seg" id="psSeg">
+              <button data-ps="off" class="on">off</button>
+              <button data-ps="on">on</button>
+            </div>
+            <p class="help">Light-sleeps the processor between packets. The radio keeps listening and a packet wakes it, so the node still repeats. For battery or solar sites.</p>
+          </div>
+        </div>
       </section>
 
       <section>
@@ -1895,6 +1979,20 @@
             </div>
           </div>
         </div>
+        <div class="row">
+          <div class="k">unscoped floods</div>
+          <div class="v">
+            <div class="seg" id="unscSeg">
+              <button data-u="allow" class="on">allow</button>
+              <button data-u="cap">cap</button>
+              <button data-u="deny">deny</button>
+            </div>
+            <div class="numf" id="unscHopsBox" hidden>
+              <input type="number" id="unscHops" inputmode="numeric" min="0" max="64" step="1" value="3" aria-label="unscoped flood hop limit"><i>hops</i>
+            </div>
+            <p class="help" id="unscHelp"></p>
+          </div>
+        </div>
         <details class="explain">
           <summary>What default scope changes</summary>
           <p><b>Tags what this node sends on its own</b> — for a repeater, mostly its adverts. It
@@ -1904,6 +2002,12 @@
              should stay. Narrower scopes belong to individual channels — a local chat scoped to its
              kommune — and to special-purpose nodes.</p>
           <p><b>off</b> works today and stops working on any repeater set to drop unscoped packets.</p>
+          <p><b>Unscoped floods</b> sets how much untagged traffic this repeater carries: messages
+             from nodes with no region set. <b>allow</b> is today's mesh, where everything floods and
+             nobody is cut off. <b>cap</b> keeps local untagged traffic but stops it crossing the
+             country. <b>deny</b> drops it outright. Leave it on <b>allow</b> until the nodes around
+             you carry regions. Turning <code>deny</code> on early isolates everyone who has not
+             switched. It is the last step of the switch, not the first.</p>
         </details>
       </section>
 
@@ -2262,6 +2366,20 @@
     // gets the region convention moving: a node that tags nothing gives the
     // rest of the mesh nothing to filter on.
     cr: '8', hash: '1', loop: 'minimal', regionDefault: 'no',
+    // Expert opt-ins, each emitted only when the operator sets it, so the
+    // default config is byte-for-byte unchanged. tx is a dBm string ('' =
+    // keep the board default); multiAcks and power are off. Persist across
+    // Reset the same way cr/hash/loop do — Reset clears the pin, not the tuning.
+    tx: '', multiAcks: false, power: false,
+    // admin password (blank = keep current); gps self-locates the node, which
+    // also publishes a location and so caps the name at 24 bytes.
+    admin: '', gps: false,
+    // Unscoped-flood control. 'allow' is the default and emits `region allowf *`
+    // exactly as before, so nothing is cut off; 'cap' adds
+    // `set flood.max.unscoped <hops>`; 'deny' emits `region denyf *`. The two
+    // documented ways to limit unscoped traffic — for the phased region
+    // rollout, off until the mesh around you carries regions. See CLAUDE.md.
+    unscoped: 'allow', unscopedHops: '3',
     owner: '', guest: '', desc: '', location: false,
     // Whether the name field is still ours to manage. Starts true — the empty
     // field the page opens with is ours, not a name the operator chose — and
@@ -3181,6 +3299,10 @@
     L.push(['c', '# radio — EU/UK Narrow, CR per node']);
     L.push(['k', 'set radio', `869.618,62.5,8,${state.cr}`]);
     L.push(['k', 'set dutycycle', '10']);
+    // tx power — only the LoRa chip's, capped at 22 dBm by the firmware.
+    // Emitted only when the operator names one; blank leaves the board default.
+    const txv = parseInt(state.tx, 10);
+    if (Number.isFinite(txv) && txv >= 1 && txv <= 22) L.push(['k', 'set tx', String(txv)]);
     L.push(['c', `# timing profile — ${p.label}`]);
     L.push(['k', 'set txdelay', p.tx]);
     L.push(['k', 'set direct.txdelay', p.dtx]);
@@ -3188,9 +3310,16 @@
     L.push(['c', '# routing hygiene']);
     L.push(['k', 'set path.hash.mode', state.hash]);
     L.push(['k', 'set loop.detect', state.loop]);
+    // multi.acks sends one extra ack retransmit (getExtraAckTransmitCount);
+    // off by default in firmware, opt-in here.
+    if (state.multiAcks) L.push(['k', 'set multi.acks', '1']);
     L.push(['c', '# adverts']);
     L.push(['k', 'set advert.interval', '240']);
     L.push(['k', 'set flood.advert.interval', '72']);
+    // powersaving light-sleeps the MCU between packets; the radio stays in RX
+    // and an incoming packet wakes it, so the node still repeats. Repeater-only
+    // command, bare (no `set`), off by default.
+    if (state.power) L.push(['k', 'powersaving', 'on']);
     L.push(['c', '# identity']);
     // no name unless a place has been given — NO-0301 alone says nothing,
     // and without a map click there is no kommune number to build it from
@@ -3200,8 +3329,19 @@
       L.push(['k', 'set lat', ll[0].toFixed(5)]);
       L.push(['k', 'set lon', ll[1].toFixed(5)]);
     }
+    // GPS self-locates the node — no precise map pin needed — and sharing it in
+    // adverts publishes the live position. Ungated on placement: a GPS node
+    // needs no click. Compile-time gated in firmware (GPS builds only); a
+    // non-GPS node answers "gps toggle not found" and is otherwise unaffected.
+    if (state.gps) {
+      L.push(['k', 'gps', 'on']);
+      L.push(['k', 'gps advert', 'share']);
+    }
     if (state.guest.trim()) L.push(['k', 'set guest.password', state.guest.trim()]);
     if (state.owner.trim()) L.push(['k', 'set owner.info', state.owner.trim()]);
+    // password <new> — no `set`. Only when given, so a blank field keeps
+    // whatever the node already has rather than resetting it to the factory one.
+    if (state.admin.trim()) L.push(['k', 'password', state.admin.trim()]);
     if (!placed) {
       L.push(['c', '# regions — none. Place the node on the map to scope its floods.']);
       for (const w of rangeWarnings(L)) L.unshift(['c', w]);
@@ -3209,8 +3349,21 @@
     }
     L.push(['c', '# regions — eu / europe / no relayed by every node;']);
     L.push(['c', '# landsdel, fylke, kommune and city all scope down from no']);
-    L.push(['c', '# allowf * is the default, restated in case this node had it denied']);
-    L.push(['k', 'region allowf', '*']);
+    // Unscoped floods: allow (default, cuts no one off) / cap (soft hop limit)
+    // / deny (hard drop). denyf * and allowf * are opposite flags on the
+    // wildcard region, so deny replaces the allowf line rather than adding to it.
+    if (state.unscoped === 'deny') {
+      L.push(['c', '# denyf * DROPS unscoped floods — isolates nodes without regions']);
+      L.push(['k', 'region denyf', '*']);
+    } else {
+      L.push(['c', '# allowf * is the default, restated in case this node had it denied']);
+      L.push(['k', 'region allowf', '*']);
+      if (state.unscoped === 'cap') {
+        const h = parseInt(state.unscopedHops, 10);
+        if (Number.isFinite(h) && h >= 0 && h <= 64)
+          L.push(['k', 'set flood.max.unscoped', String(h)]);
+      }
+    }
     const t = tags(d);
     const chain = t.map((x, i) => (i === t.length - 1 ? x : `${x}|no`)).join(' ');
     const defLine = `region def eu|* europe|eu no ${chain}`;
@@ -3342,6 +3495,16 @@
     $('devCom').textContent = nch ? `${nch} channels` : 'no channels yet';
     renderPinNote();
     renderChannels();
+    // Unscoped-flood control: the hops field belongs to 'cap' only, and the
+    // help says what the chosen mode does — 'deny' carries the warning because
+    // it is the one that cuts other nodes off.
+    $('unscHopsBox').hidden = state.unscoped !== 'cap';
+    $('unscHelp').innerHTML =
+      state.unscoped === 'cap'
+        ? `Local untagged traffic still spreads, but only ${state.unscopedHops || '?'} hops. The neighbourhood, not the country.`
+      : state.unscoped === 'deny'
+        ? '<b class="bad">Drops every untagged packet.</b> Use it only after the mesh around you carries regions, or it isolates nodes that have not switched.'
+        : 'Untagged traffic floods normally. Nothing is cut off. Leave it here until the switch.';
     // The name can be written underneath the operator — prefilled on placing,
     // cleared on Reset — so the field has to follow `state.desc`. Guarded on
     // inequality rather than written every pass: an unconditional assignment
@@ -3477,7 +3640,14 @@
     // fills tile cleanly, so they need no such treatment.
     const named = !!state.desc.trim();
     const nm = nodeName(), nb = byteLen(nm);
-    const cap = state.location ? 24 : 32;      // a published location costs 8 bytes of name
+    // A published location costs 8 bytes of name, and GPS publishes one too, so
+    // it drops the cap the same way `set lat`/`set lon` do.
+    const publishesLoc = state.location || state.gps;
+    const cap = publishesLoc ? 24 : 32;
+    // Even with no location today, warn once the name would not survive one:
+    // a later lat/lon or GPS silently recaps it to 24, and a name that fit is
+    // suddenly too long. Only meaningful while it fits the current 32.
+    const futureRisk = named && !publishesLoc && nb > 24 && nb <= 32;
     // split so the fylke digits can be picked out and the brackets below can
     // name them; the kommune prefix IS the fylke, so this can never disagree
     const tail = named ? esc(state.desc.trim().replace(/\s+/g, ' ')) : '…';
@@ -3514,7 +3684,10 @@
     // ride along with it move to the hint line below, which has the room.
     const bEl = $('nameBytes'), over = named && nb > cap;
     bEl.textContent = named ? `${nb} / ${cap}` : '';
-    bEl.className = 'bytes' + (over ? ' over' : named && nb > cap - 4 ? ' warn' : '');
+    // amber for approaching the cap — including the future 24 cap (futureRisk),
+    // which is the same "near a limit" meaning, not a second one.
+    bEl.className = 'bytes' + (over ? ' over'
+      : (futureRisk || (named && nb > cap - 4)) ? ' warn' : '');
     // Over-cap is red AND says so, because colour is never the only channel.
     //
     // The vague-poststed nudge fires only while the name is STILL the one we
@@ -3531,6 +3704,9 @@
       : !named
         ? 'Add a place — the number on its own identifies nothing, so no '
           + '<code>set name</code> is emitted yet.'
+        : futureRisk
+          ? `Fits now at ${nb} bytes, but publishing a location or GPS caps the `
+            + 'name at 24. Trim it to be safe.'
         : (state.descAuto && stedVague(pn))
           ? `<b>${esc(sted)}</b> covers ${STED_N[sted]} postnummer — `
             + 'try a bydel, hill or street.'
@@ -3539,7 +3715,9 @@
     const ll2 = unproject(state.x, state.y);
     $('locNote').textContent = state.location
       ? `Publishes ${ll2[0].toFixed(5)}°N ${ll2[1].toFixed(5)}°E. Name limit is 24 bytes.`
-      : 'No location published. Name limit is 32 bytes.';
+      : state.gps
+        ? 'GPS publishes the node’s live position. Name limit is 24 bytes.'
+        : 'No location published. Name limit is 32 bytes.';
 
     const selK = KOMMUNER.find(k => k.nr === state.kommune);
     $('selKomm').setAttribute('d', selK ? selK.el.getAttribute('d') : '');
@@ -3972,6 +4150,11 @@
   seg($('crSeg'),   'cr', v => { state.cr = v; render(); });
   seg($('hashSeg'), 'h',  v => { state.hash = v; render(); });
   seg($('loopSeg'), 'l',  v => { state.loop = v; render(); });
+  seg($('ackSeg'),  'ma', v => { state.multiAcks = v === 'on'; render(); });
+  seg($('psSeg'),   'ps', v => { state.power = v === 'on'; render(); });
+  seg($('gpsSeg'),  'g',  v => { state.gps = v === 'on'; render(); });
+  seg($('unscSeg'), 'u',  v => { state.unscoped = v; render(); });
+  $('unscHops').addEventListener('input', e => { state.unscopedHops = e.target.value; render(); });
   seg($('defSeg'),  'd',  v => { state.regionDefault = v; render(); });
   seg($('fwSeg'),   'f',  v => { state.fw = v; render(); });
   seg($('locSeg'),  'loc', v => { state.location = v === 'on'; render(); });
@@ -4103,6 +4286,8 @@
   });
   $('ownerInfo').addEventListener('input', e => { state.owner = e.target.value; render(); });
   $('guestPw').addEventListener('input',  e => { state.guest = e.target.value; render(); });
+  $('txPow').addEventListener('input',    e => { state.tx = e.target.value; render(); });
+  $('adminPw').addEventListener('input',  e => { state.admin = e.target.value; render(); });
 
   // Deliberately not seg(): that helper is for controls whose value reaches
   // the config block. This one navigates, and it also has to move `hidden`
