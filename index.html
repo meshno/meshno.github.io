@@ -1826,6 +1826,14 @@
         <h2>Radio</h2>
         <p class="sub">Advanced radio settings. Defaults are fine.</p>
         <div class="row">
+          <div class="k">tx power</div>
+          <div class="v">
+            <div class="numf">
+              <input type="number" id="txPow" inputmode="numeric" min="1" max="22" step="1" value="20" placeholder="board default" aria-label="transmit power, dBm"><i>dBm</i>
+            </div>
+          </div>
+        </div>
+        <div class="row">
           <div class="k">coding rate</div>
           <div class="v">
             <div class="seg" id="crSeg">
@@ -1856,25 +1864,6 @@
             </div>
           </div>
         </div>
-        <details class="explain">
-          <summary>What these radio settings do</summary>
-          <p>CR is the one radio parameter that may differ between nodes — receivers decode any CR. Higher = more redundancy, better survival through noise, but slower and more channel load. <b>Well-connected repeater: consider 5.</b> Frequency, bandwidth, and SF must match the mesh and are fixed here.</p>
-          <p>1-byte hashes collide quickly as repeater count grows; 2-byte (65 536 values) makes collisions practically impossible at this mesh's scale and makes network debugging far easier. 3-byte only matters at millions of nodes.</p>
-        </details>
-      </section>
-
-      <section>
-        <h2>Expert settings</h2>
-        <p class="sub">Opt-in tuning most nodes never need. They change nothing until you set them.</p>
-        <div class="row">
-          <div class="k">tx power</div>
-          <div class="v">
-            <div class="numf">
-              <input type="number" id="txPow" inputmode="numeric" min="1" max="22" step="1" placeholder="default" aria-label="transmit power, dBm"><i>dBm</i>
-            </div>
-            <p class="help">The LoRa chip's transmit power. Boards with an amplifier put out more, so check the manual. Blank keeps the default. <b>Staying inside your local legal limit is on you.</b></p>
-          </div>
-        </div>
         <div class="row">
           <div class="k">multi.acks</div>
           <div class="v">
@@ -1882,19 +1871,15 @@
               <button data-ma="off" class="on">off</button>
               <button data-ma="on">on</button>
             </div>
-            <p class="help">Sends a spare copy of each acknowledgement so it survives a collision. Steadier on a weak link, at the cost of a little more airtime.</p>
           </div>
         </div>
-        <div class="row">
-          <div class="k">powersaving</div>
-          <div class="v">
-            <div class="seg" id="psSeg">
-              <button data-ps="off" class="on">off</button>
-              <button data-ps="on">on</button>
-            </div>
-            <p class="help">Light-sleeps the processor between packets. The radio keeps listening and a packet wakes it, so the node still repeats. For battery or solar sites.</p>
-          </div>
-        </div>
+        <details class="explain">
+          <summary>What these radio settings do</summary>
+          <p>Tx power is the LoRa chip's output, defaulted to <b>20 dBm</b>. Boards with an amplifier put out more, so check the manual, and blank the field to keep the board's own default. <b>Staying inside your local legal limit is on you.</b></p>
+          <p>CR is the one radio parameter that may differ between nodes — receivers decode any CR. Higher = more redundancy, better survival through noise, but slower and more channel load. <b>Well-connected repeater: consider 5.</b> Frequency, bandwidth, and SF must match the mesh and are fixed here.</p>
+          <p>1-byte hashes collide quickly as repeater count grows; 2-byte (65 536 values) makes collisions practically impossible at this mesh's scale and makes network debugging far easier. 3-byte only matters at millions of nodes.</p>
+          <p>multi.acks sends a spare copy of each acknowledgement so it survives a collision. Steadier on a weak link, at the cost of a little more airtime. Off unless a link needs it.</p>
+        </details>
       </section>
 
       <section>
@@ -2355,11 +2340,11 @@
     // gets the region convention moving: a node that tags nothing gives the
     // rest of the mesh nothing to filter on.
     cr: '8', hash: '1', loop: 'minimal', regionDefault: 'no',
-    // Expert opt-ins, each emitted only when the operator sets it, so the
-    // default config is byte-for-byte unchanged. tx is a dBm string ('' =
-    // keep the board default); multiAcks and power are off. Persist across
-    // Reset the same way cr/hash/loop do — Reset clears the pin, not the tuning.
-    tx: '', multiAcks: false, power: false,
+    // tx is a dBm string: defaults to '20' (a baked convention default, so
+    // `set tx 20` is emitted), blank keeps the board default. multiAcks is
+    // opt-in and emits nothing until set. Both persist across Reset the same
+    // way cr/hash/loop do — Reset clears the pin, not the tuning.
+    tx: '20', multiAcks: false,
     admin: '',
     // One location control, three modes: 'none' publishes nothing, 'map'
     // emits set lat/lon from the pin, 'gps' self-locates (gps on + advert
@@ -3293,7 +3278,8 @@
     L.push(['k', 'set radio', `869.618,62.5,8,${state.cr}`]);
     L.push(['k', 'set dutycycle', '10']);
     // tx power — only the LoRa chip's, capped at 22 dBm by the firmware.
-    // Emitted only when the operator names one; blank leaves the board default.
+    // Defaults to 20 (a convention default, so it emits); a blank field leaves
+    // the board default and emits nothing.
     const txv = parseInt(state.tx, 10);
     if (Number.isFinite(txv) && txv >= 1 && txv <= 22) L.push(['k', 'set tx', String(txv)]);
     L.push(['c', `# timing profile — ${p.label}`]);
@@ -3310,9 +3296,10 @@
     L.push(['k', 'set advert.interval', '240']);
     L.push(['k', 'set flood.advert.interval', '72']);
     // powersaving light-sleeps the MCU between packets; the radio stays in RX
-    // and an incoming packet wakes it, so the node still repeats. Repeater-only
-    // command, bare (no `set`), off by default.
-    if (state.power) L.push(['k', 'powersaving', 'on']);
+    // and wakes on an incoming packet, so the node still repeats. On by
+    // convention here (off in firmware) — RX-safe, and it helps battery/solar
+    // sites at no cost to mains ones. Bare command, no `set`, repeater-only.
+    L.push(['k', 'powersaving', 'on']);
     L.push(['c', '# identity']);
     // no name unless a place has been given — NO-0301 alone says nothing,
     // and without a map click there is no kommune number to build it from
@@ -4147,7 +4134,6 @@
   seg($('hashSeg'), 'h',  v => { state.hash = v; render(); });
   seg($('loopSeg'), 'l',  v => { state.loop = v; render(); });
   seg($('ackSeg'),  'ma', v => { state.multiAcks = v === 'on'; render(); });
-  seg($('psSeg'),   'ps', v => { state.power = v === 'on'; render(); });
   seg($('unscSeg'), 'u',  v => { state.unscoped = v; render(); });
   $('unscHops').addEventListener('input', e => { state.unscopedHops = e.target.value; render(); });
   seg($('defSeg'),  'd',  v => { state.regionDefault = v; render(); });
