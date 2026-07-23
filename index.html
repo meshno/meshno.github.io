@@ -1693,8 +1693,8 @@
              still crosses the whole mesh. Narrow tags stop a local channel flooding the country.</p>
           <p><b>By default, nothing here cuts anyone off.</b> Tags only add, and this node keeps
              passing untagged traffic. The one command that stops that, <code>region denyf *</code>,
-             stays off unless you pick it under <b>unscoped floods</b>. Save it for the end of the
-             switch, once the mesh around you carries regions.</p>
+             stays off unless you pick it under <b>unscoped floods</b>. Save it for once the mesh
+             around you carries regions.</p>
           <p><b>A kommunenummer is not a postnummer.</b> Both are four digits and they are unrelated.
              Your node <b>name</b> uses the postnummer, because that is the number you know. Your
              region <b>tags</b> use the kommunenummer, because that is the one with real borders
@@ -1789,7 +1789,6 @@
               <button data-g="off" class="on">off</button>
               <button data-g="on">on</button>
             </div>
-            <p class="help">If the node has a GPS, turn this on and it finds and shares its own position, so you can skip placing it precisely on the map. GPS builds only. Publishing a location drops the name limit to 24 bytes.</p>
           </div>
         </div>
         <div class="row">
@@ -1808,7 +1807,6 @@
           <div class="k">admin password</div>
           <div class="v">
             <input type="text" id="adminPw" placeholder="leave blank to keep current" maxlength="30" aria-label="admin password">
-            <p class="help">The factory admin password is <code>password</code>, so anyone can reconfigure the node. Set your own. It appears in the config below in the clear, so keep that copy to yourself.</p>
           </div>
         </div>
         <details class="explain">
@@ -1825,11 +1823,10 @@
           <p><code>set lat</code> and <code>set lon</code> — MeshCore has no combined location
              command. <b>Off by default:</b> a map click is only accurate to about a hundred metres,
              and a wrong published position is worse than none. Type a real GPS reading before turning
-             it on, or use the <b>gps</b> toggle above and let the node place itself. Either way,
-             publishing a location puts the node on mesh maps and <b>drops the name limit to 24
+             it on. Publishing a location puts the node on mesh maps and <b>drops the name limit to 24
              bytes</b>.</p>
-          <p>Contact, antenna, power, mount. Visible to anyone who queries the node — no personal info.</p>
-          <p>Lets members query node status.</p>
+          <p><b>owner.info</b> is contact, antenna, power, mount. Visible to anyone who queries the node, so no personal info.</p>
+          <p><b>Passwords.</b> Guest lets members query the node; admin lets them reconfigure it. The factory admin password is <code>password</code>, so set your own. Both appear in the config in the clear.</p>
         </details>
       </section>
 
@@ -2006,8 +2003,8 @@
              from nodes with no region set. <b>allow</b> is today's mesh, where everything floods and
              nobody is cut off. <b>cap</b> keeps local untagged traffic but stops it crossing the
              country. <b>deny</b> drops it outright. Leave it on <b>allow</b> until the nodes around
-             you carry regions. Turning <code>deny</code> on early isolates everyone who has not
-             switched. It is the last step of the switch, not the first.</p>
+             you carry regions; turning <code>deny</code> on early isolates any node that has not set
+             regions yet.</p>
         </details>
       </section>
 
@@ -3503,8 +3500,8 @@
       state.unscoped === 'cap'
         ? `Local untagged traffic still spreads, but only ${state.unscopedHops || '?'} hops. The neighbourhood, not the country.`
       : state.unscoped === 'deny'
-        ? '<b class="bad">Drops every untagged packet.</b> Use it only after the mesh around you carries regions, or it isolates nodes that have not switched.'
-        : 'Untagged traffic floods normally. Nothing is cut off. Leave it here until the switch.';
+        ? '<b class="bad">Drops every untagged packet.</b> Use it only after the mesh around you carries regions, or it isolates nodes that have not set regions.'
+        : 'Untagged traffic floods normally. Nothing is cut off.';
     // The name can be written underneath the operator — prefilled on placing,
     // cleared on Reset — so the field has to follow `state.desc`. Guarded on
     // inequality rather than written every pass: an unconditional assignment
@@ -3705,8 +3702,8 @@
         ? 'Add a place — the number on its own identifies nothing, so no '
           + '<code>set name</code> is emitted yet.'
         : futureRisk
-          ? `Fits now at ${nb} bytes, but publishing a location or GPS caps the `
-            + 'name at 24. Trim it to be safe.'
+          ? `Fits now at ${nb} bytes, but publishing a location caps the name `
+            + 'at 24. Trim it to be safe.'
         : (state.descAuto && stedVague(pn))
           ? `<b>${esc(sted)}</b> covers ${STED_N[sted]} postnummer — `
             + 'try a bydel, hill or street.'
@@ -3716,7 +3713,7 @@
     $('locNote').textContent = state.location
       ? `Publishes ${ll2[0].toFixed(5)}°N ${ll2[1].toFixed(5)}°E. Name limit is 24 bytes.`
       : state.gps
-        ? 'GPS publishes the node’s live position. Name limit is 24 bytes.'
+        ? 'A location is published. Name limit is 24 bytes.'
         : 'No location published. Name limit is 32 bytes.';
 
     const selK = KOMMUNER.find(k => k.nr === state.kommune);
