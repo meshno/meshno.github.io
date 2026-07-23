@@ -1774,20 +1774,12 @@
           </div>
         </div>
         <div class="row">
-          <div class="k">lat / lon</div>
+          <div class="k">location</div>
           <div class="v">
             <div class="seg" id="locSeg">
-              <button data-loc="on">configure</button>
-              <button data-loc="off" class="on">skip</button>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="k">gps</div>
-          <div class="v">
-            <div class="seg" id="gpsSeg">
-              <button data-g="off" class="on">off</button>
-              <button data-g="on">on</button>
+              <button data-loc="none" class="on">none</button>
+              <button data-loc="map">map</button>
+              <button data-loc="gps">gps</button>
             </div>
           </div>
         </div>
@@ -1820,11 +1812,11 @@
              guess the postnummer, and is right about two times in three: check the bar under the
              map, and type the number instead if it is wrong.</p>
           <p></p>
-          <p><code>set lat</code> and <code>set lon</code> — MeshCore has no combined location
-             command. <b>Off by default:</b> a map click is only accurate to about a hundred metres,
-             and a wrong published position is worse than none. Type a real GPS reading before turning
-             it on. Publishing a location puts the node on mesh maps and <b>drops the name limit to 24
-             bytes</b>.</p>
+          <p><b>location</b> sets where the node says it is, three ways. <b>none</b> is the default
+             and publishes nothing. <b>map</b> uses the pin you placed, which is only accurate to
+             about a hundred metres, so treat it as rough. <b>gps</b> lets the node find its own
+             position, and set its clock from the satellites, on a build with GPS. Any published
+             location puts the node on mesh maps and <b>drops the name limit to 24 bytes</b>.</p>
           <p><b>owner.info</b> is contact, antenna, power, mount. Visible to anyone who queries the node, so no personal info.</p>
           <p><b>Passwords.</b> Guest lets members query the node; admin lets them reconfigure it. The factory admin password is <code>password</code>, so set your own. Both appear in the config in the clear.</p>
         </details>
@@ -2368,16 +2360,20 @@
     // keep the board default); multiAcks and power are off. Persist across
     // Reset the same way cr/hash/loop do — Reset clears the pin, not the tuning.
     tx: '', multiAcks: false, power: false,
-    // admin password (blank = keep current); gps self-locates the node, which
-    // also publishes a location and so caps the name at 24 bytes.
-    admin: '', gps: false,
+    admin: '',
+    // One location control, three modes: 'none' publishes nothing, 'map'
+    // emits set lat/lon from the pin, 'gps' self-locates (gps on + advert
+    // share) and also sets the clock. map and gps both end up as the node's
+    // internal lat/lon; either one caps the name at 24 bytes. 'map' needs a
+    // pin, 'gps' does not.
+    locMode: 'none',
     // Unscoped-flood control. 'allow' is the default and emits `region allowf *`
     // exactly as before, so nothing is cut off; 'cap' adds
     // `set flood.max.unscoped <hops>`; 'deny' emits `region denyf *`. The two
     // documented ways to limit unscoped traffic — for the phased region
     // rollout, off until the mesh around you carries regions. See CLAUDE.md.
     unscoped: 'allow', unscopedHops: '3',
-    owner: '', guest: '', desc: '', location: false,
+    owner: '', guest: '', desc: '',
     // Whether the name field is still ours to manage. Starts true — the empty
     // field the page opens with is ours, not a name the operator chose — and
     // goes false the moment they type in it, INCLUDING typing it empty. So
@@ -3321,16 +3317,18 @@
     // no name unless a place has been given — NO-0301 alone says nothing,
     // and without a map click there is no kommune number to build it from
     if (placed && state.desc.trim()) L.push(['k', 'set name', nodeName(d)]);
-    if (placed && state.location) {
+    // location: 'map' publishes the pin, 'gps' self-locates. Both become the
+    // node's internal lat/lon; 'none' publishes nothing.
+    if (placed && state.locMode === 'map') {
       const ll = unproject(d.x, d.y);
       L.push(['k', 'set lat', ll[0].toFixed(5)]);
       L.push(['k', 'set lon', ll[1].toFixed(5)]);
     }
-    // GPS self-locates the node — no precise map pin needed — and sharing it in
-    // adverts publishes the live position. Ungated on placement: a GPS node
-    // needs no click. Compile-time gated in firmware (GPS builds only); a
+    // GPS finds its own position (no pin needed) and sharing it in adverts
+    // publishes it; the firmware also syncs the clock from GPS automatically on
+    // fix, so no `gps sync` is needed. Compile-time gated (GPS builds only); a
     // non-GPS node answers "gps toggle not found" and is otherwise unaffected.
-    if (state.gps) {
+    if (state.locMode === 'gps') {
       L.push(['k', 'gps', 'on']);
       L.push(['k', 'gps advert', 'share']);
     }
@@ -3507,15 +3505,16 @@
     // inequality rather than written every pass: an unconditional assignment
     // moves the caret to the end on every keystroke.
     if ($('nodeDesc').value !== state.desc) $('nodeDesc').value = state.desc;
-    // the two controls that need a position say so instead of going missing
-    $('locSeg').querySelector('[data-loc="on"]').disabled = !placed;
+    // 'map' needs a pin; 'gps' and 'none' do not, so only that one greys out
+    $('locSeg').querySelector('[data-loc="map"]').disabled = !placed;
     $('nodeDesc').disabled = !placed;
     if (!placed) {
-      // Reset can arrive here with publishing switched on. Leaving the toggle
-      // reading "configure" while nothing is published is a lie; snap it back.
-      state.location = false;
+      // 'map' needs a pin, so an unplaced node cannot be in map mode — snap it
+      // back to none (gps stands on its own and is left alone), then reflect
+      // whichever mode is now active.
+      if (state.locMode === 'map') state.locMode = 'none';
       $('locSeg').querySelectorAll('button').forEach(x =>
-        x.classList.toggle('on', x.dataset.loc === 'off'));
+        x.classList.toggle('on', x.dataset.loc === state.locMode));
       $('posRead').value = '';
       $('pin').setAttribute('hidden', '');
       renderMapKey(new Set());
@@ -3637,9 +3636,9 @@
     // fills tile cleanly, so they need no such treatment.
     const named = !!state.desc.trim();
     const nm = nodeName(), nb = byteLen(nm);
-    // A published location costs 8 bytes of name, and GPS publishes one too, so
-    // it drops the cap the same way `set lat`/`set lon` do.
-    const publishesLoc = state.location || state.gps;
+    // Any location mode (map or gps) publishes a position, which costs 8 bytes
+    // of name, so it drops the cap from 32 to 24.
+    const publishesLoc = state.locMode !== 'none';
     const cap = publishesLoc ? 24 : 32;
     // Even with no location today, warn once the name would not survive one:
     // a later lat/lon or GPS silently recaps it to 24, and a name that fit is
@@ -3710,10 +3709,10 @@
           : 'The four digits are your <b class="a">postnummer</b>.';
 
     const ll2 = unproject(state.x, state.y);
-    $('locNote').textContent = state.location
+    $('locNote').textContent = state.locMode === 'map'
       ? `Publishes ${ll2[0].toFixed(5)}°N ${ll2[1].toFixed(5)}°E. Name limit is 24 bytes.`
-      : state.gps
-        ? 'A location is published. Name limit is 24 bytes.'
+      : state.locMode === 'gps'
+        ? 'The node publishes its own GPS position. Name limit is 24 bytes.'
         : 'No location published. Name limit is 32 bytes.';
 
     const selK = KOMMUNER.find(k => k.nr === state.kommune);
@@ -4149,12 +4148,11 @@
   seg($('loopSeg'), 'l',  v => { state.loop = v; render(); });
   seg($('ackSeg'),  'ma', v => { state.multiAcks = v === 'on'; render(); });
   seg($('psSeg'),   'ps', v => { state.power = v === 'on'; render(); });
-  seg($('gpsSeg'),  'g',  v => { state.gps = v === 'on'; render(); });
   seg($('unscSeg'), 'u',  v => { state.unscoped = v; render(); });
   $('unscHops').addEventListener('input', e => { state.unscopedHops = e.target.value; render(); });
   seg($('defSeg'),  'd',  v => { state.regionDefault = v; render(); });
   seg($('fwSeg'),   'f',  v => { state.fw = v; render(); });
-  seg($('locSeg'),  'loc', v => { state.location = v === 'on'; render(); });
+  seg($('locSeg'),  'loc', v => { state.locMode = v; render(); });
   // Border radii. Clamped on the way in: a blank or junk field falls back to
   // the starting value rather than silently becoming NaN and dropping a level.
   for (const [id, key] of [['kmLd', 'landsdel'], ['kmFy', 'fylke'],
