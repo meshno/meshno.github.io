@@ -1880,17 +1880,17 @@
 
       <section>
         <h2>Regions</h2>
-        <p class="sub">The region tag on this node's own traffic. Country-level, and most nodes stay there.</p>
+        <p class="sub">The region tag on this node's own traffic. Off for now.</p>
         <div class="row">
           <div class="k">region default</div>
           <div class="v">
             <div class="seg" id="defSeg">
-              <button data-d="no" class="on">country</button>
+              <button data-d="no">country</button>
               <button data-d="landsdel">landsdel</button>
               <button data-d="fylke">fylke</button>
               <button data-d="kommune">kommune</button>
               <button data-d="city">city</button>
-              <button data-d="none">off</button>
+              <button data-d="none" class="on">off</button>
             </div>
           </div>
         </div>
@@ -1913,10 +1913,11 @@
           <p><b>Tags what this node sends on its own</b> — for a repeater, mostly its adverts. It
              does not change which regions the node <em>relays</em> for; that is the tree on the
              left.</p>
-          <p><b>country</b> (<code>no</code>) is the default, and where a repeater or companion
-             should stay. Narrower scopes belong to individual channels — a local chat scoped to its
-             kommune — and to special-purpose nodes.</p>
-          <p><b>off</b> works today and stops working on any repeater set to drop unscoped packets.</p>
+          <p><b>off</b> for now. The mesh is still getting repeaters onto a base set of regions, and
+             until enough of them carry it, scoping a node's own traffic risks it being dropped. So
+             adverts go out unscoped, which every repeater passes. Once the repeaters around you carry
+             regions, set <b>country</b> (<code>no</code>) or narrower to scope what this node sends.
+             Kommune and city are for special-purpose nodes and channels.</p>
           <p><b>Unscoped floods</b> sets how much untagged traffic this repeater carries: messages
              from nodes with no region set. <b>allow</b> is today's mesh, where everything floods and
              nobody is cut off. <b>cap</b> keeps local untagged traffic but stops it crossing the
@@ -2261,7 +2262,7 @@
     
     
     
-    cr: '8', hash: '1', loop: 'minimal', regionDefault: 'no',
+    cr: '8', hash: '1', loop: 'minimal', regionDefault: 'none',
     
     
     
