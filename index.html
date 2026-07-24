@@ -1672,9 +1672,13 @@
           <p>A border works the same way: 5&nbsp;km from Buskerud and the node carries
              <code>no-33</code> too. The numbers above set how close counts. Expect neighbours
              across water — over water is the best path a radio gets.</p>
-          <p>Landsdel, fylke, kommune and city are independent overlays under <code>no</code>, not a
-             nesting, so every tag is listed in full. The codes come from the map and are current
-             since the county reform of January 2024.</p>
+          <p><b>The bare three-letter tag is your nearest airport</b> — <code>osl</code>,
+             <code>bgo</code>, <code>trd</code>. A short, well-known handle, always the single
+             closest one. It has no <code>no-</code> prefix on purpose: an airport code is unique
+             worldwide, so it needs no country in front of it.</p>
+          <p>Landsdel, fylke, kommune, city and airport are independent overlays under
+             <code>no</code>, not a nesting, so every tag is listed in full. The codes come from the
+             map and are current since the county reform of January 2024.</p>
           </details>
         </div>
       </section>
@@ -2063,6 +2067,10 @@
   const FYLKE_NAMES = {"03": "Oslo", "11": "Rogaland", "15": "Møre og Romsdal", "18": "Nordland", "31": "Østfold", "32": "Akershus", "33": "Buskerud", "34": "Innlandet", "39": "Vestfold", "40": "Telemark", "42": "Agder", "46": "Vestland", "50": "Trøndelag", "55": "Troms", "56": "Finnmark"};
   const FYLKE_BB = {"03": [127.7, 467.4, 136.9, 481.0], "11": [9.0, 469.4, 59.5, 531.9], "15": [38.1, 326.7, 116.4, 385.3], "18": [167.8, 96.6, 272.8, 274.2], "31": [127.7, 483.2, 153.0, 519.9], "32": [123.1, 449.1, 156.6, 494.4], "33": [67.3, 423.7, 130.3, 495.1], "34": [74.7, 362.4, 178.8, 481.2], "39": [110.1, 485.3, 126.2, 513.7], "40": [57.5, 460.0, 112.5, 520.2], "42": [34.3, 478.3, 99.8, 547.6], "46": [15.8, 369.6, 90.6, 480.2], "50": [95.6, 264.9, 211.3, 381.0], "55": [234.0, 54.6, 337.9, 134.9], "56": [311.8, 9.0, 451.0, 119.0]};
   const METRO_KEYS = ["no-kristiansand", "no-sandnes", "no-fredrikstad", "no-skien", "no-tonsberg", "no-stavanger", "no-drammen", "no-oslo", "no-bergen", "no-hamar", "no-molde", "no-trondheim", "no-bodo", "no-tromso", "no-alta", "no-kirkenes"];
+  
+  
+  
+  const AIRPORTS = [{"tag":"aes","name":"Vigra","x":54.7,"y":358.5},{"tag":"alf","name":"Alta","x":343.0,"y":64.1},{"tag":"anx","name":"Andenes","x":242.1,"y":97.8},{"tag":"bdu","name":"Bardufoss","x":277.2,"y":106.9},{"tag":"bgo","name":"Flesland","x":23.0,"y":447.0},{"tag":"bjf","name":"Båtsfjord","x":424.3,"y":24.8},{"tag":"bnn","name":"Brønnøysund","x":175.9,"y":252.5},{"tag":"boo","name":"Bodø","x":214.3,"y":180.2},{"tag":"bvg","name":"Berlevåg","x":413.2,"y":15.9},{"tag":"eve","name":"Evenes","x":250.3,"y":130.6},{"tag":"fde","name":"Førde","x":40.7,"y":404.6},{"tag":"fro","name":"Florø","x":27.9,"y":394.5},{"tag":"haa","name":"Hasvik","x":323.8,"y":45.3},{"tag":"hau","name":"Haugesund","x":16.5,"y":485.1},{"tag":"hft","name":"Hammerfest","x":343.5,"y":35.3},{"tag":"hov","name":"Ørsta-Volda","x":51.7,"y":373.7},{"tag":"hvg","name":"Honningsvåg","x":372.3,"y":17.7},{"tag":"kkn","name":"Kirkenes","x":435.0,"y":58.9},{"tag":"krs","name":"Kjevik","x":70.2,"y":539.9},{"tag":"ksu","name":"Kristiansund","x":89.5,"y":340.7},{"tag":"lkl","name":"Lakselv","x":364.7,"y":57.5},{"tag":"lkn","name":"Leknes","x":203.8,"y":143.8},{"tag":"meh","name":"Mehamn","x":396.2,"y":12.7},{"tag":"mjf","name":"Mosjøen","x":193.4,"y":240.2},{"tag":"mol","name":"Molde","x":77.2,"y":354.2},{"tag":"mqn","name":"Mo i Rana","x":212.3,"y":217.1},{"tag":"ola","name":"Ørland","x":124.5,"y":320.6},{"tag":"osl","name":"Gardermoen","x":140.7,"y":465.7},{"tag":"osy","name":"Namsos","x":162.3,"y":292.1},{"tag":"ret","name":"Røst","x":179.2,"y":168.1},{"tag":"rrs","name":"Røros","x":152.5,"y":369.0},{"tag":"rvk","name":"Rørvik","x":155.8,"y":276.6},{"tag":"sdn","name":"Sandane","x":50.1,"y":388.0},{"tag":"skn","name":"Stokmarknes","x":225.7,"y":126.9},{"tag":"sog","name":"Sogndal","x":66.0,"y":418.1},{"tag":"soj","name":"Sørkjosen","x":310.1,"y":75.1},{"tag":"srp","name":"Stord","x":22.1,"y":467.6},{"tag":"ssj","name":"Sandnessjøen","x":181.3,"y":232.5},{"tag":"svg","name":"Sola","x":22.3,"y":505.4},{"tag":"svj","name":"Svolvær","x":220.0,"y":140.5},{"tag":"tos","name":"Tromsø","x":281.5,"y":81.1},{"tag":"trd","name":"Værnes","x":147.5,"y":332.6},{"tag":"trf","name":"Torp","x":120.1,"y":505.2},{"tag":"vaw","name":"Vardø","x":444.5,"y":30.3},{"tag":"vds","name":"Vadsø","x":431.2,"y":45.6}];
 
   
   
@@ -2219,6 +2227,8 @@
   const state = {
     x: null, y: null,          
     fylke: null, kommune: null, kommuneName: null, metro: [],
+    airport: null,             
+
     
     
     
@@ -2447,6 +2457,18 @@
       .map(c => ({ key: c.key, d: Math.hypot(c.x - x, c.y - y) * UNIT_KM }))
       .filter(m => m.d <= state.reach.city)
       .sort((a, b) => a.d - b.d);
+  }
+
+  
+  
+  
+  function airportAt(x, y) {
+    let best = null;
+    for (const a of AIRPORTS) {
+      const d = Math.hypot(a.x - x, a.y - y) * UNIT_KM;
+      if (!best || d < best.d) best = { tag: a.tag, name: a.name, d };
+    }
+    return best;
   }
 
   
@@ -2892,6 +2914,7 @@
       kommune: k.nr, fylke: k.nr.slice(0, 2), kommuneName: k.name,
       post: pn && POST_BY_NR[pn] ? pn : (near[0] ? near[0][0] : null),
       metro: metroAt(x, y),
+      airport: airportAt(x, y),
       border: borderAt(x, y, k.nr)
     };
   }
@@ -2900,7 +2923,8 @@
   const liveCtx = () => state.kommune ? {
     x: state.x, y: state.y,
     kommune: state.kommune, fylke: state.fylke, kommuneName: state.kommuneName,
-    post: state.post, metro: state.metro, border: state.border
+    post: state.post, metro: state.metro, airport: state.airport,
+    border: state.border
   } : null;
 
   
@@ -2944,6 +2968,7 @@
       if (p) state.desc = p[1];
     }
     state.metro = d.metro;
+    state.airport = d.airport;
     state.border = d.border;
     const entered = drill && state.fylke !== state.drilled;
     if (entered) state.drilled = state.fylke;
@@ -3136,7 +3161,7 @@
   
   function clearPlacement() {
     state.kommune = null; state.kommuneName = ''; state.fylke = null;
-    state.post = null; state.metro = [];
+    state.post = null; state.metro = []; state.airport = null;
     state.border = { landsdel: [], fylke: [], kommune: [] };
   }
 
@@ -3182,7 +3207,10 @@
       'no-' + d.fylke,           ...b.fylke.map(x => 'no-' + x.nr),
       'no-' + d.kommune,
       ...b.kommune.map(x => 'no-' + x.nr),
-      ...d.metro.map(m => m.key)
+      ...d.metro.map(m => m.key),
+      
+      
+      ...(d.airport ? [d.airport.tag] : [])
     ];
   }
 
@@ -3525,6 +3553,11 @@
     
     for (const m of state.metro)
       ann[m.key] = `city — ${esc(CITIES[m.key])} ${dist(m.d)}`;
+    
+    
+    if (state.airport)
+      ann[state.airport.tag] =
+        `airport — ${esc(state.airport.name)} ${dist(state.airport.d)}`;
 
     
     
