@@ -114,6 +114,9 @@
     --slot-b:  rgba(10,108,98,0.50);
     /* the floating map furniture reads as glass over whatever is beneath */
     --glass:   rgba(255,255,255,0.88);
+    /* the get-started frost over the map — lighter than glass, it veils the
+       map without hiding it, and only shows until the first node is placed */
+    --frost:   rgba(251,252,252,0.58);
     --bad:     #b3261e;
     --warn:    #8a5300;
     --placeholder: rgba(13,27,38,0.38);
@@ -160,6 +163,7 @@
     --slot:    rgba(94,234,212,0.30);
     --slot-b:  rgba(94,234,212,0.45);
     --glass:   rgba(10,18,32,0.80);
+    --frost:   rgba(10,18,32,0.55);
     --bad:     #ff8f8f;
     --warn:    #ffb454;
     --placeholder: rgba(160,185,215,0.32);
@@ -417,6 +421,25 @@
      The water is painted here rather than inherited from the page, so the
      map is a panel with an edge instead of land floating on the background. */
   .mapbox { position: relative; background: var(--water); }
+  /* Get-started frost: shown only while unplaced. It CATCHES the first click to
+     lift the frost (adding .seen) rather than placing a node underneath — you
+     cannot aim at a map you cannot see, so the reveal and the placement are two
+     separate clicks. Placing by any means (typing a postnummer) clears
+     body.unplaced and hides it too. Sits below the floating furniture (z 1 vs 2)
+     so the zoom controls stay usable. */
+  .mapstart {
+    position: absolute; inset: 0; z-index: 1; display: none;
+    align-items: center; justify-content: center; padding: 24px;
+    cursor: pointer; text-align: center;
+    background: var(--frost); backdrop-filter: blur(2px);
+  }
+  body.unplaced .mapstart { display: flex; }
+  body.unplaced .mapstart.seen { display: none; }
+  .mapstart-in { max-width: 30ch; }
+  .ms-lead { margin: 0 0 6px; font-size: 15px; font-weight: 600; color: var(--ink); }
+  .ms-sub { margin: 0; font-size: 13px; line-height: 1.5; color: var(--dim); }
+  .ms-sub code { font-family: var(--mono); font-size: 12px; color: var(--ink); }
+  @media (prefers-reduced-motion: reduce) { .mapstart { backdrop-filter: none; } }
   .zoomctl {
     position: absolute; top: 8px; left: 8px; z-index: 2;
     display: flex; align-items: center; gap: 5px; margin: 0;
@@ -1037,6 +1060,119 @@
   pre.cmd .c { color: var(--dim); }
   pre.cmd .k { color: var(--accent); }
 
+  /* WebSerial actions live in the output header beside Copy. The block stays
+     plain — the terminal in the console is the one send log now. */
+  .out-act { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  /* Same accent-outline language as .copy — one accent, no filled variant. */
+  .usb-send {
+    font-family: var(--mono); font-size: 12px; color: var(--accent);
+    background: transparent; border: 1px solid var(--accent);
+    padding: 5px 12px; min-height: 30px; cursor: pointer;
+  }
+  .usb-send:hover { background: var(--wash); }
+  .usb-send:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .usb-send:disabled { color: var(--dim); border-color: var(--rule); cursor: not-allowed; }
+  /* Console is the quieter sibling of Send — a bare accent link, so it reads as
+     secondary to the two bordered buttons without a third border in the row. */
+  .usb-console {
+    font-family: var(--mono); font-size: 12px; color: var(--accent);
+    background: transparent; border: 0; padding: 5px 4px; cursor: pointer;
+    text-decoration: underline; text-underline-offset: 2px;
+  }
+  .usb-console:hover { color: var(--ink); }
+  .usb-console:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .usb-console:disabled { color: var(--dim); cursor: not-allowed; text-decoration: none; }
+  .usb-drop[hidden] { display: none; }
+  /* the re-tweak-and-resend loop needs a way out; text-quiet, not a second
+     bordered button competing with Send */
+  .usb-drop {
+    font-family: var(--mono); font-size: 12px; color: var(--dim);
+    background: transparent; border: 0; padding: 5px 2px; cursor: pointer;
+    text-decoration: underline; text-underline-offset: 2px; margin-left: auto;
+  }
+  .usb-drop:hover { color: var(--ink); }
+  /* transient status line under the sub, for states with no card yet. Matches
+     .sub's rhythm so it does not jump the layout when it appears and clears. */
+  .usb-stat {
+    font-family: var(--mono); font-size: 12px; color: var(--dim);
+    margin: -4px 0 14px;
+  }
+  .usb-stat.bad { color: var(--bad); }
+  .usb-stat[hidden] { display: none; }
+
+  /* The programming console: a recessed well above the block, shown only during
+     a live USB session, so the resting page is unchanged. Groups the connection,
+     the detected firmware, a progress bar during a bulk send, the raw terminal
+     and the command prompt. */
+  .dcard {
+    border: 1px solid var(--rule); background: var(--inset);
+    padding: 12px 14px; margin-bottom: 14px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .dcard[hidden] { display: none; }
+  .dcard-h { display: flex; align-items: center; gap: 10px; }
+  .dcard-h b { font-size: 13px; }
+  .dcard-f { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .dcard .cnt, .dcard .msg { font-family: var(--mono); font-size: 12px; color: var(--dim); }
+  .dcard .msg.bad { color: var(--bad); }
+  /* a connection light: dim while connecting, accent once open. The one place a
+     ring is allowed is the map node — this is a filled halo, not a ring. */
+  .usb-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--rule); flex: none; }
+  .usb-dot.on { background: var(--accent); box-shadow: 0 0 0 3px var(--wash); }
+  .usb-dot.wait { background: var(--dim); animation: usbpulse 1s ease-in-out infinite; }
+  @keyframes usbpulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  @media (prefers-reduced-motion: reduce) { .usb-dot.wait { animation: none; } }
+  /* the detected firmware, as a mono pill — same accent-on-wash as the tree's
+     coloured terms, no new token */
+  .chip {
+    font-family: var(--mono); font-size: 11px; color: var(--accent);
+    background: var(--wash); padding: 2px 7px;
+  }
+  .chip[hidden] { display: none; }
+  /* progress: a thin accent fill in a recessed track. Width is the only thing
+     JS animates; transition keeps it from snapping between commands. */
+  .pbar {
+    height: 6px; background: var(--bg); border: 1px solid var(--rule); overflow: hidden;
+  }
+  .pbar[hidden] { display: none; }
+  .pbar > i { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.2s; }
+  .pbar.bad > i { background: var(--bad); }
+
+  /* Terminal: the raw serial transcript, recessed (--bg) inside the --inset
+     card. Sent lines are accent, replies dim, errors --bad — the same three
+     roles the rest of the page uses, no new colour. */
+  /* Fixed height, not max-height: the scroll area holds its size from the first
+     line, so the card does not grow (and jump the page) as the transcript fills. */
+  .term {
+    font-family: var(--mono); font-size: 12.5px; line-height: 1.65;
+    background: var(--bg); border: 1px solid var(--rule); color: var(--ink);
+    margin: 0; padding: 10px 12px; height: 200px; overflow-y: auto;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  .term .t-out { color: var(--accent); }
+  .term .t-in  { color: var(--dim); }
+  .term .t-err { color: var(--bad); }
+  /* Prompt row: reuses the map readout's ›-prompt idiom, so the two typeable
+     mono fields on the page speak the same language. */
+  .termbar { display: flex; align-items: center; gap: 8px; }
+  .tprompt { font-family: var(--mono); font-size: 14px; color: var(--accent); }
+  .tinput {
+    flex: 1; font-family: var(--mono); font-size: 13px; color: var(--ink);
+    background: var(--bg); border: 1px solid var(--rule); border-radius: 0;
+    padding: 7px 10px; min-height: 34px; min-width: 0;
+  }
+  .tinput:focus { outline: none; border-color: var(--accent); }
+  .tinput::placeholder { color: var(--placeholder); font-style: italic; }
+  .tinput:disabled { color: var(--dim); background: var(--inset); }
+  .trun {
+    font-family: var(--mono); font-size: 12px; color: var(--accent);
+    background: transparent; border: 1px solid var(--accent);
+    padding: 5px 12px; min-height: 34px; cursor: pointer; flex: none;
+  }
+  .trun:hover:not(:disabled) { background: var(--wash); }
+  .trun:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .trun:disabled { color: var(--dim); border-color: var(--rule); cursor: not-allowed; }
+
   footer {
     border-top: 1px solid var(--rule); padding: 16px 0 40px;
     font-family: var(--mono); font-size: 12px; color: var(--dim);
@@ -1107,6 +1243,8 @@
        the rule above, so the tap target has to come from the box itself */
     .namebox { min-height: 44px; }
     .copy { min-height: 44px; }
+    .usb-send, .usb-drop, .usb-console { min-height: 44px; }
+    .tinput, .trun { min-height: 44px; }
     /* it is an input now, so it needs a real tap target */
     #posRead { width: 100%; font-size: 13px; min-height: 44px; text-align: left;
                border-color: var(--rule-2); padding: 0 8px; }
@@ -1609,6 +1747,14 @@
         </g>
       </svg>
         
+        <div class="mapstart" id="mapStart" aria-hidden="true">
+          <div class="mapstart-in">
+            <p class="ms-lead">Place your node to begin</p>
+            <p class="ms-sub">Click to reveal the map, then click a spot — or type a
+               postnummer or <code>lat, lon</code> in the box above.</p>
+          </div>
+        </div>
+        
         
         
         <div class="mapfoot">
@@ -1938,9 +2084,40 @@
         
         <div class="out-head">
           <h2>Full node config</h2>
-          <button class="copy" id="copyBtn">Copy</button>
+          <div class="out-act">
+            
+            <button class="usb-console" id="usbConsoleBtn">Console</button>
+            <button class="usb-send" id="usbBtn">Send over USB</button>
+            <button class="copy" id="copyBtn">Copy</button>
+          </div>
         </div>
         <p class="sub">Paste the whole block into the node over USB serial.</p>
+        
+        <p class="usb-stat" id="usbStat" role="status" aria-live="polite" hidden></p>
+        
+        <div class="dcard" id="usbCard" hidden>
+          <div class="dcard-h">
+            <span class="usb-dot" id="usbDot"></span>
+            <b>Programming node</b>
+            <span class="chip" id="usbFw" hidden></span>
+            <button class="usb-drop" id="usbDrop">Disconnect</button>
+          </div>
+          
+          <div class="pbar" id="usbProg" hidden><i id="usbBar"></i></div>
+          <div class="dcard-f">
+            <span class="cnt" id="usbCnt"></span>
+            <span class="msg" id="usbMsg"></span>
+          </div>
+          
+          <pre class="term" id="usbTerm" aria-live="polite" tabindex="0"></pre>
+          <div class="termbar">
+            <span class="tprompt" aria-hidden="true">›</span>
+            <input type="text" class="tinput" id="usbInput" spellcheck="false" autocomplete="off"
+                   placeholder="type a command, e.g. region list"
+                   aria-label="Send a command to the node" disabled>
+            <button class="trun" id="usbRun" disabled>Run</button>
+          </div>
+        </div>
         
         <div class="row">
           <div class="k">firmware</div>
@@ -1950,14 +2127,17 @@
               <button data-f="old">1.12.0 – 1.15.0</button>
             </div>
             <p class="help">1.16.0 added the one-line <code>region def</code> syntax. Older
-               firmware gets the same tree, built one <code>region put</code> at a time. Run
+               firmware gets the same tree, built one <code>region put</code> at a time.
+               <b>Send over USB</b> reads this off the node and sets it for you; otherwise run
                <code>ver</code> on the node if you are not sure.</p>
           </div>
         </div>
         <pre class="cmd" id="cmdOut"></pre>
         <details class="explain">
           <summary>Before you paste this</summary>
-          <p>Run over USB/serial, or the companion app's admin CLI. <code>set dutycycle 10</code>
+          <p>Run over USB/serial, or the companion app's admin CLI. On Chrome, Edge or Opera,
+             <b>Send over USB</b> writes it for you — it reads the firmware version off the node,
+             picks the matching form and sends each line. <code>set dutycycle 10</code>
              is the legal maximum on this sub-band and the preset ships with 50, so it has to be set
              explicitly. <b>Norway is EEA/EFTA, not EU</b> — nesting <code>no</code> under
              <code>eu</code> follows the existing convention, not geopolitics. Reboot after radio
@@ -3390,6 +3570,10 @@
     
     
     
+    if (placed) $('mapStart').classList.add('seen');
+    
+    
+    
     
     
     
@@ -4266,6 +4450,353 @@
     const b = $('copyBtn');
     b.textContent = 'Copied'; b.classList.add('done');
     setTimeout(() => { b.textContent = 'Copy'; b.classList.remove('done'); }, 1400);
+  });
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  const USB = (() => {
+    if (!('serial' in navigator)) return null;
+
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    let port = null, writer = null, reader = null;
+    let buf = '', onChunk = null;   
+    const enc = new TextEncoder(), dec = new TextDecoder();
+
+    const connected = () => !!port;
+
+    let lost = null;   
+    let data = null;   
+
+    async function connect() {
+      port = await navigator.serial.requestPort();
+      await port.open({ baudRate: 115200 });
+      writer = port.writable.getWriter();
+      reader = port.readable.getReader();
+      port.addEventListener('disconnect', async () => { await teardown(); if (lost) lost(); });
+      (async () => {
+        try {
+          for (;;) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            const text = dec.decode(value, { stream: true });
+            buf += text;
+            if (data) data(text);
+            if (onChunk) onChunk();
+          }
+        } catch (e) {   }
+      })();
+      
+      
+      await sleep(900);
+      buf = '';
+    }
+
+    async function teardown() {
+      try { if (reader) await reader.cancel(); } catch (e) {}
+      try { if (writer) writer.releaseLock(); } catch (e) {}
+      try { if (port) await port.close(); } catch (e) {}
+      port = writer = reader = null; buf = ''; onChunk = null;
+    }
+
+    
+    
+    function readIdle(idle, cap) {
+      return new Promise(resolve => {
+        const start = Date.now();
+        let t;
+        const done = () => { onChunk = null; clearTimeout(t); resolve(buf); };
+        const bump = () => {
+          clearTimeout(t);
+          if (Date.now() - start >= cap) return done();
+          t = setTimeout(done, idle);
+        };
+        onChunk = bump;
+        bump();
+      });
+    }
+
+    
+    async function one(cmd) {
+      buf = '';
+      await writer.write(enc.encode(cmd + '\r'));
+      
+      const text = await readIdle(160, /save\s*$/.test(cmd) ? 5000 : 2500);
+      const m = /->\s*([^\r\n]*)/.exec(text);
+      const rep = m ? m[1].trim() : '';
+      const err = /^(err|error|unknown)/i.test(rep);
+      return { rep, err };
+    }
+
+    
+    
+    
+    async function reboot() {
+      try { await writer.write(enc.encode('reboot\r')); } catch (e) {}
+      await sleep(300);
+    }
+
+    return {
+      connected, connect, teardown, one, reboot,
+      setLost: fn => { lost = fn; }, setData: fn => { data = fn; }
+    };
+  })();
+
+  {
+    const btn = $('usbBtn'), consoleBtn = $('usbConsoleBtn'), card = $('usbCard'),
+          drop = $('usbDrop'), dot = $('usbDot'), fwChip = $('usbFw'), prog = $('usbProg'),
+          bar = $('usbBar'), cnt = $('usbCnt'), msg = $('usbMsg'), stat = $('usbStat'),
+          term = $('usbTerm'), input = $('usbInput'), runBtn = $('usbRun');
+
+    
+    
+    
+    if (!USB) {
+      btn.disabled = consoleBtn.disabled = true;
+      btn.title = consoleBtn.title = 'Needs a browser with WebSerial — Chrome, Edge or Opera on desktop.';
+      stat.textContent = 'Send over USB and the console work only in browsers with WebSerial, like Chrome, Edge or Opera on desktop. Elsewhere, use Copy.';
+      stat.hidden = false;
+    } else {
+
+    const setStat = (m, bad) => { stat.textContent = m || ''; stat.hidden = !m; stat.classList.toggle('bad', !!bad); };
+    const setMsg = (m, bad) => { msg.textContent = m || ''; msg.classList.toggle('bad', !!bad); };
+    const setProg = (done, total, bad) => {
+      bar.style.width = total ? Math.round(done / total * 100) + '%' : '0%';
+      cnt.textContent = total ? `${done} / ${total} commands` : '';
+      prog.classList.toggle('bad', !!bad);
+    };
+
+    
+    
+    
+    function applyFw(reply) {
+      const m = /(\d+)\.(\d+)\.(\d+)/.exec(reply || '');
+      if (!m) return null;
+      const wants = (+m[1] > 1 || (+m[1] === 1 && +m[2] >= 16)) ? 'new' : 'old';
+      if (state.fw !== wants) {
+        state.fw = wants;
+        for (const b of $('fwSeg').querySelectorAll('button'))
+          b.classList.toggle('on', b.dataset.f === wants);
+        render();   
+      }
+      return { ver: `${m[1]}.${m[2]}.${m[3]}`, wants };
+    }
+
+    
+    let lastCmd = '', pend = '';
+    const appendTerm = (text, cls) => {
+      const s = document.createElement('span');
+      s.className = 't-' + cls; s.textContent = text + '\n';
+      term.appendChild(s); term.scrollTop = term.scrollHeight;
+    };
+    const clearTerm = () => { term.textContent = ''; pend = ''; };
+    
+    
+    
+    const showLine = raw => {
+      const t = raw.replace(/\r$/, '');
+      if (!t.length) return;
+      if (t.trim() === lastCmd.trim()) return;
+      const m = /->\s*(.*)$/.exec(t);
+      appendTerm(t, m && /^(err|error|unknown)/i.test(m[1].trim()) ? 'err' : 'in');
+    };
+    USB.setData(chunk => {
+      pend += chunk;
+      const parts = pend.split('\n');
+      pend = parts.pop();
+      for (const line of parts) showLine(line);
+    });
+    
+    const sendLine = cmd => { appendTerm('› ' + cmd, 'out'); lastCmd = cmd; return USB.one(cmd); };
+
+    const hist = []; let hi = 0;
+    let busy = false;
+    
+    
+    
+    let node = null;
+    
+    
+    
+    let ending = false;
+    const enableInput = on => { input.disabled = runBtn.disabled = !on; if (on) input.focus(); };
+
+    const closeCard = () => {
+      card.hidden = true; drop.hidden = true; drop.textContent = 'Disconnect';
+      fwChip.hidden = true; prog.hidden = true; node = null;
+      dot.className = 'usb-dot'; setMsg(''); setProg(0, 0); enableInput(false); clearTerm();
+    };
+    
+    
+    
+    USB.setLost(() => { if (!busy && !ending) { closeCard(); setStat('Node disconnected.'); } });
+
+    
+    
+    
+    async function ensureConnected(mode) {
+      card.hidden = false; setStat(''); prog.hidden = mode !== 'send';
+      if (USB.connected()) return true;
+      clearTerm(); fwChip.hidden = true; drop.hidden = true; enableInput(false);
+      dot.className = 'usb-dot wait'; setMsg('Connecting…');
+      try { await USB.connect(); }
+      catch (e) {
+        closeCard();
+        setStat(e && e.name === 'NotFoundError'
+          ? 'No device picked.'
+          : 'Could not open that port. Close any other app using it and try again.', true);
+        return false;
+      }
+      dot.className = 'usb-dot on'; drop.hidden = false; drop.textContent = 'Disconnect';
+      ending = false; clearTerm();
+      node = null;
+      try { node = applyFw((await sendLine('ver')).rep); } catch (e) {   }
+      if (node) { fwChip.textContent = 'firmware ' + node.ver; fwChip.hidden = false; }
+      return true;
+    }
+
+    
+    
+    const isReboot = cmd => /^(reboot|reset)\b/i.test(cmd);
+    async function doReboot(cmd) {
+      ending = true;   
+      appendTerm('› ' + cmd, 'out'); lastCmd = cmd;
+      await USB.reboot(); await USB.teardown();
+      appendTerm('— node rebooting, disconnected —', 'in');
+      
+      
+      dot.className = 'usb-dot'; enableInput(false);
+      drop.textContent = 'Close'; drop.hidden = false;
+      btn.textContent = 'Send again';
+    }
+
+    async function run() {   
+      if (busy) return;
+      busy = true; btn.disabled = consoleBtn.disabled = true; enableInput(false);
+      if (!(await ensureConnected('send'))) { busy = false; btn.disabled = consoleBtn.disabled = false; return; }
+      
+      
+      
+      if (!node) {
+        prog.hidden = true;
+        setMsg('No reply to `ver` — nothing sent. Check the cable, and that this is a MeshCore node.', true);
+        enableInput(true);
+        busy = false; btn.disabled = consoleBtn.disabled = false; btn.textContent = 'Send over USB';
+        return;
+      }
+      const cmds = plainText().split('\n').filter(Boolean);
+      setProg(0, cmds.length); setMsg('Sending…');
+      let errs = 0;
+      for (let i = 0; i < cmds.length; i++) {
+        let res;
+        try { res = await sendLine(cmds[i]); }
+        catch (e) {
+          setMsg('Lost the connection to the node.', true);
+          await USB.teardown(); closeCard();
+          busy = false; btn.disabled = consoleBtn.disabled = false; return;
+        }
+        if (res.err) errs++;
+        setProg(i + 1, cmds.length, errs > 0);
+      }
+      if (errs === 0) {
+        setMsg('All sent — rebooting the node…');
+        await doReboot('reboot');
+        setMsg(`All ${cmds.length} sent. The node is rebooting to apply.`);
+      } else {
+        setMsg(`${cmds.length - errs} sent, ${errs} rejected — see the red lines in the terminal.`, true);
+        enableInput(true);   
+      }
+      busy = false; btn.disabled = consoleBtn.disabled = false; btn.textContent = 'Send again';
+    }
+
+    async function openConsole() {   
+      if (busy) return;
+      if (USB.connected()) { enableInput(true); return; }
+      busy = true; btn.disabled = consoleBtn.disabled = true;
+      const ok = await ensureConnected('console');
+      busy = false; btn.disabled = consoleBtn.disabled = false;
+      if (ok) {
+        
+        
+        setMsg(node ? 'Connected. Type a command and press Enter.'
+                    : 'Connected, but no reply to `ver`. Type a command to check the link.', !node);
+        enableInput(true);
+      }
+    }
+
+    async function sendManual() {
+      if (busy || !USB.connected()) return;
+      const cmd = input.value.trim();
+      if (!cmd) return;
+      hist.push(cmd); hi = hist.length; input.value = '';
+      busy = true; input.disabled = runBtn.disabled = true;
+      if (isReboot(cmd)) { await doReboot(cmd); setMsg('Node rebooting.'); busy = false; return; }
+      try { await sendLine(cmd); }
+      catch (e) {
+        setMsg('Lost the connection to the node.', true);
+        await USB.teardown(); closeCard(); busy = false; return;
+      }
+      busy = false; enableInput(true);
+    }
+
+    btn.addEventListener('click', run);
+    consoleBtn.addEventListener('click', openConsole);
+    runBtn.addEventListener('click', sendManual);
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); sendManual(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); if (hi > 0) input.value = hist[--hi]; }
+      else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (hi < hist.length - 1) input.value = hist[++hi];
+        else { hi = hist.length; input.value = ''; }
+      }
+    });
+    
+    
+    
+    drop.addEventListener('click', async () => {
+      ending = true;
+      await USB.teardown(); closeCard();
+      btn.textContent = 'Send over USB'; setStat('');
+    });
+
+    }
+  }
+
+  
+  
+  
+  
+  $('mapStart').addEventListener('click', () => $('mapStart').classList.add('seen'), { once: true });
+
+  
+  
+  
+  
+  
+  
+  document.addEventListener('keydown', e => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (!/^[a-zA-Z0-9.,-]$/.test(e.key)) return;
+    const a = document.activeElement;
+    if (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.isContentEditable)) return;
+    if (document.querySelector('dialog[open]')) return;
+    const box = $('posRead');
+    if (box.value) return;
+    
+    
+    e.preventDefault();
+    box.focus({ preventScroll: true });
+    box.value = e.key;
+    box.dispatchEvent(new Event('input', { bubbles: true }));
   });
 
   setScope(state.chanScope);
