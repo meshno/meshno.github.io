@@ -1050,14 +1050,6 @@
     gap: 12px; margin-bottom: 14px;
   }
   .out-head h2 { margin: 0; }
-  .copy {
-    font-family: var(--mono); font-size: 12px; color: var(--accent);
-    background: transparent; border: 1px solid var(--accent);
-    padding: 5px 12px; min-height: 30px; cursor: pointer;
-  }
-  .copy:hover { background: var(--wash); }
-  .copy.done { border-color: var(--muted); color: var(--muted); }
-  .copy:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   pre.cmd {
     font-family: var(--mono); font-size: 13px; line-height: 1.8;
     background: var(--inset); border: 1px solid var(--rule);
@@ -1069,7 +1061,7 @@
   /* WebSerial actions live in the output header beside Copy. The block stays
      plain — the terminal in the console is the one send log now. */
   .out-act { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  /* Same accent-outline language as .copy — one accent, no filled variant. */
+  /* One accent, no filled variant. */
   .usb-send {
     font-family: var(--mono); font-size: 12px; color: var(--accent);
     background: transparent; border: 1px solid var(--accent);
@@ -1088,28 +1080,30 @@
   .usb-console:hover { color: var(--ink); }
   .usb-console:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .usb-console:disabled { color: var(--dim); cursor: not-allowed; text-decoration: none; }
-  /* The share panel. Recessed like every other inset on the page, so it reads
-     as a well opened under the header rather than a card floating on it.
-     display:flex/grid out-specifies the UA [hidden] rule — the same trap as
-     .nmbars, .numf and the SVG pin — so the hidden state is spelled out. */
-  .sharebox[hidden] { display: none; }
-  .sharebox {
-    background: var(--inset); border: 1px solid var(--rule);
-    padding: 12px 14px; margin-bottom: 14px;
+  /* The config block and its actions are ONE object: the border lives on the
+     wrapper and the bar is joined to the top of the block, so nothing has to
+     say which text Copy copies. Same construction as .dcard above. */
+  .cmdcard { border: 1px solid var(--rule); }
+  /* the block's own border would double the wrapper's */
+  .cmdcard pre.cmd { border: 0; }
+  .cmdbar {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: 8px 12px; border-bottom: 1px solid var(--rule);
+    /* raised against the recessed block below it, the same relationship the
+       themes use for a panel on the page */
+    background: var(--bg);
   }
-  .share-row { display: flex; gap: 8px; align-items: center; }
-  /* The URL is the deliverable, so it gets the mono treatment the CLI block
-     has. --bg, not --inset: an inset field on an inset panel is invisible,
-     which is the same one-level-in rule the reach settings follow. */
-  .share-row input {
-    flex: 1; min-width: 0; font-family: var(--mono); font-size: 12px;
-    background: var(--bg); border: 1px solid var(--rule); color: var(--ink);
-    padding: 6px 8px; min-height: 30px;
+  /* pushes the actions to the block's right edge and gives the row a left
+     anchor, so the bar is not four things floating in a line */
+  .cmdcount {
+    font-family: var(--mono); font-size: 12px; color: var(--dim);
+    font-variant-numeric: tabular-nums; margin-right: auto;
   }
-  .share-row input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-  .share-row .copy { flex: none; }
-  .sharebox .help { margin-top: 8px; }
-  .sharebox .help[hidden] { display: none; }
+  /* A link arriving from a NEWER page than this one is refused whole and says
+     so here. All that is left of the share panel — the link itself is the
+     address bar now. */
+  .link-note[hidden] { display: none; }
+  .link-note { margin-bottom: 14px; }
   .usb-drop[hidden] { display: none; }
   /* the re-tweak-and-resend loop needs a way out; text-quiet, not a second
      bordered button competing with Send */
@@ -1270,9 +1264,15 @@
     /* the input inside .namebox is deliberately min-height:0 and out-specifies
        the rule above, so the tap target has to come from the box itself */
     .namebox { min-height: 44px; }
-    .copy { min-height: 44px; }
     .usb-send, .usb-drop, .usb-console { min-height: 44px; }
     .tinput, .trun { min-height: 44px; }
+    /* Two columns is the same grid .seg drops into at this width, so the bar
+       falls into a layout the page already speaks. Both actions need WebSerial,
+       which a phone does not have, so both arrive DISABLED here — visible with
+       their reason rather than hidden, and #usbStat names the way out (select
+       the block, or share the page address). */
+    .cmdbar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .cmdcount { grid-column: 1 / -1; margin-right: 0; }
     /* it is an input now, so it needs a real tap target */
     #posRead { width: 100%; font-size: 13px; min-height: 44px; text-align: left;
                border-color: var(--rule-2); padding: 0 8px; }
@@ -2112,30 +2112,12 @@
         
         <div class="out-head">
           <h2>Full node config</h2>
-          <div class="out-act">
-            
-            
-            <button class="usb-console" id="shareBtn" aria-expanded="false"
-                    aria-controls="shareBox">Share link</button>
-            <button class="usb-console" id="usbConsoleBtn">Console</button>
-            <button class="usb-send" id="usbBtn">Send over USB</button>
-            <button class="copy" id="copyBtn">Copy</button>
-          </div>
         </div>
-        <p class="sub">Paste the whole block into the node over USB serial.</p>
         
-        <div class="sharebox" id="shareBox" hidden>
-          <div class="share-row">
-            <input type="text" id="shareLink" readonly spellcheck="false"
-                   aria-label="Shareable link to this config">
-            <button class="copy" id="shareCopy">Copy</button>
-          </div>
-          <p class="help" id="shareLen"></p>
-          <p class="help" id="shareWarn" hidden></p>
-          <p class="help">Carries both pins and every setting you have changed —
-             only the changes, to keep it short enough to send over the mesh.
-             Opening it sets this page up the same way.</p>
-        </div>
+        <p class="sub">Send it over USB, type the lines into the app's remote admin CLI,
+           or share the whole setup by copying this page's address.</p>
+        
+        <p class="help link-note" id="linkNote" role="status" aria-live="polite" hidden></p>
         
         <p class="usb-stat" id="usbStat" role="status" aria-live="polite" hidden></p>
         
@@ -2170,24 +2152,48 @@
               <button data-f="new" class="on">1.16.0+</button>
               <button data-f="old">1.15.x</button>
             </div>
-            <p class="help">1.16.0 added the one-line <code>region def</code> syntax; 1.15.x builds the
-               same tree one <code>region put</code> at a time. <b>Region commands only exist from
-               1.15</b> — on older firmware the radio and timing settings still apply, but the region
-               block does not. Both forms create each region flood-allowed, so no per-region
-               <code>allowf</code> is needed. <b>Send over USB</b> reads the version off the node and
-               picks the form; otherwise run <code>ver</code> if you are not sure.</p>
+            
           </div>
         </div>
-        <pre class="cmd" id="cmdOut"></pre>
+        
+        <div class="cmdcard">
+          <div class="cmdbar">
+            <span class="cmdcount" id="cmdCount"></span>
+            
+            <button class="usb-console" id="usbConsoleBtn">Console</button>
+            <button class="usb-send" id="usbBtn">Send over USB</button>
+          </div>
+          <pre class="cmd" id="cmdOut"></pre>
+        </div>
+        
         <details class="explain">
-          <summary>Before you paste this</summary>
-          <p>Run over USB/serial, or the companion app's admin CLI. On Chrome, Edge or Opera,
-             <b>Send over USB</b> writes it for you — it reads the firmware version off the node,
-             picks the matching form and sends each line. <code>set dutycycle 10</code>
-             is the legal maximum on this sub-band and the preset ships with 50, so it has to be set
-             explicitly. <b>Norway is EEA/EFTA, not EU</b> — nesting <code>no</code> under
-             <code>eu</code> follows the existing convention, not geopolitics. Reboot after radio
-             changes.</p>
+          <summary>Sending this to a node</summary>
+          <p><b>Over USB.</b> On Chrome, Edge or Opera, <b>Send over USB</b> writes the whole block
+             for you — it reads the firmware version off the node, picks the matching form, sends
+             each line and reboots when every one is accepted. <b>Console</b> opens the same
+             connection without sending anything, so you can type commands yourself.</p>
+          <p><b>Line by line, over the air.</b> In the MeshCore app, open the repeater under
+             <i>Contacts</i> and use its remote admin CLI. There is no paste — send one command per
+             message, in the order they appear above, and check each reply before the next.
+             Remote admin caps a command at <b>160 characters</b>, the same limit the block is
+             built to; a longer line is silently truncated and comes back as a
+             <code>put failed</code> or <code>unknown jump</code> error rather than a complaint
+             about length. Finish with <code>region save</code>, then <code>reboot</code>.</p>
+          <p><b>To another person.</b> This page's address carries the whole setup — both pins,
+             every setting you have changed and both devices — and updates as you work. Copy it
+             from the address bar and send it; opening it sets their page up the same way. It is
+             short enough to fit in a mesh message. <b>It also carries any passwords you have
+             set</b>, so treat it as you would those.</p>
+          <p><b>Which firmware.</b> 1.16.0 added the one-line <code>region def</code> syntax;
+             1.15.x builds the same tree one <code>region put</code> at a time. Both forms create
+             each region flood-allowed, so no per-region <code>allowf</code> is needed.
+             <b>Region commands only exist from 1.15</b> — on older firmware the radio and timing
+             settings still apply, but the region block does not. Sending over USB picks the form
+             for you; setting it by hand, run <code>ver</code> if you are not sure.</p>
+          <p><code>set dutycycle 10</code> is the legal maximum on this sub-band and the preset
+             ships with 50, so it has to be set explicitly. <b>Norway is EEA/EFTA, not EU</b> —
+             nesting <code>no</code> under <code>eu</code> follows the existing convention, not
+             geopolitics. Reboot after radio changes.</p>
         </details>
       </section>
 
@@ -3692,10 +3698,23 @@
 
   const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
-  const renderLines = () => buildLines().map(([ty, cmd, arg]) =>
+  const renderLines = (L = buildLines()) => L.map(([ty, cmd, arg]) =>
     ty === 'c' ? `<span class="c">${esc(cmd)}</span>`
                : `<span class="k">${esc(cmd)}</span>${arg ? ' ' + esc(arg) : ''}`
   ).join('\n');
+
+  
+  
+  
+  
+  
+  
+  function paintBlock() {
+    const L = buildLines();
+    $('cmdOut').innerHTML = renderLines(L);
+    const n = L.filter(([ty]) => ty === 'k').length;
+    $('cmdCount').textContent = `${n} command${n === 1 ? '' : 's'}`;
+  }
 
   
   
@@ -3715,7 +3734,6 @@
   };
   const byteLen = s => new TextEncoder().encode(s).length;
 
-  
   
   
   
@@ -3831,7 +3849,7 @@
       $('scope').innerHTML =
         '<span class="empty">Place the node on the map and its regions appear here. '
         + 'Everything else configures without one.</span>';
-      $('cmdOut').innerHTML = renderLines();
+      paintBlock();
       
       $('selKomm').setAttribute('d', '');
       $('nbkLine').setAttribute('d', '');
@@ -3923,7 +3941,7 @@
       + tag + ' '.repeat(Math.max(1, wide - indent.length - tag.length))
       + (note ? `<span class="an">${note}</span>` : '') + '</span>').join('');
 
-    $('cmdOut').innerHTML = renderLines();
+    paintBlock();
 
     
     
@@ -4603,19 +4621,6 @@
     showPinFor(state.device, true);
   });
 
-  $('copyBtn').addEventListener('click', async () => {
-    const text = plainText();
-    try { await navigator.clipboard.writeText(text); }
-    catch (e) {
-      const ta = document.createElement('textarea');
-      ta.value = text; document.body.appendChild(ta);
-      ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-    }
-    const b = $('copyBtn');
-    b.textContent = 'Copied'; b.classList.add('done');
-    setTimeout(() => { b.textContent = 'Copy'; b.classList.remove('done'); }, 1400);
-  });
-
   
   
   
@@ -4726,7 +4731,9 @@
     if (!USB) {
       btn.disabled = consoleBtn.disabled = true;
       btn.title = consoleBtn.title = 'Needs a browser with WebSerial — Chrome, Edge or Opera on desktop.';
-      stat.textContent = 'Send over USB and the console work only in browsers with WebSerial, like Chrome, Edge or Opera on desktop. Elsewhere, use Copy.';
+      
+      
+      stat.textContent = 'Send over USB and the console work only in browsers with WebSerial, like Chrome, Edge or Opera on desktop. Here, select the block below and copy it by hand.';
       stat.hidden = false;
     } else {
 
@@ -5123,12 +5130,6 @@
     return F.join('~');
   }
 
-  const shareUrl = () => {
-    const base = location.origin + location.pathname.replace(/index\.html$/, '');
-    const h = shareHash();
-    return h ? base + '#' + h : base;
-  };
-
   
   
   
@@ -5238,51 +5239,45 @@
     return true;
   }
 
-  {
-    const btn = $('shareBtn'), box = $('shareBox'), field = $('shareLink'),
-          copy = $('shareCopy'), note = $('shareLen'), warn = $('shareWarn');
-
-    function fillShare() {
-      const url = shareUrl();
-      field.value = url;
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  let urlFrozen = false;
+  let urlTimer = null, urlLast = null;
+  function syncUrl() {
+    if (urlFrozen || urlTimer) return;
+    urlTimer = setTimeout(() => {
+      urlTimer = null;
+      const h = shareHash();
+      if (h === urlLast) return;
+      urlLast = h;
       
       
-      
-      note.textContent = `${url.length} characters`
-        + (url.length <= 160 ? ' — fits in one mesh message.'
-                             : ' — longer than a 160-character mesh message.');
-      note.classList.toggle('bad', url.length > 160);
-      
-      
-      const secrets = [state.admin && 'admin', state.guest && 'guest'].filter(Boolean);
-      warn.innerHTML = secrets.length
-        ? `<b class="bad">This link contains the ${secrets.join(' and ')} `
-          + `password${secrets.length > 1 ? 's' : ''} in the clear.</b> `
-          + 'Anyone who gets the link can read them.'
-        : '';
-      warn.hidden = !secrets.length;
-    }
-
-    
-    
-    
-    refreshShare = () => { if (!box.hidden) fillShare(); };
-
-    btn.addEventListener('click', () => {
-      const open = box.hidden;
-      box.hidden = !open;
-      btn.setAttribute('aria-expanded', String(open));
-      if (open) { fillShare(); field.select(); }
-    });
-
-    copy.addEventListener('click', async () => {
-      fillShare();   
-      try { await navigator.clipboard.writeText(field.value); }
-      catch (e) { field.select(); document.execCommand('copy'); }
-      copy.textContent = 'Copied'; copy.classList.add('done');
-      setTimeout(() => { copy.textContent = 'Copy'; copy.classList.remove('done'); }, 1400);
-    });
+      try { history.replaceState(null, '', h ? '#' + h : location.pathname + location.search); }
+      catch (e) {   }
+    }, 400);
   }
+  refreshShare = syncUrl;
 
   
   
@@ -5323,22 +5318,22 @@
 
   
   
-  
-  
-  
-  
-  
-  
-  
   if (shared === 'newer') {
-    $('shareBox').hidden = false;
-    $('shareBtn').setAttribute('aria-expanded', 'true');
-    $('shareLen').textContent = '';
-    $('shareWarn').hidden = false;
-    $('shareWarn').innerHTML = '<b class="bad">This link was made by a newer version '
+    $('linkNote').hidden = false;
+    $('linkNote').innerHTML = '<b class="bad">This link was made by a newer version '
       + 'of this page.</b> Nothing has been applied. Reload to pick up the current '
       + 'version, then open the link again.';
+    
+    urlFrozen = true;
+    const thaw = () => { urlFrozen = false; };
+    addEventListener('pointerdown', thaw, { once: true });
+    addEventListener('keydown', thaw, { once: true });
   }
+
+  
+  
+  
+  urlLast = shareHash();
 
   
   
