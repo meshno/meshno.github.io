@@ -5068,6 +5068,9 @@
   
   const SH_NUM  = { t: ['tx', '22'], U: ['unscopedHops', '3'] };
   const SH_REACH = { 1: 'landsdel', 2: 'fylke', 3: 'kommune', 4: 'city' };
+  
+  
+  
   const SH_TEXT = { n: 'desc', o: 'owner', g: 'guest', a: 'admin' };
   const SH_PIN  = { '@': 'repeater', $: 'companion' };
 
@@ -5090,14 +5093,32 @@
       if (String(state[f]) !== def) F.push(k + shEnc(String(state[f])));
     for (const [k, lvl] of Object.entries(SH_REACH))
       if (state.reach[lvl] !== REACH_DEF[lvl]) F.push(k + state.reach[lvl]);
-    
-    
-    
-    
     for (const [k, f] of Object.entries(SH_TEXT)) {
-      if (f === 'desc' && state.descAuto) continue;
+      if (f === 'desc') continue;         
       if (state[f]) F.push(k + shEnc(state[f]));
-      else if (f === 'desc') F.push(k);   
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    if (!state.descAuto) {
+      const rd = ctxFor('repeater'), rp = rd && POST_BY_NR[rd.post];
+      if (state.desc && rp && state.desc === rp[1]) F.push('N');
+      else if (state.desc) F.push('n' + shEnc(state.desc));
+      else F.push('n');
     }
     return F.join('~');
   }
@@ -5154,7 +5175,7 @@
     
     const ver = fields.find(f => f[0] === 'V');
     if (ver && ver.slice(1) !== SH_VER) return 'newer';
-    let used = false;
+    let used = false, ownName = false;
     const pins = {};
     for (const fld of fields) {
       if (!fld) continue;
@@ -5177,6 +5198,10 @@
           state.reach[SH_REACH[k]] = Math.min(REACH_MAX, Math.max(0, n));
           used = true;
         }
+      } else if (k === 'N') {
+        
+        
+        ownName = true; used = true;
       } else if (SH_TEXT[k]) {
         state[SH_TEXT[k]] = shDec(v);
         
@@ -5194,7 +5219,22 @@
     syncControls();
     
     
-    showPinFor(state.device);
+    
+    
+    
+    
+    
+    
+    showPinFor(state.device, true);
+    
+    
+    
+    
+    
+    if (ownName) {
+      const rd = ctxFor('repeater'), rp = rd && POST_BY_NR[rd.post];
+      if (rp) { state.desc = rp[1]; state.descAuto = false; render(); }
+    }
     return true;
   }
 
