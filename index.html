@@ -1901,10 +1901,10 @@
           <p>Convention: <code>NO-&lt;postnummer&gt; &lt;place&gt;</code> — a node on Skuiåsen in
              Bærums Verk is <code>NO-1354 Skuiåsen</code>. <b>32 bytes, or 24 if you publish a
              location.</b> Norwegian letters cost two each. Takes effect after a reboot.</p>
-          <p><b>Type your postnummer into the position field</b> and the node lands in the middle of
-             that area — the only way to set it exactly. A map click pins the exact spot but has to
-             guess the postnummer, and is right about two times in three: check the bar under the
-             map, and type the number instead if it is wrong.</p>
+          <p>A map click now finds your postnummer <b>exactly</b>, from the real area borders — the
+             bar under the map shows it. If you already know it, <b>type it into the position
+             field</b> and the node lands in the middle of that area. Either way is exact; typing is
+             just faster when you know the number.</p>
           <p></p>
           <p><b>location</b> sets where the node says it is, three ways. <b>none</b> is the default
              and publishes nothing. <b>map</b> uses the pin you placed, which is only accurate to
@@ -2124,12 +2124,14 @@
           <div class="v">
             <div class="seg" id="fwSeg">
               <button data-f="new" class="on">1.16.0+</button>
-              <button data-f="old">1.12.0 – 1.15.0</button>
+              <button data-f="old">1.15.x</button>
             </div>
-            <p class="help">1.16.0 added the one-line <code>region def</code> syntax. Older
-               firmware gets the same tree, built one <code>region put</code> at a time.
-               <b>Send over USB</b> reads this off the node and sets it for you; otherwise run
-               <code>ver</code> on the node if you are not sure.</p>
+            <p class="help">1.16.0 added the one-line <code>region def</code> syntax; 1.15.x builds the
+               same tree one <code>region put</code> at a time. <b>Region commands only exist from
+               1.15</b> — on older firmware the radio and timing settings still apply, but the region
+               block does not. Both forms create each region flood-allowed, so no per-region
+               <code>allowf</code> is needed. <b>Send over USB</b> reads the version off the node and
+               picks the form; otherwise run <code>ver</code> if you are not sure.</p>
           </div>
         </div>
         <pre class="cmd" id="cmdOut"></pre>
@@ -2311,11 +2313,102 @@
   
   
   
+  
+  
+  
   function postNear(kommune, x, y) {
     return (POST_BY_KOMM[kommune] || [])
       .map(p => ({ p, d: (p[3] - x) ** 2 + (p[4] - y) ** 2 }))
       .sort((a, b) => a.d - b.d)
       .map(e => e.p);
+  }
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  let POST_GEO = null;                 
+
+  
+  
+  
+  
+  function exactPost(kommune, x, y) {
+    if (!POST_GEO) return null;
+    const hit = areaAt(POST_GEO[kommune] || [], x, y);
+    return hit ? hit.nr : null;
+  }
+
+  
+  
+  
+  
+  
+  async function loadPostGeo() {
+    let g;
+    try {
+      const r = await fetch('postnr-geo.json');
+      if (!r.ok) return;               
+      g = await r.json();
+    } catch (e) { return; }
+    const [minx, miny, step] = g.t;
+    
+    const arcs = g.arcs.map(da => {
+      let ix = 0, iy = 0; const pts = [];
+      for (const [dx, dy] of da) { ix += dx; iy += dy; pts.push([minx + ix * step, miny + iy * step]); }
+      return pts;
+    });
+    
+    
+    const ring = ids => {
+      const pts = [];
+      for (const id of ids) {
+        const a = id >= 0 ? arcs[id] : arcs[~id].slice().reverse();
+        const s = pts.length && pts[pts.length - 1][0] === a[0][0]
+          && pts[pts.length - 1][1] === a[0][1] ? 1 : 0;
+        for (let i = s; i < a.length; i++) pts.push(a[i]);
+      }
+      return pts;
+    };
+    const byKomm = {};
+    for (const [nr, parts] of g.polys) {
+      const rec = POST_BY_NR[nr];
+      if (!rec) continue;              
+      const komm = rec[2];
+      for (const part of parts) {
+        const rings = part.map(ring);
+        let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+        for (const r of rings) for (const [x, y] of r) {
+          if (x < x0) x0 = x; if (x > x1) x1 = x;
+          if (y < y0) y0 = y; if (y > y1) y1 = y;
+        }
+        (byKomm[komm] = byKomm[komm] || []).push({ nr, rings, bb: [x0, y0, x1, y1] });
+      }
+    }
+    POST_GEO = byKomm;
+    refreshPost();
+  }
+
+  
+  
+  
+  
+  function refreshPost() {
+    otherCtx = { key: null, ctx: null };   
+    if (!state.kommune) return;
+    const d = deriveAt(state.x, state.y, state.postTyped);
+    if (d) applyPin(d, false, false);
   }
   
   
@@ -2436,8 +2529,8 @@
     
     
     pins: {
-      repeater:  { x: null, y: null, post: null, auto: true },
-      companion: { x: null, y: null, post: null, auto: true }
+      repeater:  { x: null, y: null, post: null, postTyped: null, auto: true },
+      companion: { x: null, y: null, post: null, postTyped: null, auto: true }
     },
     
     
@@ -2474,6 +2567,10 @@
     
     
     unscoped: 'allow', unscopedHops: '3',
+    
+    
+    
+    postTyped: null,
     owner: '', guest: '', desc: '',
     
     
@@ -3095,7 +3192,10 @@
     return {
       x, y,
       kommune: k.nr, fylke: k.nr.slice(0, 2), kommuneName: k.name,
-      post: pn && POST_BY_NR[pn] ? pn : (near[0] ? near[0][0] : null),
+      
+      
+      post: pn && POST_BY_NR[pn] ? pn
+        : (exactPost(k.nr, x, y) || (near[0] ? near[0][0] : null)),
       metro: metroAt(x, y),
       airport: airportAt(x, y),
       border: borderAt(x, y, k.nr)
@@ -3120,8 +3220,8 @@
     const p = livePin(dev);
     if (p.x === null) return null;
     const r = state.reach;
-    const key = `${p.x},${p.y},${p.post},${r.landsdel},${r.fylke},${r.kommune},${r.city}`;
-    if (otherCtx.key !== key) otherCtx = { key, ctx: deriveAt(p.x, p.y, p.post) };
+    const key = `${p.x},${p.y},${p.postTyped},${r.landsdel},${r.fylke},${r.kommune},${r.city}`;
+    if (otherCtx.key !== key) otherCtx = { key, ctx: deriveAt(p.x, p.y, p.postTyped) };
     return otherCtx.ctx;
   }
 
@@ -3344,7 +3444,7 @@
   
   function clearPlacement() {
     state.kommune = null; state.kommuneName = ''; state.fylke = null;
-    state.post = null; state.metro = []; state.airport = null;
+    state.post = null; state.postTyped = null; state.metro = []; state.airport = null;
     state.border = { landsdel: [], fylke: [], kommune: [] };
   }
 
@@ -3356,8 +3456,10 @@
     const p = state.pins[state.device];
     
     p.x = x; p.y = y; p.auto = false;
+    
+    state.postTyped = pn && POST_BY_NR[pn] ? pn : null;
     applyPin(d, drill, reframe);
-    p.post = state.post;
+    p.post = state.post; p.postTyped = state.postTyped;
     
     otherCtx = { key: null, ctx: null };
     return true;
@@ -3373,7 +3475,10 @@
   
   function showPinFor(dev, jump = false) {
     const p = livePin(dev);
-    const d = p.x === null ? null : deriveAt(p.x, p.y, p.post);
+    
+    
+    const d = p.x === null ? null : deriveAt(p.x, p.y, p.postTyped);
+    state.postTyped = p.postTyped;
     otherCtx = { key: null, ctx: null };   
     if (!d) { clearPlacement(); render(); return; }
     applyPin(d, jump);
@@ -4120,7 +4225,7 @@
     
     
     const p = state.pins[state.device];
-    p.x = p.y = p.post = null; p.auto = true;
+    p.x = p.y = p.post = p.postTyped = null; p.auto = true;
     view.z = 1; view.rest = 1; view.cx = VBX + W / 2; view.cy = VBY + H / 2;
     
     
@@ -4435,7 +4540,7 @@
   $('pinNote').addEventListener('click', e => {
     if (!e.target.closest('button')) return;
     const p = state.pins[state.device];
-    p.x = p.y = p.post = null; p.auto = true;
+    p.x = p.y = p.post = p.postTyped = null; p.auto = true;
     showPinFor(state.device, true);
   });
 
@@ -4800,6 +4905,13 @@
   });
 
   setScope(state.chanScope);
+
+  
+  
+  
+  
+  
+  (window.requestIdleCallback || (fn => setTimeout(fn, 200)))(loadPostGeo);
 </script>
 </body>
 </html>
