@@ -1088,6 +1088,28 @@
   .usb-console:hover { color: var(--ink); }
   .usb-console:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .usb-console:disabled { color: var(--dim); cursor: not-allowed; text-decoration: none; }
+  /* The share panel. Recessed like every other inset on the page, so it reads
+     as a well opened under the header rather than a card floating on it.
+     display:flex/grid out-specifies the UA [hidden] rule — the same trap as
+     .nmbars, .numf and the SVG pin — so the hidden state is spelled out. */
+  .sharebox[hidden] { display: none; }
+  .sharebox {
+    background: var(--inset); border: 1px solid var(--rule);
+    padding: 12px 14px; margin-bottom: 14px;
+  }
+  .share-row { display: flex; gap: 8px; align-items: center; }
+  /* The URL is the deliverable, so it gets the mono treatment the CLI block
+     has. --bg, not --inset: an inset field on an inset panel is invisible,
+     which is the same one-level-in rule the reach settings follow. */
+  .share-row input {
+    flex: 1; min-width: 0; font-family: var(--mono); font-size: 12px;
+    background: var(--bg); border: 1px solid var(--rule); color: var(--ink);
+    padding: 6px 8px; min-height: 30px;
+  }
+  .share-row input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .share-row .copy { flex: none; }
+  .sharebox .help { margin-top: 8px; }
+  .sharebox .help[hidden] { display: none; }
   .usb-drop[hidden] { display: none; }
   /* the re-tweak-and-resend loop needs a way out; text-quiet, not a second
      bordered button competing with Send */
@@ -2092,12 +2114,28 @@
           <h2>Full node config</h2>
           <div class="out-act">
             
+            
+            <button class="usb-console" id="shareBtn" aria-expanded="false"
+                    aria-controls="shareBox">Share link</button>
             <button class="usb-console" id="usbConsoleBtn">Console</button>
             <button class="usb-send" id="usbBtn">Send over USB</button>
             <button class="copy" id="copyBtn">Copy</button>
           </div>
         </div>
         <p class="sub">Paste the whole block into the node over USB serial.</p>
+        
+        <div class="sharebox" id="shareBox" hidden>
+          <div class="share-row">
+            <input type="text" id="shareLink" readonly spellcheck="false"
+                   aria-label="Shareable link to this config">
+            <button class="copy" id="shareCopy">Copy</button>
+          </div>
+          <p class="help" id="shareLen"></p>
+          <p class="help" id="shareWarn" hidden></p>
+          <p class="help">Carries both pins and every setting you have changed —
+             only the changes, to keep it short enough to send over the mesh.
+             Opening it sets this page up the same way.</p>
+        </div>
         
         <p class="usb-stat" id="usbStat" role="status" aria-live="polite" hidden></p>
         
@@ -2492,6 +2530,11 @@
   const REACH_KM = { landsdel: 50, fylke: 25, kommune: 10, city: 25 };
   const REACH_MAX = 300;   
                             
+  
+  
+  
+  
+  const REACH_DEF = { ...REACH_KM, kommune: 0 };
 
   
   
@@ -2521,7 +2564,7 @@
     border: { landsdel: [], fylke: [], kommune: [] },
     
     
-    reach: { ...REACH_KM, kommune: 0 },
+    reach: { ...REACH_DEF },
     drilled: null,             
     
     
@@ -3672,7 +3715,17 @@
   };
   const byteLen = s => new TextEncoder().encode(s).length;
 
+  
+  
+  
+  
+  let refreshShare = null;
+
   function render() {
+    
+    
+    
+    if (refreshShare) refreshShare();
     
     
     
@@ -4886,6 +4939,315 @@
   
   
   
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  const B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+  const b64n = (n, w) => {
+    let s = '';
+    for (let i = 0; i < w; i++) { s = B64[n & 63] + s; n = Math.floor(n / 64); }
+    return s;
+  };
+  const nb64 = s => {
+    let n = 0;
+    for (const c of s) { const i = B64.indexOf(c); if (i < 0) return NaN; n = n * 64 + i; }
+    return n;
+  };
+
+  
+  
+  
+  
+  
+  const SH_LAT0 = 57, SH_LON0 = 3;
+  const encPos = (x, y) => {
+    const [la, lo] = unproject(x, y);
+    return b64n(Math.round((la - SH_LAT0) * 1e5), 4)
+         + b64n(Math.round((lo - SH_LON0) * 1e5), 4);
+  };
+  const decPos = s => {
+    const a = nb64(s.slice(0, 4)), o = nb64(s.slice(4, 8));
+    if (!Number.isFinite(a) || !Number.isFinite(o)) return null;
+    return project(SH_LAT0 + a / 1e5, SH_LON0 + o / 1e5);
+  };
+
+  
+  
+  
+  
+  
+  const SH_SAFE = /[A-Za-z0-9\-._!$'()*,:;=@]/;
+  
+  
+  const SH_ENC = new TextEncoder();
+  function shEnc(s) {
+    let o = '';
+    for (const ch of s) {
+      if (ch === ' ') { o += '+'; continue; }
+      if (SH_SAFE.test(ch)) { o += ch; continue; }
+      for (const b of SH_ENC.encode(ch))
+        o += '%' + b.toString(16).toUpperCase().padStart(2, '0');
+    }
+    return o;
+  }
+  const shDec = s => {
+    try { return decodeURIComponent(s.replace(/\+/g, ' ')); }
+    catch (e) { return s.replace(/\+/g, ' '); }   
+  };
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  const SH_VER = '1';
+
+  
+  
+  
+  const SH_ENUM = {
+    p: ['profile',       'neighborhood', ['local', 'neighborhood', 'hilltop', 'mountaintop']],
+    c: ['cr',            '8',            ['5', '6', '7', '8']],
+    h: ['hash',          '1',            ['0', '1', '2']],
+    l: ['loop',          'minimal',      ['minimal', 'moderate', 'strict']],
+    d: ['regionDefault', 'none',         ['no', 'landsdel', 'fylke', 'kommune', 'city', 'none']],
+    f: ['fw',            'new',          ['new', 'old']],
+    L: ['locMode',       'none',         ['none', 'map', 'gps']],
+    u: ['unscoped',      'allow',        ['allow', 'cap', 'deny']],
+    v: ['device',        'repeater',     ['repeater', 'companion']]
+  };
+  
+  
+  const SH_BOOL = { m: ['multiAcks', false], s: ['chanScope', false] };
+  
+  
+  
+  const SH_NUM  = { t: ['tx', '22'], U: ['unscopedHops', '3'] };
+  const SH_REACH = { 1: 'landsdel', 2: 'fylke', 3: 'kommune', 4: 'city' };
+  const SH_TEXT = { n: 'desc', o: 'owner', g: 'guest', a: 'admin' };
+  const SH_PIN  = { '@': 'repeater', $: 'companion' };
+
+  function shareHash() {
+    const F = [];
+    
+    
+    
+    for (const [k, dev] of Object.entries(SH_PIN)) {
+      const p = state.pins[dev];
+      if (p.x === null || p.auto) continue;
+      F.push(k + encPos(p.x, p.y) + (p.postTyped || ''));
+    }
+    for (const [k, [f, def, vals]] of Object.entries(SH_ENUM))
+      if (state[f] !== def && vals.indexOf(state[f]) >= 0)
+        F.push(k + vals.indexOf(state[f]));
+    for (const [k, [f, def]] of Object.entries(SH_BOOL))
+      if (state[f] !== def) F.push(k);
+    for (const [k, [f, def]] of Object.entries(SH_NUM))
+      if (String(state[f]) !== def) F.push(k + shEnc(String(state[f])));
+    for (const [k, lvl] of Object.entries(SH_REACH))
+      if (state.reach[lvl] !== REACH_DEF[lvl]) F.push(k + state.reach[lvl]);
+    
+    
+    
+    
+    for (const [k, f] of Object.entries(SH_TEXT)) {
+      if (f === 'desc' && state.descAuto) continue;
+      if (state[f]) F.push(k + shEnc(state[f]));
+      else if (f === 'desc') F.push(k);   
+    }
+    return F.join('~');
+  }
+
+  const shareUrl = () => {
+    const base = location.origin + location.pathname.replace(/index\.html$/, '');
+    const h = shareHash();
+    return h ? base + '#' + h : base;
+  };
+
+  
+  
+  
+  
+  function setSeg(id, attr, val) {
+    for (const b of $(id).querySelectorAll('button'))
+      b.classList.toggle('on', b.dataset[attr] === val);
+  }
+  function syncControls() {
+    setSeg('crSeg', 'cr', state.cr);
+    setSeg('hashSeg', 'h', state.hash);
+    setSeg('loopSeg', 'l', state.loop);
+    setSeg('ackSeg', 'ma', state.multiAcks ? 'on' : 'off');
+    setSeg('unscSeg', 'u', state.unscoped);
+    setSeg('defSeg', 'd', state.regionDefault);
+    setSeg('fwSeg', 'f', state.fw);
+    setSeg('locSeg', 'loc', state.locMode);
+    $('txPow').value = state.tx;
+    $('unscHops').value = state.unscopedHops;
+    $('ownerInfo').value = state.owner;
+    $('guestPw').value = state.guest;
+    $('adminPw').value = state.admin;
+    for (const key of Object.keys(kmInput)) $(kmInput[key]).value = state.reach[key];
+    syncBorderBtns();
+    
+    
+    for (const b of $('devSw').querySelectorAll('button')) {
+      const on = b.dataset.dev === state.device;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    }
+    $('paneRep').toggleAttribute('hidden', state.device !== 'repeater');
+    $('paneCom').toggleAttribute('hidden', state.device !== 'companion');
+  }
+
+  
+  
+  function applyShare(hash) {
+    const raw = (hash || '').replace(/^#/, '');
+    if (!raw) return false;
+    const fields = raw.split('~');
+    
+    
+    
+    const ver = fields.find(f => f[0] === 'V');
+    if (ver && ver.slice(1) !== SH_VER) return 'newer';
+    let used = false;
+    const pins = {};
+    for (const fld of fields) {
+      if (!fld) continue;
+      const k = fld[0], v = fld.slice(1);
+      if (SH_PIN[k]) {
+        const xy = decPos(v);
+        if (!xy) continue;
+        pins[SH_PIN[k]] = { xy, pn: /^\d{4}$/.test(v.slice(8)) ? v.slice(8) : null };
+        used = true;
+      } else if (SH_ENUM[k]) {
+        const [f, , vals] = SH_ENUM[k];
+        if (vals[+v] !== undefined) { state[f] = vals[+v]; used = true; }
+      } else if (SH_BOOL[k]) {
+        state[SH_BOOL[k][0]] = !SH_BOOL[k][1]; used = true;
+      } else if (SH_NUM[k]) {
+        state[SH_NUM[k][0]] = shDec(v); used = true;
+      } else if (SH_REACH[k]) {
+        const n = parseFloat(v);
+        if (Number.isFinite(n)) {
+          state.reach[SH_REACH[k]] = Math.min(REACH_MAX, Math.max(0, n));
+          used = true;
+        }
+      } else if (SH_TEXT[k]) {
+        state[SH_TEXT[k]] = shDec(v);
+        
+        
+        if (SH_TEXT[k] === 'desc') state.descAuto = false;
+        used = true;
+      }
+      
+    }
+    if (!used) return false;
+    for (const [dev, p] of Object.entries(pins)) {
+      const pin = state.pins[dev];
+      pin.x = p.xy[0]; pin.y = p.xy[1]; pin.postTyped = p.pn; pin.auto = false;
+    }
+    syncControls();
+    
+    
+    showPinFor(state.device);
+    return true;
+  }
+
+  {
+    const btn = $('shareBtn'), box = $('shareBox'), field = $('shareLink'),
+          copy = $('shareCopy'), note = $('shareLen'), warn = $('shareWarn');
+
+    function fillShare() {
+      const url = shareUrl();
+      field.value = url;
+      
+      
+      
+      note.textContent = `${url.length} characters`
+        + (url.length <= 160 ? ' — fits in one mesh message.'
+                             : ' — longer than a 160-character mesh message.');
+      note.classList.toggle('bad', url.length > 160);
+      
+      
+      const secrets = [state.admin && 'admin', state.guest && 'guest'].filter(Boolean);
+      warn.innerHTML = secrets.length
+        ? `<b class="bad">This link contains the ${secrets.join(' and ')} `
+          + `password${secrets.length > 1 ? 's' : ''} in the clear.</b> `
+          + 'Anyone who gets the link can read them.'
+        : '';
+      warn.hidden = !secrets.length;
+    }
+
+    
+    
+    
+    refreshShare = () => { if (!box.hidden) fillShare(); };
+
+    btn.addEventListener('click', () => {
+      const open = box.hidden;
+      box.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+      if (open) { fillShare(); field.select(); }
+    });
+
+    copy.addEventListener('click', async () => {
+      fillShare();   
+      try { await navigator.clipboard.writeText(field.value); }
+      catch (e) { field.select(); document.execCommand('copy'); }
+      copy.textContent = 'Copied'; copy.classList.add('done');
+      setTimeout(() => { copy.textContent = 'Copy'; copy.classList.remove('done'); }, 1400);
+    });
+  }
+
+  
+  
+  
+  
   $('mapStart').addEventListener('click', () => $('mapStart').classList.add('seen'), { once: true });
 
   
@@ -4910,7 +5272,33 @@
     box.dispatchEvent(new Event('input', { bubbles: true }));
   });
 
+  
+  
+  
+  
+  
+  const shared = applyShare(location.hash);
+
   setScope(state.chanScope);
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  if (shared === 'newer') {
+    $('shareBox').hidden = false;
+    $('shareBtn').setAttribute('aria-expanded', 'true');
+    $('shareLen').textContent = '';
+    $('shareWarn').hidden = false;
+    $('shareWarn').innerHTML = '<b class="bad">This link was made by a newer version '
+      + 'of this page.</b> Nothing has been applied. Reload to pick up the current '
+      + 'version, then open the link again.';
+  }
 
   
   
