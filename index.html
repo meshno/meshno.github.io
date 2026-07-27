@@ -1267,7 +1267,19 @@
   @media (max-width: 900px) {
     main { grid-template-columns: minmax(0, 1fr); gap: 28px; --cols: 1;
            --map-reserve: var(--map-reserve-col);
-           --map-reserve-col: calc((100vw - 36px) * 1.1705 + 353px); }
+           --map-reserve-col: calc((100vw - 36px) * 1.1705 + 367px); }
+    /* THE FURNITURE IS A STEP FUNCTION OF WIDTH, not a constant, because the
+       heading, the sub and the position row wrap at different points. Measured
+       across the range: 386px at 320, 376px at 360, 353px from 375 to 500, and
+       367px again by 700. A single 353 under-reserved the narrow end and the
+       config column jumped 33px at 320 and 23px at 360 when the tree box
+       landed — which is exactly the shift this reservation exists to stop.
+       Two tiers cover it with at most 14px of slack, and slack is free here:
+       it is a floor, so it shows up as a slightly wider gap above the config
+       column and never as movement. */
+    @media (max-width: 374px) {
+      main { --map-reserve-col: calc((100vw - 36px) * 1.1705 + 386px); }
+    }
     /* one column here, so the pinned tracks above would put the config column
        in a second track that does not exist and the grid would invent one */
     .map-col, .col { grid-column: auto; }
@@ -2288,7 +2300,8 @@
         
         <div class="treebox">
           <div class="treehead">Region tree</div>
-          <div class="scope" id="scope"></div>
+          
+          <div class="scope" id="scope"><span class="empty">Place the node on the map and its regions appear here. Everything else configures without one.</span></div>
           <details class="explain treefoot">
           <summary>Region settings, and what the numbers mean</summary>
           <div class="kmsbox">
@@ -4455,6 +4468,11 @@
   
   
   
+  const EMPTY_TREE = $('scope').innerHTML;
+
+  
+  
+  
   
   
   
@@ -4604,9 +4622,10 @@
   
   function tree(ctx) {
     if (!ctx) {
-      $('scope').innerHTML =
-        '<span class="empty">Place the node on the map and its regions appear here. '
-        + 'Everything else configures without one.</span>';
+      
+      
+      
+      if ($('scope').innerHTML !== EMPTY_TREE) $('scope').innerHTML = EMPTY_TREE;
       return;
     }
     const ann = {};
