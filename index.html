@@ -732,14 +732,7 @@
 
   /* ---- sections ---- */
   section { border-top: 1px solid var(--rule); padding: 22px 0 26px; }
-  /* NO BOTTOM PADDING: this is the last thing in the map column, so the 26px
-     that `section` gives every block to separate it from the next one has
-     nothing to separate it from. It sat at the end of the column's own scroll
-     area as a strip of dead space you could scroll to and find empty —
-     reported as strange padding under the left column on a short viewport,
-     where the column scrolls internally and you actually reach its end.
-     Sections in the right-hand column keep it; they have neighbours. */
-  .needs-node { position: relative; padding-top: 18px; padding-bottom: 0; }
+  .needs-node { position: relative; padding-top: 18px; }
 
   /* A node without a position still gets a config — radio and timing do not
      depend on where it stands. The region tree just says what is missing. */
@@ -1290,7 +1283,7 @@
   @media (max-width: 900px) {
     main { grid-template-columns: minmax(0, 1fr); gap: 28px; --cols: 1;
            --map-reserve: var(--map-reserve-col);
-           --map-reserve-col: calc((100vw - 36px) * 1.1705 + 251px); }
+           --map-reserve-col: calc((100vw - 36px) * 1.1705 + 367px); }
     /* THE FURNITURE IS A STEP FUNCTION OF WIDTH, not a constant, because the
        heading, the sub and the position row wrap at different points. Measured
        across the range: 386px at 320, 376px at 360, 353px from 375 to 500, and
@@ -1300,47 +1293,52 @@
        Two tiers cover it with at most 14px of slack, and slack is free here:
        it is a floor, so it shows up as a slightly wider gap above the config
        column and never as movement. */
-        /* one column here, so the pinned tracks above would put the config column
+    @media (max-width: 374px) {
+      main { --map-reserve-col: calc((100vw - 36px) * 1.1705 + 386px); }
+    }
+    /* one column here, so the pinned tracks above would put the config column
        in a second track that does not exist and the grid would invent one */
     .map-col, .col { grid-column: auto; }
 
     /* RESERVE THE MAP COLUMN'S HEIGHT WHILE ITS CONTENT IS STILL ARRIVING.
-       Stacked, the map sits on top (order: -1) but is last in the source, so it
-       grows underneath the already-visible config column and shoves it down.
-       Measured without this: CLS 0.27 at 320px rising to 0.61 at 700px.
-       Desktop needs nothing — the columns are separate grid tracks, so neither
-       moves the other, and a floor there is actively harmful (see .map-col).
+       Stacked, the map sits on top (order: -1) but is last in the source, so
+       it grows underneath the already-visible config column and shoves it down
+       — measured CLS 0.37 without this. Desktop has no such problem: the two
+       columns are separate grid tracks, so neither moves the other.
 
-       IT TAKES TWO RULES, AND BOTH ARE NEEDED. They cover the two halves of the
-       window and hand over in the same frame:
+       IT GOES ON THE COLUMN, NOT ON `main`. Two earlier attempts padded `main`
+       while the column was absent, and both made things worse (0.48 against
+       0.37), because the column is NOT absent for most of that window: the
+       `<svg viewBox>` gives the browser the map's aspect ratio at its opening
+       tag, so 560 of the eventual 767px are already reserved by 1.9s and the
+       padding simply double-counted them. What actually streams in after that
+       is the ~200px of furniture around the map — heading, sub, position row,
+       map tag.
 
-         main padding-top    before the column's opening tag exists at all,
-                             when there is nothing to put a height on. Released
-                             by the one-line inline script immediately before
-                             .map-col in page.html, which is the only way to hit
-                             that instant exactly. `:has()` looks right and is
-                             not: Chrome does not re-evaluate it on insertion,
-                             so it held the padding until the column's CONTENT
-                             finished, measuring worse than no reservation.
+       The height is the SVG's own aspect ratio (viewBox 470.3x550.5 -> 1.1705)
+       plus that furniture, measured at 353px at 390px wide and 332-376px
+       across 360-430px as the headings wrap. It is a floor, not a size: too
+       low and the column simply grows past it, too high and it leaves a little
+       dead space under the map tag. Re-measure if that furniture changes.
 
-         .map-col min-height from that opening tag onward, while the furniture
-                             streams in. Without it the padding drops at the
-                             opening tag and the config column falls in one frame.
+       IT TAKES TWO RULES, AND BOTH ARE NEEDED — this cost four measured
+       attempts. They cover the two halves of the window and hand over in the
+       same frame:
 
-       THE HEIGHT IS THE SVG PLUS THE FURNITURE'S FLOOR, and the floor is the
-       point. The SVG part is exact — viewBox 470.3x550.5, so it is the column
-       width times 1.1705. The furniture round it (heading, sub, position row,
-       tree box) is text, and text is a STEP FUNCTION of width as it rewraps:
-       measured 360px at 320 wide, 349 at 350, 326 at 370, 305 at 400, 274 at
-       600, 251 from 650 up. Six steps is six magic numbers that rot the moment
-       any of that copy changes.
+         main padding-top          before the column's opening tag exists at
+                                   all, when there is nothing to put a height
+                                   on. Released by the one-line inline script
+                                   immediately before `.map-col` in page.html,
+                                   which is the only way to hit that instant
+                                   exactly — see the comment there for the
+                                   CSS-only version that looks right and is not.
 
-       So reserve the smallest it ever is — 251 — and let the rest grow. Being
-       SHORT costs almost nothing, because the overflow happens below the fold
-       on a phone: measured CLS 0.0000 from 320 to 700px, 0.0175 at 899. Being
-       LONG costs dead space you can scroll to and find empty, which is exactly
-       what was reported here once. At 251 that is 0px up to 600 and 14px above.
-       Do not "improve" this by fitting the constant to a wide viewport. */
+         .map-col min-height       from that opening tag onward, while the
+                                   furniture streams in. Without it the padding
+                                   drops at the opening tag and the config
+                                   column falls 767px in one frame (0.50).
+
+       Together: 0.04, i.e. no worse than before the reorder. */
     main { padding-top: var(--map-reserve); }
     .map-col { min-height: var(--map-reserve-col); }
     /* the columns stack here, so the left one must not be its own scroll
