@@ -247,13 +247,34 @@
        of the breakpoint in JS. One source of truth; do not add a matchMedia
        with the same number in it. */
     --cols: 2;
+    /* The map column's resting height, reserved so the footer does not move
+       when the column arrives — it is last in the source now. The track is a
+       fixed 380px and the SVG is that times its viewBox ratio (470.3/550.5 ->
+       1.1705), leaving 299px of furniture measured at this width. A floor
+       only: placing a node grows the region tree past it. */
+    --map-reserve-col: calc(380px * 1.1705 + 299px);
   }
   /* grid items default to min-width:auto and refuse to shrink below their
      content, so they burst out of the track and past the page padding */
   .map-col, .col { min-width: 0; }
 
   /* ---- map ---- */
-  .map-col { position: sticky; top: 24px; }
+  /* THE MAP IS LAST IN THE SOURCE AND FIRST ON THE SCREEN, deliberately.
+     Its 357 kommune outlines are 91 KB gzipped and a browser paints as it
+     parses, so with the map first in the document a slow connection drew
+     vectors for two seconds before the configurator existed. `order: -1` puts
+     it back on top visually in both layouts.
+
+     grid-column IS LOAD-BEARING, not tidiness. Without it, while the map's
+     markup is still arriving the config column is the grid's only child and
+     lands in the FIRST track — the 380px one — then jumps to the second when
+     the map appears. Measured CLS 0.27, "poor" by Core Web Vitals; pinning
+     both tracks takes it back to 0.02. Do not remove one without the other,
+     and note they must be released when the columns stack (see the narrow
+     block, which is one column and would otherwise grow a phantom second). */
+  .map-col { position: sticky; top: 24px; order: -1; grid-column: 1;
+             min-height: var(--map-reserve-col); }
+  .col { grid-column: 2; }
   .map-col > h2 { margin-bottom: 6px; }
   .map-col > .sub { margin-bottom: 14px; }
   .sub { color: var(--muted); font-size: 14px; margin: -6px 0 14px; max-width: 68ch; }
@@ -1236,7 +1257,54 @@
 
   /* ---- narrow ---- */
   @media (max-width: 900px) {
-    main { grid-template-columns: minmax(0, 1fr); gap: 28px; --cols: 1; }
+    main { grid-template-columns: minmax(0, 1fr); gap: 28px; --cols: 1;
+           --map-reserve: var(--map-reserve-col);
+           --map-reserve-col: calc((100vw - 36px) * 1.1705 + 353px); }
+    /* one column here, so the pinned tracks above would put the config column
+       in a second track that does not exist and the grid would invent one */
+    .map-col, .col { grid-column: auto; }
+
+    /* RESERVE THE MAP COLUMN'S HEIGHT WHILE ITS CONTENT IS STILL ARRIVING.
+       Stacked, the map sits on top (order: -1) but is last in the source, so
+       it grows underneath the already-visible config column and shoves it down
+       — measured CLS 0.37 without this. Desktop has no such problem: the two
+       columns are separate grid tracks, so neither moves the other.
+
+       IT GOES ON THE COLUMN, NOT ON `main`. Two earlier attempts padded `main`
+       while the column was absent, and both made things worse (0.48 against
+       0.37), because the column is NOT absent for most of that window: the
+       `<svg viewBox>` gives the browser the map's aspect ratio at its opening
+       tag, so 560 of the eventual 767px are already reserved by 1.9s and the
+       padding simply double-counted them. What actually streams in after that
+       is the ~200px of furniture around the map — heading, sub, position row,
+       map tag.
+
+       The height is the SVG's own aspect ratio (viewBox 470.3x550.5 -> 1.1705)
+       plus that furniture, measured at 353px at 390px wide and 332-376px
+       across 360-430px as the headings wrap. It is a floor, not a size: too
+       low and the column simply grows past it, too high and it leaves a little
+       dead space under the map tag. Re-measure if that furniture changes.
+
+       IT TAKES TWO RULES, AND BOTH ARE NEEDED — this cost four measured
+       attempts. They cover the two halves of the window and hand over in the
+       same frame:
+
+         main padding-top          before the column's opening tag exists at
+                                   all, when there is nothing to put a height
+                                   on. Released by the one-line inline script
+                                   immediately before `.map-col` in page.html,
+                                   which is the only way to hit that instant
+                                   exactly — see the comment there for the
+                                   CSS-only version that looks right and is not.
+
+         .map-col min-height       from that opening tag onward, while the
+                                   furniture streams in. Without it the padding
+                                   drops at the opening tag and the config
+                                   column falls 767px in one frame (0.50).
+
+       Together: 0.04, i.e. no worse than before the reorder. */
+    main { padding-top: var(--map-reserve); }
+    .map-col { min-height: var(--map-reserve-col); }
     /* the columns stack here, so the left one must not be its own scroll
        area inside the page scroll — release the sticky sizing entirely */
     .map-col { position: static; max-height: none; overflow-y: visible; }
@@ -1339,6 +1407,414 @@
   </header>
 
   <main id="main">
+    
+    <div class="col">
+      
+      <div class="dsw" id="devSw" role="tablist" aria-label="Device to configure">
+        <button type="button" role="tab" data-dev="repeater" class="on"
+                aria-selected="true" aria-controls="paneRep" id="tabRep">
+          <span class="node" aria-hidden="true"></span>
+          <span class="dn">Repeater</span>
+          <span class="dv" id="devRep"></span>
+        </button>
+        <button type="button" role="tab" data-dev="companion"
+                aria-selected="false" aria-controls="paneCom" id="tabCom">
+          <span class="node" aria-hidden="true"></span>
+          <span class="dn">Companion</span>
+          <span class="dv" id="devCom">not set up yet</span>
+        </button>
+      </div>
+
+      <div class="pane" id="paneRep" role="tabpanel" aria-labelledby="tabRep">
+      <section>
+        <h2>Identity</h2>
+        <p class="sub">What the node calls itself, and whether it says where it is.</p>
+        <div class="row">
+          <div class="k">name</div>
+          <div class="v">
+            
+            <div class="namebox">
+              <span class="np" id="namePrefix">NO-…</span>
+              <input type="text" id="nodeDesc" placeholder="e.g. Årvollåsen" maxlength="40"
+                     aria-label="Node name" aria-describedby="namePrefix nameBytes">
+              <span class="bytes" id="nameBytes"></span>
+            </div>
+            <p class="nmwhy" id="nameHint">The four digits are your <b class="a">postnummer</b>.</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="k">location</div>
+          <div class="v">
+            <div class="seg" id="locSeg">
+              <button data-loc="none" class="on">none</button>
+              <button data-loc="map">map</button>
+              <button data-loc="gps">gps</button>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="k">owner.info</div>
+          <div class="v">
+            <input type="text" id="ownerInfo" placeholder="e.g. LA1ABC / 6dBi omni @9m / solar+batt / roof" maxlength="90" aria-label="owner.info — contact, antenna, power, mount">
+          </div>
+        </div>
+        <div class="row">
+          <div class="k">guest.password</div>
+          <div class="v">
+            <input type="text" id="guestPw" placeholder="leave blank for none" maxlength="30" aria-label="guest.password">
+          </div>
+        </div>
+        <div class="row">
+          <div class="k">admin password</div>
+          <div class="v">
+            <input type="text" id="adminPw" placeholder="leave blank to keep current" maxlength="30" aria-label="admin password">
+          </div>
+        </div>
+        <details class="explain">
+          <summary>About the name and location</summary>
+          <p id="locNote"></p>
+          <p>Convention: <code>NO-&lt;postnummer&gt; &lt;place&gt;</code> — a node on Skuiåsen in
+             Bærums Verk is <code>NO-1354 Skuiåsen</code>. <b>32 bytes, or 24 if you publish a
+             location.</b> Norwegian letters cost two each. Takes effect after a reboot.</p>
+          <p>A map click now finds your postnummer <b>exactly</b>, from the real area borders — the
+             bar under the map shows it. If you already know it, <b>type it into the position
+             field</b> and the node lands in the middle of that area. Either way is exact; typing is
+             just faster when you know the number.</p>
+          <p></p>
+          <p><b>location</b> sets where the node says it is, three ways. <b>none</b> is the default
+             and publishes nothing. <b>map</b> uses the pin you placed, which is only accurate to
+             about a hundred metres, so treat it as rough. <b>gps</b> lets the node find its own
+             position, and set its clock from the satellites, on a build with GPS. Any published
+             location puts the node on mesh maps and <b>drops the name limit to 24 bytes</b>.</p>
+          <p><b>owner.info</b> is contact, antenna, power, mount. Visible to anyone who queries the node, so no personal info.</p>
+          <p><b>Passwords.</b> Guest lets members query the node; admin lets them reconfigure it. The factory admin password is <code>password</code>, so set your own. Both appear in the config in the clear.</p>
+        </details>
+      </section>
+
+      <section>
+        <h2>Radio</h2>
+        <p class="sub">Advanced radio settings. Defaults are fine.</p>
+        <div class="row">
+          <div class="k">tx power</div>
+          <div class="v">
+            <div class="numf">
+              <input type="number" id="txPow" inputmode="numeric" min="1" max="22" step="1" value="22" placeholder="board default" aria-label="transmit power, dBm"><i>dBm</i>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="k">coding rate</div>
+          <div class="v">
+            <div class="seg" id="crSeg">
+              <button data-cr="5">5 · +25%</button>
+              <button data-cr="6">6 · +50%</button>
+              <button data-cr="7">7 · +75%</button>
+              <button data-cr="8" class="on">8 · +100%</button>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="k">path.hash.mode</div>
+          <div class="v">
+            <div class="seg" id="hashSeg">
+              <button data-h="0">1-byte · 64 hops</button>
+              <button data-h="1" class="on">2-byte · 32 hops</button>
+              <button data-h="2">3-byte · 21 hops</button>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="k">loop.detect</div>
+          <div class="v">
+            <div class="seg" id="loopSeg">
+              <button data-l="minimal" class="on">minimal</button>
+              <button data-l="moderate">moderate</button>
+              <button data-l="strict">strict</button>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="k">multi.acks</div>
+          <div class="v">
+            <div class="seg" id="ackSeg">
+              <button data-ma="off" class="on">off</button>
+              <button data-ma="on">on</button>
+            </div>
+          </div>
+        </div>
+        <details class="explain">
+          <summary>What these radio settings do</summary>
+          <p>Tx power is the LoRa chip's output, defaulted to <b>20 dBm</b>. Boards with an amplifier put out more, so check the manual, and blank the field to keep the board's own default. <b>Staying inside your local legal limit is on you.</b></p>
+          <p>CR is the one radio parameter that may differ between nodes — receivers decode any CR. Higher = more redundancy, better survival through noise, but slower and more channel load. <b>Well-connected repeater: consider 5.</b> Frequency, bandwidth, and SF must match the mesh and are fixed here.</p>
+          <p>1-byte hashes collide quickly as repeater count grows; 2-byte (65 536 values) makes collisions practically impossible at this mesh's scale and makes network debugging far easier. 3-byte only matters at millions of nodes.</p>
+          <p>multi.acks sends a spare copy of each acknowledgement so it survives a collision. Steadier on a weak link, at the cost of a little more airtime. Off unless a link needs it.</p>
+        </details>
+      </section>
+
+      <section>
+        <h2>Node profile</h2>
+        <p class="sub">Sizes the random back-off before repeating a flood. Based on neighbour count with SNR above 0.</p>
+        <div class="row">
+          <div class="k">txdelay<br>rxdelay</div>
+          <div class="v">
+            <div class="profiles" id="profiles">
+              <button class="profile" data-p="mountaintop">
+                <span class="p-n">Mountaintop <span class="p-nb">25+ neighbours</span></span>
+                <span class="p-d">Line of sight over a whole region — a real summit or a mast on one. <b>Only pick this if you genuinely see that far;</b> a tall building in town is Hilltop.</span>
+                <span class="p-slots" aria-hidden="true"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i></span>
+                <span class="p-v">back-off 8/10 slots · <b>txdelay 1.6</b> · direct 0.8 · rx 3</span>
+              </button>
+              <button class="profile" data-p="hilltop">
+                <span class="p-n">Hilltop <span class="p-nb">15–25 neighbours</span></span>
+                <span class="p-d">Clear view over a wide area. Backbone for a district — mast, ridge, high-rise rooftop.</span>
+                <span class="p-slots" aria-hidden="true"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i></span>
+                <span class="p-v">back-off 6/10 slots · <b>txdelay 1.2</b> · direct 0.6 · rx 3</span>
+              </button>
+              <button class="profile on" data-p="neighborhood">
+                <span class="p-n">Neighborhood <span class="p-nb">5–15 neighbours</span></span>
+                <span class="p-d">Typical install covering its own district. Ordinary rooftop in a city or suburb.</span>
+                <span class="p-slots" aria-hidden="true"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                <span class="p-v">back-off 4/10 slots · <b>txdelay 0.8</b> · direct 0.4 · rx 3</span>
+              </button>
+              <button class="profile" data-p="local">
+                <span class="p-n">Local <span class="p-nb">1–4 neighbours</span></span>
+                <span class="p-d">Sees only a few neighbors. Indoors, ground level, or a low roof.</span>
+                <span class="p-slots" aria-hidden="true"><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                <span class="p-v">back-off 2/10 slots · <b>txdelay 0.4</b> · direct 0.2 · rx 3</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <details class="explain">
+          <summary>How the back-off works, and how to choose</summary>
+          <p><b>Several repeaters hear the same flood.</b> Each waits a random moment before
+             repeating it so they do not transmit over each other. The profile scales that window:
+             the more repeaters around you, the wider it needs to be. It costs a little latency and
+             nothing else — it does not change what your node repeats, or who can reach it.</p>
+          <p><code>rxdelay 3</code> is on every profile. It works from the receiving side: a packet
+             that arrived weakly is held back briefly so a repeater that heard it clearly gets there
+             first, and the weak copy is dropped as a duplicate.</p>
+          <p><b>A repeater should not move.</b> One that travels keeps changing which nodes it can
+             hear, so routes through it break as fast as they form. Set one up on the <b>Companion</b> tab instead — you
+             still get the mesh, without adding an unstable relay to it.</p>
+          <p>Run <code>neighbors</code> on the node and count how many have SNR above 0. Reported:
+             16 neighbours with 4 above 0 is sparse; 50 with 19 above 0 is dense.</p>
+          <p><code>txdelay</code> moves in steps of <b>0.2</b> and both delays cap at <b>2</b> —
+             that is firmware behaviour, not opinion. Everything else here is local convention.</p>
+        </details>
+      </section>
+
+
+
+      <section>
+        <h2>Regions</h2>
+        <p class="sub">The region tag on this node's own traffic. Off for now.</p>
+        <div class="row">
+          <div class="k">region default</div>
+          <div class="v">
+            <div class="seg" id="defSeg">
+              <button data-d="no">country</button>
+              <button data-d="landsdel">landsdel</button>
+              <button data-d="fylke">fylke</button>
+              <button data-d="kommune">kommune</button>
+              <button data-d="city">city</button>
+              <button data-d="none" class="on">off</button>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="k">unscoped floods</div>
+          <div class="v">
+            <div class="seg" id="unscSeg">
+              <button data-u="allow" class="on">allow</button>
+              <button data-u="cap">cap</button>
+              <button data-u="deny">deny</button>
+            </div>
+            <div class="numf" id="unscHopsBox" hidden>
+              <input type="number" id="unscHops" inputmode="numeric" min="0" max="64" step="1" value="3" aria-label="unscoped flood hop limit"><i>hops</i>
+            </div>
+            <p class="help" id="unscHelp"></p>
+          </div>
+        </div>
+        <details class="explain">
+          <summary>What default scope changes</summary>
+          <p><b>Tags what this node sends on its own</b> — for a repeater, mostly its adverts. It
+             does not change which regions the node <em>relays</em> for; that is the tree on the
+             left.</p>
+          <p><b>off</b> for now. The mesh is still getting repeaters onto a base set of regions, and
+             until enough of them carry it, scoping a node's own traffic risks it being dropped. So
+             adverts go out unscoped, which every repeater passes. Once the repeaters around you carry
+             regions, set <b>country</b> (<code>no</code>) or narrower to scope what this node sends.
+             Kommune and city are for special-purpose nodes and channels.</p>
+          <p><b>Unscoped floods</b> sets how much untagged traffic this repeater carries: messages
+             from nodes with no region set. <b>allow</b> is today's mesh, where everything floods and
+             nobody is cut off. <b>cap</b> keeps local untagged traffic but stops it crossing the
+             country. <b>deny</b> drops it outright. Leave it on <b>allow</b> until the nodes around
+             you carry regions; turning <code>deny</code> on early isolates any node that has not set
+             regions yet.</p>
+        </details>
+      </section>
+
+      <section>
+        
+        <div class="out-head">
+          <h2>Full node config</h2>
+        </div>
+        
+        <p class="sub">Send it over USB, type the lines into the app's remote admin CLI,
+           or share the whole setup by copying this page's address.</p>
+        
+        <p class="help link-note" id="linkNote" role="status" aria-live="polite" hidden></p>
+        
+        <p class="usb-stat" id="usbStat" role="status" aria-live="polite" hidden></p>
+        
+        <div class="dcard" id="usbCard" hidden>
+          <div class="dcard-h">
+            <span class="usb-dot" id="usbDot"></span>
+            <b>Programming node</b>
+            <span class="chip" id="usbFw" hidden></span>
+            <button class="usb-drop" id="usbDrop">Disconnect</button>
+          </div>
+          
+          <div class="pbar" id="usbProg" hidden><i id="usbBar"></i></div>
+          <div class="dcard-f">
+            <span class="cnt" id="usbCnt"></span>
+            <span class="msg" id="usbMsg"></span>
+          </div>
+          
+          <pre class="term" id="usbTerm" aria-live="polite" tabindex="0"></pre>
+          <div class="termbar">
+            <span class="tprompt" aria-hidden="true">›</span>
+            <input type="text" class="tinput" id="usbInput" spellcheck="false" autocomplete="off"
+                   placeholder="type a command, e.g. region list"
+                   aria-label="Send a command to the node" disabled>
+            <button class="trun" id="usbRun" disabled>Run</button>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="k">firmware</div>
+          <div class="v">
+            <div class="seg" id="fwSeg">
+              <button data-f="new" class="on">1.16.0+</button>
+              <button data-f="old">1.15.x</button>
+            </div>
+            
+          </div>
+        </div>
+        
+        <div class="cmdcard">
+          <div class="cmdbar">
+            <span class="cmdcount" id="cmdCount"></span>
+            
+            <button class="usb-console" id="usbConsoleBtn">Console</button>
+            <button class="usb-send" id="usbBtn">Send over USB</button>
+          </div>
+          <pre class="cmd" id="cmdOut"></pre>
+        </div>
+        
+        <details class="explain">
+          <summary>Sending this to a node</summary>
+          <p><b>Over USB.</b> On Chrome, Edge or Opera, <b>Send over USB</b> writes the whole block
+             for you — it reads the firmware version off the node, picks the matching form, sends
+             each line and reboots when every one is accepted. <b>Console</b> opens the same
+             connection without sending anything, so you can type commands yourself.</p>
+          <p><b>Line by line, over the air.</b> In the MeshCore app, open the repeater under
+             <i>Contacts</i> and use its remote admin CLI. There is no paste — send one command per
+             message, in the order they appear above, and check each reply before the next.
+             Remote admin caps a command at <b>160 characters</b>, the same limit the block is
+             built to; a longer line is silently truncated and comes back as a
+             <code>put failed</code> or <code>unknown jump</code> error rather than a complaint
+             about length. Finish with <code>region save</code>, then <code>reboot</code>.</p>
+          <p><b>To another person.</b> This page's address carries the whole setup — both pins,
+             every setting you have changed and both devices — and updates as you work. Copy it
+             from the address bar and send it; opening it sets their page up the same way. It is
+             short enough to fit in a mesh message. <b>It also carries any passwords you have
+             set</b>, so treat it as you would those.</p>
+          <p><b>Which firmware.</b> 1.16.0 added the one-line <code>region def</code> syntax;
+             1.15.x builds the same tree one <code>region put</code> at a time. Both forms create
+             each region flood-allowed, so no per-region <code>allowf</code> is needed.
+             <b>Region commands only exist from 1.15</b> — on older firmware the radio and timing
+             settings still apply, but the region block does not. Sending over USB picks the form
+             for you; setting it by hand, run <code>ver</code> if you are not sure.</p>
+          <p><code>set dutycycle 10</code> is the legal maximum on this sub-band and the preset
+             ships with 50, so it has to be set explicitly. <b>Norway is EEA/EFTA, not EU</b> —
+             nesting <code>no</code> under <code>eu</code> follows the existing convention, not
+             geopolitics. Reboot after radio changes.</p>
+        </details>
+      </section>
+
+      
+      <section>
+        <h2>Contact</h2>
+        <p class="sub">The region convention on this page is a proposal, not a standard — push back on it.</p>
+        <div class="row plain">
+          <div class="k">discord</div>
+          <div class="v">
+            <a href="https://discord.gg/2X4C9J4PR" target="_blank" rel="noopener">Norwegian MeshCore community</a>
+            <p class="help">Where the convention gets discussed and agreed. Best place for anything about the mesh itself.</p>
+          </div>
+        </div>
+        <div class="row plain">
+          <div class="k">email</div>
+          <div class="v">
+            <a href="mailto:meshno.cloning239@passmail.com">meshno.cloning239@passmail.com</a>
+            <p class="help">The site operator, for corrections to this page.</p>
+          </div>
+        </div>
+      </section>
+      </div>
+
+      
+      <div class="pane" id="paneCom" role="tabpanel" aria-labelledby="tabCom" hidden>
+        <section>
+          <h2>Channels</h2>
+          <p class="sub">One channel per region you are in, taken from the map.</p>
+          <div class="row">
+            <div class="k">region scope</div>
+            <div class="v">
+              <div class="seg" id="scopeSeg">
+                <button data-sc="off" class="on">skip</button>
+                <button data-sc="on">include</button>
+              </div>
+              <p class="help" id="scopeNote"></p>
+            </div>
+          </div>
+          
+          <div class="row plain">
+            <div class="k">default region</div>
+            <div class="v">
+              <p class="help">In the app: <b>Experimental Settings → Default Region → <code>no</code></b>.
+                 Direct messages and
+                 unscoped channels go out carrying this tag. Only repeaters that carry
+                 <code>no</code> will repeat them — ask your local operators to add it.</p>
+            </div>
+          </div>
+          <details class="explain">
+            <summary>How these channels work, and who else is on them</summary>
+            <p><b>The name is the channel.</b> A channel starting with <code>#</code> derives its
+               own key from its name, so everyone who types <code>#baerum</code> lands on the same
+               one. There is no key to send anybody. The app accepts only <code>a-z</code>,
+               <code>0-9</code> and <code>-</code>, which is why these are written
+               <code>ostlandet</code> and <code>baerum</code>.</p>
+            <p><b>Which is why they are not private.</b> Anyone who knows the name can work out the
+               key. Treat them as an open calling frequency; for something private, make a channel
+               with a random secret and hand it out yourself.</p>
+          </details>
+        </section>
+
+        
+        <section>
+          <h2>QR codes</h2>
+          <p class="sub">Scan one with the MeshCore app to join. Reading this on the phone you are
+             setting up? Tap <b>Add</b> instead.</p>
+          <div class="chans" id="chans"></div>
+        </section>
+      </div>
+    </div>
+
+    
+    <script>document.currentScript.parentNode.style.setProperty('--map-reserve','0px')</script>
     <div class="map-col">
       
       <h2 id="mapHead">Region</h2>
@@ -1861,410 +2337,6 @@
       </section>
     </div>
 
-    <div class="col">
-      
-      <div class="dsw" id="devSw" role="tablist" aria-label="Device to configure">
-        <button type="button" role="tab" data-dev="repeater" class="on"
-                aria-selected="true" aria-controls="paneRep" id="tabRep">
-          <span class="node" aria-hidden="true"></span>
-          <span class="dn">Repeater</span>
-          <span class="dv" id="devRep"></span>
-        </button>
-        <button type="button" role="tab" data-dev="companion"
-                aria-selected="false" aria-controls="paneCom" id="tabCom">
-          <span class="node" aria-hidden="true"></span>
-          <span class="dn">Companion</span>
-          <span class="dv" id="devCom">not set up yet</span>
-        </button>
-      </div>
-
-      <div class="pane" id="paneRep" role="tabpanel" aria-labelledby="tabRep">
-      <section>
-        <h2>Identity</h2>
-        <p class="sub">What the node calls itself, and whether it says where it is.</p>
-        <div class="row">
-          <div class="k">name</div>
-          <div class="v">
-            
-            <div class="namebox">
-              <span class="np" id="namePrefix">NO-…</span>
-              <input type="text" id="nodeDesc" placeholder="e.g. Årvollåsen" maxlength="40"
-                     aria-label="Node name" aria-describedby="namePrefix nameBytes">
-              <span class="bytes" id="nameBytes"></span>
-            </div>
-            <p class="nmwhy" id="nameHint">The four digits are your <b class="a">postnummer</b>.</p>
-          </div>
-        </div>
-        <div class="row">
-          <div class="k">location</div>
-          <div class="v">
-            <div class="seg" id="locSeg">
-              <button data-loc="none" class="on">none</button>
-              <button data-loc="map">map</button>
-              <button data-loc="gps">gps</button>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="k">owner.info</div>
-          <div class="v">
-            <input type="text" id="ownerInfo" placeholder="e.g. LA1ABC / 6dBi omni @9m / solar+batt / roof" maxlength="90" aria-label="owner.info — contact, antenna, power, mount">
-          </div>
-        </div>
-        <div class="row">
-          <div class="k">guest.password</div>
-          <div class="v">
-            <input type="text" id="guestPw" placeholder="leave blank for none" maxlength="30" aria-label="guest.password">
-          </div>
-        </div>
-        <div class="row">
-          <div class="k">admin password</div>
-          <div class="v">
-            <input type="text" id="adminPw" placeholder="leave blank to keep current" maxlength="30" aria-label="admin password">
-          </div>
-        </div>
-        <details class="explain">
-          <summary>About the name and location</summary>
-          <p id="locNote"></p>
-          <p>Convention: <code>NO-&lt;postnummer&gt; &lt;place&gt;</code> — a node on Skuiåsen in
-             Bærums Verk is <code>NO-1354 Skuiåsen</code>. <b>32 bytes, or 24 if you publish a
-             location.</b> Norwegian letters cost two each. Takes effect after a reboot.</p>
-          <p>A map click now finds your postnummer <b>exactly</b>, from the real area borders — the
-             bar under the map shows it. If you already know it, <b>type it into the position
-             field</b> and the node lands in the middle of that area. Either way is exact; typing is
-             just faster when you know the number.</p>
-          <p></p>
-          <p><b>location</b> sets where the node says it is, three ways. <b>none</b> is the default
-             and publishes nothing. <b>map</b> uses the pin you placed, which is only accurate to
-             about a hundred metres, so treat it as rough. <b>gps</b> lets the node find its own
-             position, and set its clock from the satellites, on a build with GPS. Any published
-             location puts the node on mesh maps and <b>drops the name limit to 24 bytes</b>.</p>
-          <p><b>owner.info</b> is contact, antenna, power, mount. Visible to anyone who queries the node, so no personal info.</p>
-          <p><b>Passwords.</b> Guest lets members query the node; admin lets them reconfigure it. The factory admin password is <code>password</code>, so set your own. Both appear in the config in the clear.</p>
-        </details>
-      </section>
-
-      <section>
-        <h2>Radio</h2>
-        <p class="sub">Advanced radio settings. Defaults are fine.</p>
-        <div class="row">
-          <div class="k">tx power</div>
-          <div class="v">
-            <div class="numf">
-              <input type="number" id="txPow" inputmode="numeric" min="1" max="22" step="1" value="22" placeholder="board default" aria-label="transmit power, dBm"><i>dBm</i>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="k">coding rate</div>
-          <div class="v">
-            <div class="seg" id="crSeg">
-              <button data-cr="5">5 · +25%</button>
-              <button data-cr="6">6 · +50%</button>
-              <button data-cr="7">7 · +75%</button>
-              <button data-cr="8" class="on">8 · +100%</button>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="k">path.hash.mode</div>
-          <div class="v">
-            <div class="seg" id="hashSeg">
-              <button data-h="0">1-byte · 64 hops</button>
-              <button data-h="1" class="on">2-byte · 32 hops</button>
-              <button data-h="2">3-byte · 21 hops</button>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="k">loop.detect</div>
-          <div class="v">
-            <div class="seg" id="loopSeg">
-              <button data-l="minimal" class="on">minimal</button>
-              <button data-l="moderate">moderate</button>
-              <button data-l="strict">strict</button>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="k">multi.acks</div>
-          <div class="v">
-            <div class="seg" id="ackSeg">
-              <button data-ma="off" class="on">off</button>
-              <button data-ma="on">on</button>
-            </div>
-          </div>
-        </div>
-        <details class="explain">
-          <summary>What these radio settings do</summary>
-          <p>Tx power is the LoRa chip's output, defaulted to <b>20 dBm</b>. Boards with an amplifier put out more, so check the manual, and blank the field to keep the board's own default. <b>Staying inside your local legal limit is on you.</b></p>
-          <p>CR is the one radio parameter that may differ between nodes — receivers decode any CR. Higher = more redundancy, better survival through noise, but slower and more channel load. <b>Well-connected repeater: consider 5.</b> Frequency, bandwidth, and SF must match the mesh and are fixed here.</p>
-          <p>1-byte hashes collide quickly as repeater count grows; 2-byte (65 536 values) makes collisions practically impossible at this mesh's scale and makes network debugging far easier. 3-byte only matters at millions of nodes.</p>
-          <p>multi.acks sends a spare copy of each acknowledgement so it survives a collision. Steadier on a weak link, at the cost of a little more airtime. Off unless a link needs it.</p>
-        </details>
-      </section>
-
-      <section>
-        <h2>Node profile</h2>
-        <p class="sub">Sizes the random back-off before repeating a flood. Based on neighbour count with SNR above 0.</p>
-        <div class="row">
-          <div class="k">txdelay<br>rxdelay</div>
-          <div class="v">
-            <div class="profiles" id="profiles">
-              <button class="profile" data-p="mountaintop">
-                <span class="p-n">Mountaintop <span class="p-nb">25+ neighbours</span></span>
-                <span class="p-d">Line of sight over a whole region — a real summit or a mast on one. <b>Only pick this if you genuinely see that far;</b> a tall building in town is Hilltop.</span>
-                <span class="p-slots" aria-hidden="true"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i></span>
-                <span class="p-v">back-off 8/10 slots · <b>txdelay 1.6</b> · direct 0.8 · rx 3</span>
-              </button>
-              <button class="profile" data-p="hilltop">
-                <span class="p-n">Hilltop <span class="p-nb">15–25 neighbours</span></span>
-                <span class="p-d">Clear view over a wide area. Backbone for a district — mast, ridge, high-rise rooftop.</span>
-                <span class="p-slots" aria-hidden="true"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i></span>
-                <span class="p-v">back-off 6/10 slots · <b>txdelay 1.2</b> · direct 0.6 · rx 3</span>
-              </button>
-              <button class="profile on" data-p="neighborhood">
-                <span class="p-n">Neighborhood <span class="p-nb">5–15 neighbours</span></span>
-                <span class="p-d">Typical install covering its own district. Ordinary rooftop in a city or suburb.</span>
-                <span class="p-slots" aria-hidden="true"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-                <span class="p-v">back-off 4/10 slots · <b>txdelay 0.8</b> · direct 0.4 · rx 3</span>
-              </button>
-              <button class="profile" data-p="local">
-                <span class="p-n">Local <span class="p-nb">1–4 neighbours</span></span>
-                <span class="p-d">Sees only a few neighbors. Indoors, ground level, or a low roof.</span>
-                <span class="p-slots" aria-hidden="true"><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-                <span class="p-v">back-off 2/10 slots · <b>txdelay 0.4</b> · direct 0.2 · rx 3</span>
-              </button>
-            </div>
-          </div>
-        </div>
-        <details class="explain">
-          <summary>How the back-off works, and how to choose</summary>
-          <p><b>Several repeaters hear the same flood.</b> Each waits a random moment before
-             repeating it so they do not transmit over each other. The profile scales that window:
-             the more repeaters around you, the wider it needs to be. It costs a little latency and
-             nothing else — it does not change what your node repeats, or who can reach it.</p>
-          <p><code>rxdelay 3</code> is on every profile. It works from the receiving side: a packet
-             that arrived weakly is held back briefly so a repeater that heard it clearly gets there
-             first, and the weak copy is dropped as a duplicate.</p>
-          <p><b>A repeater should not move.</b> One that travels keeps changing which nodes it can
-             hear, so routes through it break as fast as they form. Set one up on the <b>Companion</b> tab instead — you
-             still get the mesh, without adding an unstable relay to it.</p>
-          <p>Run <code>neighbors</code> on the node and count how many have SNR above 0. Reported:
-             16 neighbours with 4 above 0 is sparse; 50 with 19 above 0 is dense.</p>
-          <p><code>txdelay</code> moves in steps of <b>0.2</b> and both delays cap at <b>2</b> —
-             that is firmware behaviour, not opinion. Everything else here is local convention.</p>
-        </details>
-      </section>
-
-
-
-      <section>
-        <h2>Regions</h2>
-        <p class="sub">The region tag on this node's own traffic. Off for now.</p>
-        <div class="row">
-          <div class="k">region default</div>
-          <div class="v">
-            <div class="seg" id="defSeg">
-              <button data-d="no">country</button>
-              <button data-d="landsdel">landsdel</button>
-              <button data-d="fylke">fylke</button>
-              <button data-d="kommune">kommune</button>
-              <button data-d="city">city</button>
-              <button data-d="none" class="on">off</button>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="k">unscoped floods</div>
-          <div class="v">
-            <div class="seg" id="unscSeg">
-              <button data-u="allow" class="on">allow</button>
-              <button data-u="cap">cap</button>
-              <button data-u="deny">deny</button>
-            </div>
-            <div class="numf" id="unscHopsBox" hidden>
-              <input type="number" id="unscHops" inputmode="numeric" min="0" max="64" step="1" value="3" aria-label="unscoped flood hop limit"><i>hops</i>
-            </div>
-            <p class="help" id="unscHelp"></p>
-          </div>
-        </div>
-        <details class="explain">
-          <summary>What default scope changes</summary>
-          <p><b>Tags what this node sends on its own</b> — for a repeater, mostly its adverts. It
-             does not change which regions the node <em>relays</em> for; that is the tree on the
-             left.</p>
-          <p><b>off</b> for now. The mesh is still getting repeaters onto a base set of regions, and
-             until enough of them carry it, scoping a node's own traffic risks it being dropped. So
-             adverts go out unscoped, which every repeater passes. Once the repeaters around you carry
-             regions, set <b>country</b> (<code>no</code>) or narrower to scope what this node sends.
-             Kommune and city are for special-purpose nodes and channels.</p>
-          <p><b>Unscoped floods</b> sets how much untagged traffic this repeater carries: messages
-             from nodes with no region set. <b>allow</b> is today's mesh, where everything floods and
-             nobody is cut off. <b>cap</b> keeps local untagged traffic but stops it crossing the
-             country. <b>deny</b> drops it outright. Leave it on <b>allow</b> until the nodes around
-             you carry regions; turning <code>deny</code> on early isolates any node that has not set
-             regions yet.</p>
-        </details>
-      </section>
-
-      <section>
-        
-        <div class="out-head">
-          <h2>Full node config</h2>
-        </div>
-        
-        <p class="sub">Send it over USB, type the lines into the app's remote admin CLI,
-           or share the whole setup by copying this page's address.</p>
-        
-        <p class="help link-note" id="linkNote" role="status" aria-live="polite" hidden></p>
-        
-        <p class="usb-stat" id="usbStat" role="status" aria-live="polite" hidden></p>
-        
-        <div class="dcard" id="usbCard" hidden>
-          <div class="dcard-h">
-            <span class="usb-dot" id="usbDot"></span>
-            <b>Programming node</b>
-            <span class="chip" id="usbFw" hidden></span>
-            <button class="usb-drop" id="usbDrop">Disconnect</button>
-          </div>
-          
-          <div class="pbar" id="usbProg" hidden><i id="usbBar"></i></div>
-          <div class="dcard-f">
-            <span class="cnt" id="usbCnt"></span>
-            <span class="msg" id="usbMsg"></span>
-          </div>
-          
-          <pre class="term" id="usbTerm" aria-live="polite" tabindex="0"></pre>
-          <div class="termbar">
-            <span class="tprompt" aria-hidden="true">›</span>
-            <input type="text" class="tinput" id="usbInput" spellcheck="false" autocomplete="off"
-                   placeholder="type a command, e.g. region list"
-                   aria-label="Send a command to the node" disabled>
-            <button class="trun" id="usbRun" disabled>Run</button>
-          </div>
-        </div>
-        
-        <div class="row">
-          <div class="k">firmware</div>
-          <div class="v">
-            <div class="seg" id="fwSeg">
-              <button data-f="new" class="on">1.16.0+</button>
-              <button data-f="old">1.15.x</button>
-            </div>
-            
-          </div>
-        </div>
-        
-        <div class="cmdcard">
-          <div class="cmdbar">
-            <span class="cmdcount" id="cmdCount"></span>
-            
-            <button class="usb-console" id="usbConsoleBtn">Console</button>
-            <button class="usb-send" id="usbBtn">Send over USB</button>
-          </div>
-          <pre class="cmd" id="cmdOut"></pre>
-        </div>
-        
-        <details class="explain">
-          <summary>Sending this to a node</summary>
-          <p><b>Over USB.</b> On Chrome, Edge or Opera, <b>Send over USB</b> writes the whole block
-             for you — it reads the firmware version off the node, picks the matching form, sends
-             each line and reboots when every one is accepted. <b>Console</b> opens the same
-             connection without sending anything, so you can type commands yourself.</p>
-          <p><b>Line by line, over the air.</b> In the MeshCore app, open the repeater under
-             <i>Contacts</i> and use its remote admin CLI. There is no paste — send one command per
-             message, in the order they appear above, and check each reply before the next.
-             Remote admin caps a command at <b>160 characters</b>, the same limit the block is
-             built to; a longer line is silently truncated and comes back as a
-             <code>put failed</code> or <code>unknown jump</code> error rather than a complaint
-             about length. Finish with <code>region save</code>, then <code>reboot</code>.</p>
-          <p><b>To another person.</b> This page's address carries the whole setup — both pins,
-             every setting you have changed and both devices — and updates as you work. Copy it
-             from the address bar and send it; opening it sets their page up the same way. It is
-             short enough to fit in a mesh message. <b>It also carries any passwords you have
-             set</b>, so treat it as you would those.</p>
-          <p><b>Which firmware.</b> 1.16.0 added the one-line <code>region def</code> syntax;
-             1.15.x builds the same tree one <code>region put</code> at a time. Both forms create
-             each region flood-allowed, so no per-region <code>allowf</code> is needed.
-             <b>Region commands only exist from 1.15</b> — on older firmware the radio and timing
-             settings still apply, but the region block does not. Sending over USB picks the form
-             for you; setting it by hand, run <code>ver</code> if you are not sure.</p>
-          <p><code>set dutycycle 10</code> is the legal maximum on this sub-band and the preset
-             ships with 50, so it has to be set explicitly. <b>Norway is EEA/EFTA, not EU</b> —
-             nesting <code>no</code> under <code>eu</code> follows the existing convention, not
-             geopolitics. Reboot after radio changes.</p>
-        </details>
-      </section>
-
-      
-      <section>
-        <h2>Contact</h2>
-        <p class="sub">The region convention on this page is a proposal, not a standard — push back on it.</p>
-        <div class="row plain">
-          <div class="k">discord</div>
-          <div class="v">
-            <a href="https://discord.gg/2X4C9J4PR" target="_blank" rel="noopener">Norwegian MeshCore community</a>
-            <p class="help">Where the convention gets discussed and agreed. Best place for anything about the mesh itself.</p>
-          </div>
-        </div>
-        <div class="row plain">
-          <div class="k">email</div>
-          <div class="v">
-            <a href="mailto:meshno.cloning239@passmail.com">meshno.cloning239@passmail.com</a>
-            <p class="help">The site operator, for corrections to this page.</p>
-          </div>
-        </div>
-      </section>
-      </div>
-
-      
-      <div class="pane" id="paneCom" role="tabpanel" aria-labelledby="tabCom" hidden>
-        <section>
-          <h2>Channels</h2>
-          <p class="sub">One channel per region you are in, taken from the map.</p>
-          <div class="row">
-            <div class="k">region scope</div>
-            <div class="v">
-              <div class="seg" id="scopeSeg">
-                <button data-sc="off" class="on">skip</button>
-                <button data-sc="on">include</button>
-              </div>
-              <p class="help" id="scopeNote"></p>
-            </div>
-          </div>
-          
-          <div class="row plain">
-            <div class="k">default region</div>
-            <div class="v">
-              <p class="help">In the app: <b>Experimental Settings → Default Region → <code>no</code></b>.
-                 Direct messages and
-                 unscoped channels go out carrying this tag. Only repeaters that carry
-                 <code>no</code> will repeat them — ask your local operators to add it.</p>
-            </div>
-          </div>
-          <details class="explain">
-            <summary>How these channels work, and who else is on them</summary>
-            <p><b>The name is the channel.</b> A channel starting with <code>#</code> derives its
-               own key from its name, so everyone who types <code>#baerum</code> lands on the same
-               one. There is no key to send anybody. The app accepts only <code>a-z</code>,
-               <code>0-9</code> and <code>-</code>, which is why these are written
-               <code>ostlandet</code> and <code>baerum</code>.</p>
-            <p><b>Which is why they are not private.</b> Anyone who knows the name can work out the
-               key. Treat them as an open calling frequency; for something private, make a channel
-               with a random secret and hand it out yourself.</p>
-          </details>
-        </section>
-
-        
-        <section>
-          <h2>QR codes</h2>
-          <p class="sub">Scan one with the MeshCore app to join. Reading this on the phone you are
-             setting up? Tap <b>Add</b> instead.</p>
-          <div class="chans" id="chans"></div>
-        </section>
-      </div>
-    </div>
   </main>
 
   
