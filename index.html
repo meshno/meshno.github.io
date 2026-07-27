@@ -453,7 +453,15 @@
      cannot aim at a map you cannot see, so the reveal and the placement are two
      separate clicks. Placing by any means (typing a postnummer) clears
      body.unplaced and hides it too. Sits below the floating furniture (z 1 vs 2)
-     so the zoom controls stay usable. */
+     so the zoom controls stay usable.
+
+     IT IS ALSO THE LOADING STATE, and that is why `body.unplaced` is in the
+     static markup rather than only being set by render(). The overlay sits
+     before the <svg> in the document so it exists while the 91 KB of kommune
+     outlines stream in behind it — but that buys nothing if the rule that
+     shows it waits for JS, which does not run until the whole page has
+     arrived. With both, the map's vectors draw behind a frost that was already
+     there instead of in the open. */
   .mapstart {
     position: absolute; inset: 0; z-index: 1; display: none;
     align-items: center; justify-content: center; padding: 24px;
@@ -1374,7 +1382,8 @@
   })();
 </script>
 </head>
-<body>
+
+<body class="unplaced">
 <a class="skip-link" href="#main">Skip to configurator</a>
 
 <div class="wrap">
@@ -1840,6 +1849,15 @@
         <button type="button" id="zPan" aria-pressed="false"
                 title="Drag the map to move it. Off, the page scrolls through it instead.">Pan</button>
       </div>
+      
+      
+        <div class="mapstart" id="mapStart" aria-hidden="true">
+          <div class="mapstart-in">
+            <p class="ms-lead">Place your node to begin</p>
+            <p class="ms-sub">Type your <b>postnummer</b> or <b><code>lat, lon</code></b> in the
+               box above — that pins you exactly. Clicking the map is a rough fallback.</p>
+          </div>
+        </div>
       <svg class="map" id="map" viewBox="4.0 4.0 470.3 550.5" style="--k:1" role="application" aria-label="Map of Norway. Click to place your node, or use the city buttons.">
         
         <g class="terrs" id="terrs" aria-hidden="true">
@@ -2250,14 +2268,6 @@
           <circle class="pin-dot" r="3.5"></circle>
         </g>
       </svg>
-        
-        <div class="mapstart" id="mapStart" aria-hidden="true">
-          <div class="mapstart-in">
-            <p class="ms-lead">Place your node to begin</p>
-            <p class="ms-sub">Type your <b>postnummer</b> or <b><code>lat, lon</code></b> in the
-               box above — that pins you exactly. Clicking the map is a rough fallback.</p>
-          </div>
-        </div>
         
         
         
