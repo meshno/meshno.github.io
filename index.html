@@ -59,7 +59,7 @@
 
      <html data-theme> is ALWAYS resolved to light or dark, never "auto" — the
      head script in page.html sets it before first paint from localStorage or
-     the OS, and app.js keeps it in sync. So the CSS needs exactly one dark
+     the OS, and controls.js keeps it in sync. So the CSS needs exactly one dark
      block and there is nothing here to keep in sync with a media query. Do not
      add a prefers-color-scheme block; it would silently diverge from this one. */
   :root {
@@ -241,7 +241,7 @@
   main {
     display: grid; grid-template-columns: 380px minmax(0, 1fr);
     gap: 40px; align-items: start; padding-bottom: 60px;
-    /* How many columns the layout is in, published for app.js to read. The
+    /* How many columns the layout is in, published for mapview.js to read. The
        map's pan lock starts on in the two-column view and off in the one-
        column one, and this is how it knows which it is WITHOUT a second copy
        of the breakpoint in JS. One source of truth; do not add a matchMedia
@@ -2298,6 +2298,20 @@
 </div>
 
 <script>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
   const CITIES = {"no-kristiansand": "Kristiansand", "no-sandnes": "Sandnes", "no-fredrikstad": "Fredrikstad", "no-skien": "Skien", "no-tonsberg": "Tønsberg", "no-stavanger": "Stavanger", "no-drammen": "Drammen", "no-oslo": "Oslo", "no-bergen": "Bergen", "no-hamar": "Hamar", "no-molde": "Molde", "no-trondheim": "Trondheim", "no-bodo": "Bodø", "no-tromso": "Tromsø", "no-alta": "Alta", "no-kirkenes": "Kirkenes"};
   const FYLKE_NAMES = {"03": "Oslo", "11": "Rogaland", "15": "Møre og Romsdal", "18": "Nordland", "31": "Østfold", "32": "Akershus", "33": "Buskerud", "34": "Innlandet", "39": "Vestfold", "40": "Telemark", "42": "Agder", "46": "Vestland", "50": "Trøndelag", "55": "Troms", "56": "Finnmark"};
   const FYLKE_BB = {"03": [127.7, 467.4, 136.9, 481.0], "11": [9.0, 469.4, 59.5, 531.9], "15": [38.1, 326.7, 116.4, 385.3], "18": [167.8, 96.6, 272.8, 274.2], "31": [127.7, 483.2, 153.0, 519.9], "32": [123.1, 449.1, 156.6, 494.4], "33": [67.3, 423.7, 130.3, 495.1], "34": [74.7, 362.4, 178.8, 481.2], "39": [110.1, 485.3, 126.2, 513.7], "40": [57.5, 460.0, 112.5, 520.2], "42": [34.3, 478.3, 99.8, 547.6], "46": [15.8, 369.6, 90.6, 480.2], "50": [95.6, 264.9, 211.3, 381.0], "55": [234.0, 54.6, 337.9, 134.9], "56": [311.8, 9.0, 451.0, 119.0]};
@@ -2307,6 +2321,9 @@
   
   const AIRPORTS = [{"tag":"aes","name":"Vigra","x":54.7,"y":358.5},{"tag":"alf","name":"Alta","x":343.0,"y":64.1},{"tag":"anx","name":"Andenes","x":242.1,"y":97.8},{"tag":"bdu","name":"Bardufoss","x":277.2,"y":106.9},{"tag":"bgo","name":"Flesland","x":23.0,"y":447.0},{"tag":"bjf","name":"Båtsfjord","x":424.3,"y":24.8},{"tag":"bnn","name":"Brønnøysund","x":175.9,"y":252.5},{"tag":"boo","name":"Bodø","x":214.3,"y":180.2},{"tag":"bvg","name":"Berlevåg","x":413.2,"y":15.9},{"tag":"eve","name":"Evenes","x":250.3,"y":130.6},{"tag":"fde","name":"Førde","x":40.7,"y":404.6},{"tag":"fro","name":"Florø","x":27.9,"y":394.5},{"tag":"haa","name":"Hasvik","x":323.8,"y":45.3},{"tag":"hau","name":"Haugesund","x":16.5,"y":485.1},{"tag":"hft","name":"Hammerfest","x":343.5,"y":35.3},{"tag":"hov","name":"Ørsta-Volda","x":51.7,"y":373.7},{"tag":"hvg","name":"Honningsvåg","x":372.3,"y":17.7},{"tag":"kkn","name":"Kirkenes","x":435.0,"y":58.9},{"tag":"krs","name":"Kjevik","x":70.2,"y":539.9},{"tag":"ksu","name":"Kristiansund","x":89.5,"y":340.7},{"tag":"lkl","name":"Lakselv","x":364.7,"y":57.5},{"tag":"lkn","name":"Leknes","x":203.8,"y":143.8},{"tag":"meh","name":"Mehamn","x":396.2,"y":12.7},{"tag":"mjf","name":"Mosjøen","x":193.4,"y":240.2},{"tag":"mol","name":"Molde","x":77.2,"y":354.2},{"tag":"mqn","name":"Mo i Rana","x":212.3,"y":217.1},{"tag":"ola","name":"Ørland","x":124.5,"y":320.6},{"tag":"osl","name":"Gardermoen","x":140.7,"y":465.7},{"tag":"osy","name":"Namsos","x":162.3,"y":292.1},{"tag":"ret","name":"Røst","x":179.2,"y":168.1},{"tag":"rrs","name":"Røros","x":152.5,"y":369.0},{"tag":"rvk","name":"Rørvik","x":155.8,"y":276.6},{"tag":"sdn","name":"Sandane","x":50.1,"y":388.0},{"tag":"skn","name":"Stokmarknes","x":225.7,"y":126.9},{"tag":"sog","name":"Sogndal","x":66.0,"y":418.1},{"tag":"soj","name":"Sørkjosen","x":310.1,"y":75.1},{"tag":"srp","name":"Stord","x":22.1,"y":467.6},{"tag":"ssj","name":"Sandnessjøen","x":181.3,"y":232.5},{"tag":"svg","name":"Sola","x":22.3,"y":505.4},{"tag":"svj","name":"Svolvær","x":220.0,"y":140.5},{"tag":"tos","name":"Tromsø","x":281.5,"y":81.1},{"tag":"trd","name":"Værnes","x":147.5,"y":332.6},{"tag":"trf","name":"Torp","x":120.1,"y":505.2},{"tag":"vaw","name":"Vardø","x":444.5,"y":30.3},{"tag":"vds","name":"Vadsø","x":431.2,"y":45.6}];
 
+  
+  
+  
   
   
   
@@ -2376,95 +2393,305 @@
   
   
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  let POST_GEO = null;                 
-
-  
-  
-  
-  
-  function exactPost(kommune, x, y) {
-    if (!POST_GEO) return null;
-    const hit = areaAt(POST_GEO[kommune] || [], x, y);
-    return hit ? hit.nr : null;
-  }
-
-  
-  
-  
-  
-  
-  async function loadPostGeo() {
-    let g;
-    try {
-      const r = await fetch('postnr-geo.json');
-      if (!r.ok) return;               
-      g = await r.json();
-    } catch (e) { return; }
-    const [minx, miny, step] = g.t;
-    
-    const arcs = g.arcs.map(da => {
-      let ix = 0, iy = 0; const pts = [];
-      for (const [dx, dy] of da) { ix += dx; iy += dy; pts.push([minx + ix * step, miny + iy * step]); }
-      return pts;
-    });
-    
-    
-    const ring = ids => {
-      const pts = [];
-      for (const id of ids) {
-        const a = id >= 0 ? arcs[id] : arcs[~id].slice().reverse();
-        const s = pts.length && pts[pts.length - 1][0] === a[0][0]
-          && pts[pts.length - 1][1] === a[0][1] ? 1 : 0;
-        for (let i = s; i < a.length; i++) pts.push(a[i]);
-      }
-      return pts;
-    };
-    const byKomm = {};
-    for (const [nr, parts] of g.polys) {
-      const rec = POST_BY_NR[nr];
-      if (!rec) continue;              
-      const komm = rec[2];
-      for (const part of parts) {
-        const rings = part.map(ring);
-        let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-        for (const r of rings) for (const [x, y] of r) {
-          if (x < x0) x0 = x; if (x > x1) x1 = x;
-          if (y < y0) y0 = y; if (y > y1) y1 = y;
-        }
-        (byKomm[komm] = byKomm[komm] || []).push({ nr, rings, bb: [x0, y0, x1, y1] });
-      }
-    }
-    POST_GEO = byKomm;
-    refreshPost();
-  }
-
-  
-  
-  
-  
-  function refreshPost() {
-    otherCtx = { key: null, ctx: null };   
-    if (!state.kommune) return;
-    const d = deriveAt(state.x, state.y, state.postTyped);
-    if (d) applyPin(d, false, false);
-  }
-  
-  
-  
   const LANDSDEL = {"03": "ost", "31": "ost", "32": "ost", "33": "ost", "34": "ost", "39": "ost", "40": "ost", "42": "sor", "11": "vest", "46": "vest", "50": "midt", "15": "midt", "18": "nord", "55": "nord", "56": "nord"};
   const LANDSDEL_NAMES = {"ost": "Østlandet", "sor": "Sørlandet", "vest": "Vestlandet", "midt": "Midt-Norge", "nord": "Nord-Norge"};
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  const PROFILES = {"mountaintop": {"tx": "1.6", "dtx": "0.8", "rx": "3", "label": "mountaintop / regional backbone"}, "hilltop": {"tx": "1.2", "dtx": "0.6", "rx": "3", "label": "hilltop / local backbone"}, "neighborhood": {"tx": "0.8", "dtx": "0.4", "rx": "3", "label": "neighborhood rooftop"}, "local": {"tx": "0.4", "dtx": "0.2", "rx": "3", "label": "local / low elevation"}};
+  const PROFILE_DEFAULT = "neighborhood";
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+
+  const $ = id => document.getElementById(id);
+
+  
+  
+  
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+  
+  
+  const byteLen = s => new TextEncoder().encode(s).length;
+
+  
+  
+  
+  function seg(el, attr, cb) {
+    el.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      el.querySelectorAll('button').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+      cb(b.dataset[attr]);
+    }));
+  }
+
+  
+  
+  function setSeg(id, attr, val) {
+    for (const b of $(id).querySelectorAll('button'))
+      b.classList.toggle('on', b.dataset[attr] === val);
+  }
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  const FIELDS = [
+    { f: 'profile', kind: 'cards', el: 'profiles', attr: 'p',
+      def: PROFILE_DEFAULT, w: 'p',
+      vals: ['local', 'neighborhood', 'hilltop', 'mountaintop'] },
+    { f: 'cr', kind: 'seg', el: 'crSeg', attr: 'cr', def: '8', w: 'c',
+      vals: ['5', '6', '7', '8'] },
+    { f: 'hash', kind: 'seg', el: 'hashSeg', attr: 'h', def: '1', w: 'h',
+      vals: ['0', '1', '2'] },
+    { f: 'loop', kind: 'seg', el: 'loopSeg', attr: 'l', def: 'minimal', w: 'l',
+      vals: ['minimal', 'moderate', 'strict'] },
+    { f: 'regionDefault', kind: 'seg', el: 'defSeg', attr: 'd', def: 'none',
+      w: 'd', vals: ['no', 'landsdel', 'fylke', 'kommune', 'city', 'none'] },
+    { f: 'fw', kind: 'seg', el: 'fwSeg', attr: 'f', def: 'new', w: 'f',
+      vals: ['new', 'old'] },
+    { f: 'locMode', kind: 'seg', el: 'locSeg', attr: 'loc', def: 'none', w: 'L',
+      vals: ['none', 'map', 'gps'] },
+    { f: 'unscoped', kind: 'seg', el: 'unscSeg', attr: 'u', def: 'allow', w: 'u',
+      vals: ['allow', 'cap', 'deny'] },
+
+    
+    
+    { f: 'multiAcks', kind: 'segbool', el: 'ackSeg', attr: 'ma', def: false,
+      w: 'm' },
+
+    
+    
+    
+    { f: 'tx', kind: 'num', el: 'txPow', def: '22', w: 't' },
+    { f: 'unscopedHops', kind: 'num', el: 'unscHops', def: '3', w: 'U' },
+
+    { f: 'owner', kind: 'text', el: 'ownerInfo', def: '', w: 'o' },
+    { f: 'guest', kind: 'text', el: 'guestPw', def: '', w: 'g' },
+    { f: 'admin', kind: 'text', el: 'adminPw', def: '', w: 'a' },
+
+    
+
+    
+    
+    
+    
+    
+    
+    { f: 'desc', kind: 'own', el: 'nodeDesc', def: '', w: 'n', delta: true },
+    
+    
+    
+    
+    { f: 'device', kind: 'own', el: 'devSw', attr: 'dev', def: 'repeater',
+      w: 'v', vals: ['repeater', 'companion'], in: 'ui' },
+    
+    
+    
+    
+    { f: 'chanScope', kind: 'own', el: 'scopeSeg', attr: 'sc', def: false,
+      w: 's' },
+    
+    
+    
+    { f: 'descAuto', kind: 'none', def: true },
+  ];
+
+  
+  
+  
+  const REACH_FIELDS = [
+    { lvl: 'landsdel', el: 'kmLd', w: '1' },
+    { lvl: 'fylke', el: 'kmFy', w: '2' },
+    { lvl: 'kommune', el: 'kmKo', w: '3' },
+    { lvl: 'city', el: 'kmCi', w: '4' },
+  ];
+
+  
+  
+  const bagOf = row => (row.in === 'ui' ? ui : cfg);
+
+  
+  
+  
+  
+  
+  
+  
+  
+
+  
+  
+  
+  
+  
+  
+  
+  const REACH_KM = { landsdel: 50, fylke: 25, kommune: 10, city: 25 };
+  const REACH_MAX = 300;   
+                            
+  
+  
+  
+  
+  const REACH_DEF = { ...REACH_KM, kommune: 0 };
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  
+  
+  
+  
+  
+  
+  const cfg = {};
+  for (const r of FIELDS) if (r.in !== 'ui') cfg[r.f] = r.def;
+
+  
+  
+  
+  
+  
+  
+  
+  const pins = {
+    repeater:  { x: null, y: null, post: null, postTyped: null, auto: true },
+    companion: { x: null, y: null, post: null, postTyped: null, auto: true }
+  };
+
+  
+  
+  
+  const reach = { ...REACH_DEF };
+
+  
+  const ui = {
+    
+    
+    device: FIELDS.find(r => r.f === 'device').def,
+    drilled: null              
+  };
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  let cur = null;
+
+  
+  
+  
+  
+  
+  
+  
+  const Proj = (() => {
 
   
   
@@ -2495,173 +2722,6 @@
     ];
   }
 
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  const PROFILES = {
-    mountaintop:  { tx: '1.6', dtx: '0.8', rx: '3', label: 'mountaintop / regional backbone' },
-    hilltop:      { tx: '1.2', dtx: '0.6', rx: '3', label: 'hilltop / local backbone' },
-    neighborhood: { tx: '0.8', dtx: '0.4', rx: '3', label: 'neighborhood rooftop' },
-    local:        { tx: '0.4', dtx: '0.2', rx: '3', label: 'local / low elevation' }
-  };
-
-  
-  
-  
-  
-  
-  
-  
-  const REACH_KM = { landsdel: 50, fylke: 25, kommune: 10, city: 25 };
-  const REACH_MAX = 300;   
-                            
-  
-  
-  
-  
-  const REACH_DEF = { ...REACH_KM, kommune: 0 };
-
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  const FILL_TIERS = ['t-own', 't-nbf', 't-ownl', 't-nbl'];
-  const TIERS = [...FILL_TIERS, 't-nbk'];
-
-  const state = {
-    x: null, y: null,          
-    fylke: null, kommune: null, kommuneName: null, metro: [],
-    airport: null,             
-
-    
-    
-    
-    post: null,
-    
-    
-    
-    border: { landsdel: [], fylke: [], kommune: [] },
-    
-    
-    reach: { ...REACH_DEF },
-    drilled: null,             
-    
-    
-    
-    device: 'repeater',
-    
-    
-    
-    
-    
-    
-    
-    pins: {
-      repeater:  { x: null, y: null, post: null, postTyped: null, auto: true },
-      companion: { x: null, y: null, post: null, postTyped: null, auto: true }
-    },
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    chanScope: false,
-    fw: 'new', profile: 'neighborhood',
-    
-    
-    
-    
-    
-    cr: '8', hash: '1', loop: 'minimal', regionDefault: 'none',
-    
-    
-    
-    
-    tx: '22', multiAcks: false,
-    admin: '',
-    
-    
-    
-    
-    
-    locMode: 'none',
-    
-    
-    
-    
-    
-    unscoped: 'allow', unscopedHops: '3',
-    
-    
-    
-    postTyped: null,
-    owner: '', guest: '', desc: '',
-    
-    
-    
-    
-    descAuto: true
-  };
-
-  const $ = id => document.getElementById(id);
-
-  
-  
-  function parseAreas(sel) {
-    return [...document.querySelectorAll(sel)].map(el => {
-      const rings = el.getAttribute('d').split('M ').slice(1).map(sub =>
-        sub.replace(/\s*Z\s*$/, '').split(' L ').map(p => p.split(',').map(Number)));
-      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-      for (const r of rings) for (const [x, y] of r) {
-        if (x < x0) x0 = x; if (x > x1) x1 = x;
-        if (y < y0) y0 = y; if (y > y1) y1 = y;
-      }
-      return { nr: el.dataset.nr, name: el.dataset.name, rings, bb: [x0, y0, x1, y1], el };
-    });
-  }
-  const KOMMUNER = parseAreas('#kommuner .kommune');
-  
-  KOMMUNER.forEach(k => {
-    const r = k.rings.reduce((a, b) => (a.length > b.length ? a : b));
-    k.c = r.reduce((a, p) => [a[0] + p[0] / r.length, a[1] + p[1] / r.length], [0, 0]);
-  });
-
-  const CITY_PTS = [...document.querySelectorAll('.city')].map(el => {
-    const m = /translate\(([-\d.]+),([-\d.]+)\)/.exec(el.getAttribute('transform'));
-    return { key: el.dataset.key, x: +m[1], y: +m[2], minz: +el.dataset.minz || 1, el };
-  });
-
   function pointInRing(x, y, pts) {
     let inside = false;
     for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
@@ -2684,52 +2744,10 @@
     return null;
   }
 
-  
-  
-  
-  
-  
-  
-  
-  const OFFSHORE_KM = 12;
-
-  function nearestKommune(x, y) {
-    let best = null;
-    for (const k of KOMMUNER) {
-      for (const r of k.rings) {
-        for (const p of r) {
-          const d = (p[0] - x) ** 2 + (p[1] - y) ** 2;
-          if (!best || d < best.d) best = { k, d };
-        }
-      }
-    }
-    return best;
-  }
-
-  function resolve(x, y) {
-    const k = areaAt(KOMMUNER, x, y);
-    if (k) return k;
-    const n = nearestKommune(x, y);
-    return n && Math.sqrt(n.d) * UNIT_KM <= OFFSHORE_KM ? n.k : null;
-  }
 
   
   const UNIT_KM = 2.72276;
 
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  const borderReach = () =>
-    Math.max(state.reach.landsdel, state.reach.fylke, state.reach.kommune);
 
   
   function segDist2(px, py, ax, ay, bx, by) {
@@ -2739,72 +2757,8 @@
     return ex * ex + ey * ey;
   }
 
-  
-  
-  
-  
-  function areaDistKm(x, y, a, reach) {
-    const b = a.bb;
-    
-    const bx = Math.max(b[0] - x, 0, x - b[2]), by = Math.max(b[1] - y, 0, y - b[3]);
-    const floor = Math.hypot(bx, by) * UNIT_KM;
-    if (floor > reach) return floor;
-    let n = 0;
-    for (const r of a.rings) if (pointInRing(x, y, r)) n++;
-    if (n % 2) return 0;
-    let best = Infinity;
-    for (const r of a.rings)
-      for (let i = 0, j = r.length - 1; i < r.length; j = i++)
-        best = Math.min(best, segDist2(x, y, r[j][0], r[j][1], r[i][0], r[i][1]));
-    return Math.sqrt(best) * UNIT_KM;
-  }
-
-  
-  
-  
-  
-  function borderAt(x, y, homeKomm) {
-    const homeFy = homeKomm.slice(0, 2), homeLd = LANDSDEL[homeFy];
-    const B = state.reach, reach = borderReach();
-    const fy = new Map(), ld = new Map(), km = [];
-    for (const a of KOMMUNER) {
-      const d = areaDistKm(x, y, a, reach);
-      if (d > reach) continue;
-      const f = a.nr.slice(0, 2), l = LANDSDEL[f];
-      if (f !== homeFy && (!fy.has(f) || d < fy.get(f))) fy.set(f, d);
-      if (l !== homeLd && (!ld.has(l) || d < ld.get(l))) ld.set(l, d);
-      if (a.nr !== homeKomm && d <= B.kommune) km.push({ nr: a.nr, name: a.name, d });
-    }
-    const pick = (m, lim) => [...m].filter(([, d]) => d <= lim)
-      .sort((a, b) => a[1] - b[1]).map(([k, d]) => ({ nr: k, d }));
-    return {
-      landsdel: pick(ld, B.landsdel),
-      fylke: pick(fy, B.fylke),
-      kommune: km.sort((a, b) => a.d - b.d)
-    };
-  }
-
-  
-  
-  function metroAt(x, y) {
-    return CITY_PTS
-      .filter(c => METRO_KEYS.includes(c.key))
-      .map(c => ({ key: c.key, d: Math.hypot(c.x - x, c.y - y) * UNIT_KM }))
-      .filter(m => m.d <= state.reach.city)
-      .sort((a, b) => a.d - b.d);
-  }
-
-  
-  
-  
-  function airportAt(x, y) {
-    let best = null;
-    for (const a of AIRPORTS) {
-      const d = Math.hypot(a.x - x, a.y - y) * UNIT_KM;
-      if (!best || d < best.d) best = { tag: a.tag, name: a.name, d };
-    }
-    return best;
-  }
+  return { project, unproject, pointInRing, areaAt, segDist2, UNIT_KM, PROJ };
+  })();
 
   
   
@@ -2818,6 +2772,7 @@
   
   
   
+  const QR = (() => {
   
   
   
@@ -3117,6 +3072,9 @@
     return best.map(r => r.map(Boolean));
   }
 
+  return { matrix: qrMatrix };
+  })();
+
   
   
   
@@ -3126,9 +3084,7 @@
   
   
   
-  
-  
-  
+  const Sha = (() => {
   function sha256hex(str) {
     const K = [
       0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
@@ -3170,7 +3126,349 @@
     }
     return H.map(x => ('00000000' + (x >>> 0).toString(16)).slice(-8)).join('');
   }
-  const channelSecret = name => sha256hex('#' + name).slice(0, 32);
+
+  return { hex: sha256hex };
+  })();
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  const Geo = (() => {
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  let POST_GEO = null;                 
+
+  
+  
+  
+  
+  function exactPost(kommune, x, y) {
+    if (!POST_GEO) return null;
+    const hit = Proj.areaAt(POST_GEO[kommune] || [], x, y);
+    return hit ? hit.nr : null;
+  }
+
+  
+  
+  
+  
+  
+  async function loadPostGeo(onReady) {
+    let g;
+    try {
+      const r = await fetch('postnr-geo.json');
+      if (!r.ok) return;               
+      g = await r.json();
+    } catch (e) { return; }
+    const [minx, miny, step] = g.t;
+    
+    const arcs = g.arcs.map(da => {
+      let ix = 0, iy = 0; const pts = [];
+      for (const [dx, dy] of da) { ix += dx; iy += dy; pts.push([minx + ix * step, miny + iy * step]); }
+      return pts;
+    });
+    
+    
+    const ring = ids => {
+      const pts = [];
+      for (const id of ids) {
+        const a = id >= 0 ? arcs[id] : arcs[~id].slice().reverse();
+        const s = pts.length && pts[pts.length - 1][0] === a[0][0]
+          && pts[pts.length - 1][1] === a[0][1] ? 1 : 0;
+        for (let i = s; i < a.length; i++) pts.push(a[i]);
+      }
+      return pts;
+    };
+    const byKomm = {};
+    for (const [nr, parts] of g.polys) {
+      const rec = POST_BY_NR[nr];
+      if (!rec) continue;              
+      const komm = rec[2];
+      for (const part of parts) {
+        const rings = part.map(ring);
+        let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+        for (const r of rings) for (const [x, y] of r) {
+          if (x < x0) x0 = x; if (x > x1) x1 = x;
+          if (y < y0) y0 = y; if (y > y1) y1 = y;
+        }
+        (byKomm[komm] = byKomm[komm] || []).push({ nr, rings, bb: [x0, y0, x1, y1] });
+      }
+    }
+    POST_GEO = byKomm;
+    
+    
+    
+    if (onReady) onReady();
+  }
+
+  
+  
+  function parseAreas(sel) {
+    return [...document.querySelectorAll(sel)].map(el => {
+      const rings = el.getAttribute('d').split('M ').slice(1).map(sub =>
+        sub.replace(/\s*Z\s*$/, '').split(' L ').map(p => p.split(',').map(Number)));
+      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+      for (const r of rings) for (const [x, y] of r) {
+        if (x < x0) x0 = x; if (x > x1) x1 = x;
+        if (y < y0) y0 = y; if (y > y1) y1 = y;
+      }
+      return { nr: el.dataset.nr, name: el.dataset.name, rings, bb: [x0, y0, x1, y1], el };
+    });
+  }
+  const KOMMUNER = parseAreas('#kommuner .kommune');
+  
+  KOMMUNER.forEach(k => {
+    const r = k.rings.reduce((a, b) => (a.length > b.length ? a : b));
+    k.c = r.reduce((a, p) => [a[0] + p[0] / r.length, a[1] + p[1] / r.length], [0, 0]);
+  });
+
+  const CITY_PTS = [...document.querySelectorAll('.city')].map(el => {
+    const m = /translate\(([-\d.]+),([-\d.]+)\)/.exec(el.getAttribute('transform'));
+    return { key: el.dataset.key, x: +m[1], y: +m[2], minz: +el.dataset.minz || 1, el };
+  });
+
+
+  
+  
+  
+  
+  
+  
+  
+  const OFFSHORE_KM = 12;
+
+  function nearestKommune(x, y) {
+    let best = null;
+    for (const k of KOMMUNER) {
+      for (const r of k.rings) {
+        for (const p of r) {
+          const d = (p[0] - x) ** 2 + (p[1] - y) ** 2;
+          if (!best || d < best.d) best = { k, d };
+        }
+      }
+    }
+    return best;
+  }
+
+  function resolve(x, y) {
+    const k = Proj.areaAt(KOMMUNER, x, y);
+    if (k) return k;
+    const n = nearestKommune(x, y);
+    return n && Math.sqrt(n.d) * Proj.UNIT_KM <= OFFSHORE_KM ? n.k : null;
+  }
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  const borderReach = () =>
+    Math.max(reach.landsdel, reach.fylke, reach.kommune);
+
+
+  
+  
+  
+  
+  function areaDistKm(x, y, a, reach) {
+    const b = a.bb;
+    
+    const bx = Math.max(b[0] - x, 0, x - b[2]), by = Math.max(b[1] - y, 0, y - b[3]);
+    const floor = Math.hypot(bx, by) * Proj.UNIT_KM;
+    if (floor > reach) return floor;
+    let n = 0;
+    for (const r of a.rings) if (Proj.pointInRing(x, y, r)) n++;
+    if (n % 2) return 0;
+    let best = Infinity;
+    for (const r of a.rings)
+      for (let i = 0, j = r.length - 1; i < r.length; j = i++)
+        best = Math.min(best, Proj.segDist2(x, y, r[j][0], r[j][1], r[i][0], r[i][1]));
+    return Math.sqrt(best) * Proj.UNIT_KM;
+  }
+
+  
+  
+  
+  
+  function borderAt(x, y, homeKomm) {
+    const homeFy = homeKomm.slice(0, 2), homeLd = LANDSDEL[homeFy];
+    
+    
+    
+    const B = reach, lim = borderReach();
+    const fy = new Map(), ld = new Map(), km = [];
+    for (const a of KOMMUNER) {
+      const d = areaDistKm(x, y, a, lim);
+      if (d > lim) continue;
+      const f = a.nr.slice(0, 2), l = LANDSDEL[f];
+      if (f !== homeFy && (!fy.has(f) || d < fy.get(f))) fy.set(f, d);
+      if (l !== homeLd && (!ld.has(l) || d < ld.get(l))) ld.set(l, d);
+      if (a.nr !== homeKomm && d <= B.kommune) km.push({ nr: a.nr, name: a.name, d });
+    }
+    const pick = (m, lim) => [...m].filter(([, d]) => d <= lim)
+      .sort((a, b) => a[1] - b[1]).map(([k, d]) => ({ nr: k, d }));
+    return {
+      landsdel: pick(ld, B.landsdel),
+      fylke: pick(fy, B.fylke),
+      kommune: km.sort((a, b) => a.d - b.d)
+    };
+  }
+
+  
+  
+  function metroAt(x, y) {
+    return CITY_PTS
+      .filter(c => METRO_KEYS.includes(c.key))
+      .map(c => ({ key: c.key, d: Math.hypot(c.x - x, c.y - y) * Proj.UNIT_KM }))
+      .filter(m => m.d <= reach.city)
+      .sort((a, b) => a.d - b.d);
+  }
+
+  
+  
+  
+  function airportAt(x, y) {
+    let best = null;
+    for (const a of AIRPORTS) {
+      const d = Math.hypot(a.x - x, a.y - y) * Proj.UNIT_KM;
+      if (!best || d < best.d) best = { tag: a.tag, name: a.name, d };
+    }
+    return best;
+  }
+
+  return { KOMMUNER, CITY_PTS, resolve, borderAt, metroAt, airportAt, exactPost, loadPostGeo, OFFSHORE_KM };
+  })();
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  const Ctx = (() => {
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  const OTHER = { repeater: 'companion', companion: 'repeater' };
+  
+  
+  
+  const livePin = dev => pins[dev].auto ? pins[OTHER[dev]] : pins[dev];
+
+  
+  
+  
+  function deriveAt(x, y, pn) {
+    const k = Geo.resolve(x, y);
+    if (!k) return null;
+    const near = postNear(k.nr, x, y);
+    return {
+      x, y,
+      kommune: k.nr, fylke: k.nr.slice(0, 2), kommuneName: k.name,
+      
+      
+      post: pn && POST_BY_NR[pn] ? pn
+        : (Geo.exactPost(k.nr, x, y) || (near[0] ? near[0][0] : null)),
+      
+      
+      
+      postTyped: pn && POST_BY_NR[pn] ? pn : null,
+      metro: Geo.metroAt(x, y),
+      airport: Geo.airportAt(x, y),
+      border: Geo.borderAt(x, y, k.nr)
+    };
+  }
+
+  
+  
+  
+  
+  let otherCtx = { key: null, ctx: null };
+  function ctxFor(dev) {
+    if (dev === ui.device) return cur;
+    const p = livePin(dev);
+    if (p.x === null) return null;
+    const r = reach;
+    const key = `${p.x},${p.y},${p.postTyped},${r.landsdel},${r.fylke},${r.kommune},${r.city}`;
+    if (otherCtx.key !== key) otherCtx = { key, ctx: deriveAt(p.x, p.y, p.postTyped) };
+    return otherCtx.ctx;
+  }
+
+  
+  
+  
+  
+  
+  const invalidate = () => { otherCtx = { key: null, ctx: null }; };
+
+  return { deriveAt, livePin, ctxFor, invalidate, OTHER };
+  })();
+
+  
+  
+  
+  
+  
+  
+  
+  
+  const Regions = (() => {
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  const channelSecret = name => Sha.hex('#' + name).slice(0, 32);
 
   
   
@@ -3231,92 +3529,7 @@
     return out.filter(c => best.get(c.name) === c);
   }
 
-  const OTHER = { repeater: 'companion', companion: 'repeater' };
-  
-  
-  
-  const livePin = dev => state.pins[dev].auto ? state.pins[OTHER[dev]] : state.pins[dev];
 
-  
-  
-  
-  function deriveAt(x, y, pn) {
-    const k = resolve(x, y);
-    if (!k) return null;
-    const near = postNear(k.nr, x, y);
-    return {
-      x, y,
-      kommune: k.nr, fylke: k.nr.slice(0, 2), kommuneName: k.name,
-      
-      
-      post: pn && POST_BY_NR[pn] ? pn
-        : (exactPost(k.nr, x, y) || (near[0] ? near[0][0] : null)),
-      metro: metroAt(x, y),
-      airport: airportAt(x, y),
-      border: borderAt(x, y, k.nr)
-    };
-  }
-
-  
-  const liveCtx = () => state.kommune ? {
-    x: state.x, y: state.y,
-    kommune: state.kommune, fylke: state.fylke, kommuneName: state.kommuneName,
-    post: state.post, metro: state.metro, airport: state.airport,
-    border: state.border
-  } : null;
-
-  
-  
-  
-  
-  let otherCtx = { key: null, ctx: null };
-  function ctxFor(dev) {
-    if (dev === state.device) return liveCtx();
-    const p = livePin(dev);
-    if (p.x === null) return null;
-    const r = state.reach;
-    const key = `${p.x},${p.y},${p.postTyped},${r.landsdel},${r.fylke},${r.kommune},${r.city}`;
-    if (otherCtx.key !== key) otherCtx = { key, ctx: deriveAt(p.x, p.y, p.postTyped) };
-    return otherCtx.ctx;
-  }
-
-  
-  
-  function applyPin(d, drill, reframe = true) {
-    const { x, y } = d;
-    state.x = x; state.y = y;
-    state.fylke = d.fylke;
-    state.kommune = d.kommune;
-    state.kommuneName = d.kommuneName;
-    state.post = d.post;
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    if (state.device === 'repeater' && state.descAuto) {
-      const p = POST_BY_NR[state.post];
-      if (p) state.desc = p[1];
-    }
-    state.metro = d.metro;
-    state.airport = d.airport;
-    state.border = d.border;
-    const entered = drill && state.fylke !== state.drilled;
-    if (entered) state.drilled = state.fylke;
-    render();
-    
-    
-    
-    
-    if (entered && reframe) zoomToFylke(state.fylke);
-  }
 
   
   
@@ -3330,215 +3543,8 @@
   
   const channelUrl = c => `meshcore://channel/add?name=${encodeURIComponent('#' + c.name)}`
                         + `&secret=${channelSecret(c.name)}`
-                        + (state.chanScope ? `&region_scope=${encodeURIComponent(c.scope)}` : '');
+                        + (cfg.chanScope ? `&region_scope=${encodeURIComponent(c.scope)}` : '');
 
-  
-  
-  function qrSvg(text) {
-    const m = qrMatrix(text), n = m.length;
-    let d = '';
-    for (let r = 0; r < n; r++) {
-      let c = 0;
-      while (c < n) {
-        if (!m[r][c]) { c++; continue; }
-        let w = 0;
-        while (c + w < n && m[r][c + w]) w++;
-        d += `M${c} ${r}h${w}v1h-${w}z`;
-        c += w;
-      }
-    }
-    
-    
-    return `<svg viewBox="-2 -2 ${n + 4} ${n + 4}" shape-rendering="crispEdges" `
-         + `aria-hidden="true"><path d="${d}"/></svg>`;
-  }
-
-  function renderChannels() {
-    const box = $('chans');
-    
-    
-    const list = channels(liveCtx());
-    if (!list.length) {
-      box.innerHTML = '<p class="empty">Place the node on the map and the channels for '
-        + 'that area appear here.</p>';
-      return;
-    }
-    const row = (c, i) => `<div class="chan">
-        <button type="button" class="cqr" data-i="${i}"
-                aria-label="Enlarge the QR code for #${esc(c.name)}">
-          <span class="qr">${qrSvg(channelUrl(c))}</span>
-        </button>
-        <div class="cm">
-          <span class="cn">#${esc(c.name)}</span>
-          <span class="ca"><b>${esc(c.kind)}</b> · ${esc(c.an)}</span>
-        </div>
-        <a class="cadd" href="${esc(channelUrl(c))}">Add &rarr;</a>
-      </div>`;
-    
-    
-    const home = list.map((c, i) => [c, i]).filter(([c]) => !c.nb);
-    const near = list.map((c, i) => [c, i]).filter(([c]) => c.nb);
-    let html = home.map(([c, i]) => row(c, i)).join('');
-    if (near.length) {
-      html += '<div class="chgroup"><span>Neighbouring regions</span>'
-            + '<p>Close enough that your node relays for them. Worth joining if you want '
-            + 'their traffic too — skip them if you only care about where you are.</p></div>'
-            + near.map(([c, i]) => row(c, i)).join('');
-    }
-    box.innerHTML = html;
-  }
-
-  
-  
-  
-  
-  let qrShown = null;
-  function showQr(c) {
-    qrShown = c;
-    const url = channelUrl(c);
-    $('qrBig').innerHTML = qrSvg(url);
-    $('qrName').textContent = '#' + c.name;
-    $('qrKind').textContent = state.chanScope
-      ? `${c.kind} · scoped to ${c.scope}`
-      : `${c.kind} · unscoped`;
-    $('qrSecret').textContent = channelSecret(c.name);
-    $('qrGo').href = url;
-    $('qrDlg').querySelectorAll('#qrScope button').forEach(x =>
-      x.classList.toggle('on', (x.dataset.sc === 'on') === state.chanScope));
-  }
-  $('chans').addEventListener('click', e => {
-    const b = e.target.closest('.cqr');
-    if (!b) return;
-    showQr(channels(liveCtx())[+b.dataset.i]);
-    $('qrDlg').showModal();
-  });
-  
-  
-  function setScope(on) {
-    state.chanScope = on;
-    $('scopeSeg').querySelectorAll('button').forEach(x =>
-      x.classList.toggle('on', (x.dataset.sc === 'on') === on));
-    
-    
-    
-    $('scopeNote').innerHTML = on
-      ? 'Each channel carries its region, so only repeaters that carry it pass those messages on. '
-      + 'Local traffic stays local instead of spending everyone’s airtime. <b>Most repeaters don’t '
-      + 'carry regions yet, so check what is around you.</b> Unset region scope in the app if '
-      + 'messages stop getting through.'
-      : 'No region tag, so a message travels as far as the mesh carries it. <b>Skipped by default '
-      + 'while most repeaters don’t carry regions</b> — turn it on once the ones around you do.';
-    render();
-    if (qrShown) showQr(qrShown);
-  }
-  seg($('scopeSeg'), 'sc', v => setScope(v === 'on'));
-  seg($('qrScope'), 'sc', v => setScope(v === 'on'));
-
-  $('qrClose').addEventListener('click', () => $('qrDlg').close());
-  
-  
-  $('qrDlg').addEventListener('click', e => { if (e.target === $('qrDlg')) $('qrDlg').close(); });
-
-  
-  
-  
-  function renderMapKey(present) {
-    const key = $('mapKey');
-    if (!present.has('sel')) { key.setAttribute('hidden', ''); return; }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    const LEVELS = [
-      ['kommune',  'sel',  'nbk'],
-      ['fylke',    'own',  'nbf'],
-      ['landsdel', 'ownl', 'nbl'],
-    ];
-    const cols = LEVELS.filter(([, own, nb]) => present.has(own) || present.has(nb));
-    const near = cols.some(([, , nb]) => present.has(nb));
-    const cell = t => present.has(t) ? `<i class="mk-sw mk-${t}"></i>` : '<i class="mk-no"></i>';
-    let h = '<span></span>' + cols.map(([n]) => `<span class="mk-c">${n}</span>`).join('');
-    h += '<span class="mk-h">own</span>' + cols.map(([, own]) => cell(own)).join('');
-    if (near) {
-      h += '<span class="mk-h">neighbour</span>'
-         + cols.map(([, , nb]) => cell(nb)).join('');
-    }
-    key.style.setProperty('--mk-cols', cols.length);
-    key.innerHTML = h;
-    key.removeAttribute('hidden');
-  }
-
-  
-  
-  function renderPinNote() {
-    const note = $('pinNote');
-    const dev = state.device, oth = OTHER[dev];
-    const mine = state.pins[dev], theirs = state.pins[oth];
-    let html = '';
-    if (mine.auto && theirs.x !== null) {
-      html = `Following the ${oth}'s position. Move the pin to give the `
-           + `${dev} its own.`;
-    } else if (!mine.auto && theirs.auto && theirs.x === null) {
-      html = `The ${oth} starts from this position until you move its pin.`;
-    } else if (!mine.auto && !theirs.auto) {
-      html = `Set separately from the ${oth}. `
-           + `<button type="button">follow it again</button>`;
-    }
-    note.innerHTML = html;
-    note.toggleAttribute('hidden', !html);
-  }
-
-  
-  
-  function clearPlacement() {
-    state.kommune = null; state.kommuneName = ''; state.fylke = null;
-    state.post = null; state.postTyped = null; state.metro = []; state.airport = null;
-    state.border = { landsdel: [], fylke: [], kommune: [] };
-  }
-
-  
-  
-  function place(x, y, drill = true, pn = null, reframe = true) {
-    const d = deriveAt(x, y, pn);
-    if (!d) return false;              
-    const p = state.pins[state.device];
-    
-    p.x = x; p.y = y; p.auto = false;
-    
-    state.postTyped = pn && POST_BY_NR[pn] ? pn : null;
-    applyPin(d, drill, reframe);
-    p.post = state.post; p.postTyped = state.postTyped;
-    
-    otherCtx = { key: null, ctx: null };
-    return true;
-  }
-
-  
-  
-  
-  
-  
-  
-  
-  
-  function showPinFor(dev, jump = false) {
-    const p = livePin(dev);
-    
-    
-    const d = p.x === null ? null : deriveAt(p.x, p.y, p.postTyped);
-    state.postTyped = p.postTyped;
-    otherCtx = { key: null, ctx: null };   
-    if (!d) { clearPlacement(); render(); return; }
-    applyPin(d, jump);
-    if (jump) ensureVisible(d.x, d.y);
-  }
 
   
   
@@ -3557,35 +3563,48 @@
     ];
   }
 
+  return { tags, channels, chanName, channelSecret, channelUrl };
+  })();
+
+  
+  
+  
+  
+  
+  
+  
+  
+  const Cfg = (() => {
+
   function buildLines() {
-    const p = PROFILES[state.profile];
+    const p = PROFILES[cfg.profile];
     
     
     
     
     
     
-    const d = ctxFor('repeater');
+    const d = Ctx.ctxFor('repeater');
     const placed = !!d;
     const L = [];
     L.push(['c', '# radio — EU/UK Narrow, CR per node']);
-    L.push(['k', 'set radio', `869.618,62.5,8,${state.cr}`]);
+    L.push(['k', 'set radio', `869.618,62.5,8,${cfg.cr}`]);
     L.push(['k', 'set dutycycle', '10']);
     
     
     
-    const txv = parseInt(state.tx, 10);
+    const txv = parseInt(cfg.tx, 10);
     if (Number.isFinite(txv) && txv >= 1 && txv <= 22) L.push(['k', 'set tx', String(txv)]);
     L.push(['c', `# timing profile — ${p.label}`]);
     L.push(['k', 'set txdelay', p.tx]);
     L.push(['k', 'set direct.txdelay', p.dtx]);
     L.push(['k', 'set rxdelay', p.rx]);
     L.push(['c', '# routing hygiene']);
-    L.push(['k', 'set path.hash.mode', state.hash]);
-    L.push(['k', 'set loop.detect', state.loop]);
+    L.push(['k', 'set path.hash.mode', cfg.hash]);
+    L.push(['k', 'set loop.detect', cfg.loop]);
     
     
-    if (state.multiAcks) L.push(['k', 'set multi.acks', '1']);
+    if (cfg.multiAcks) L.push(['k', 'set multi.acks', '1']);
     L.push(['c', '# adverts']);
     L.push(['k', 'set advert.interval', '240']);
     L.push(['k', 'set flood.advert.interval', '72']);
@@ -3597,11 +3616,11 @@
     L.push(['c', '# identity']);
     
     
-    if (placed && state.desc.trim()) L.push(['k', 'set name', nodeName(d)]);
+    if (placed && cfg.desc.trim()) L.push(['k', 'set name', nodeName(d)]);
     
     
-    if (placed && state.locMode === 'map') {
-      const ll = unproject(d.x, d.y);
+    if (placed && cfg.locMode === 'map') {
+      const ll = Proj.unproject(d.x, d.y);
       L.push(['k', 'set lat', ll[0].toFixed(5)]);
       L.push(['k', 'set lon', ll[1].toFixed(5)]);
     }
@@ -3609,15 +3628,15 @@
     
     
     
-    if (state.locMode === 'gps') {
+    if (cfg.locMode === 'gps') {
       L.push(['k', 'gps', 'on']);
       L.push(['k', 'gps advert', 'share']);
     }
-    if (state.guest.trim()) L.push(['k', 'set guest.password', state.guest.trim()]);
-    if (state.owner.trim()) L.push(['k', 'set owner.info', state.owner.trim()]);
+    if (cfg.guest.trim()) L.push(['k', 'set guest.password', cfg.guest.trim()]);
+    if (cfg.owner.trim()) L.push(['k', 'set owner.info', cfg.owner.trim()]);
     
     
-    if (state.admin.trim()) L.push(['k', 'password', state.admin.trim()]);
+    if (cfg.admin.trim()) L.push(['k', 'password', cfg.admin.trim()]);
     if (!placed) {
       L.push(['c', '# regions — none. Place the node on the map to scope its floods.']);
       for (const w of rangeWarnings(L)) L.unshift(['c', w]);
@@ -3628,19 +3647,19 @@
     
     
     
-    if (state.unscoped === 'deny') {
+    if (cfg.unscoped === 'deny') {
       L.push(['c', '# denyf * DROPS unscoped floods — isolates nodes without regions']);
       L.push(['k', 'region denyf', '*']);
     } else {
       L.push(['c', '# allowf * is the default, restated in case this node had it denied']);
       L.push(['k', 'region allowf', '*']);
-      if (state.unscoped === 'cap') {
-        const h = parseInt(state.unscopedHops, 10);
+      if (cfg.unscoped === 'cap') {
+        const h = parseInt(cfg.unscopedHops, 10);
         if (Number.isFinite(h) && h >= 0 && h <= 64)
           L.push(['k', 'set flood.max.unscoped', String(h)]);
       }
     }
-    const t = tags(d);
+    const t = Regions.tags(d);
     const chain = t.map((x, i) => (i === t.length - 1 ? x : `${x}|no`)).join(' ');
     const defLine = `region def eu|* europe|eu no ${chain}`;
     
@@ -3648,8 +3667,8 @@
     
     
     
-    const overflow = state.fw === 'new' && defLine.length > 160;
-    if (state.fw === 'new' && !overflow) {
+    const overflow = cfg.fw === 'new' && defLine.length > 160;
+    if (cfg.fw === 'new' && !overflow) {
       
       
       L.push(['k', 'region def', `eu|* europe|eu no ${chain}`]);
@@ -3664,14 +3683,14 @@
       L.push(['k', 'region put', 'no eu']);
       for (const x of t) L.push(['k', 'region put', `${x} no`]);
     }
-    if (state.regionDefault === 'no') L.push(['k', 'region default', 'no']);
+    if (cfg.regionDefault === 'no') L.push(['k', 'region default', 'no']);
     
     
-    if (state.regionDefault === 'landsdel')
+    if (cfg.regionDefault === 'landsdel')
       L.push(['k', 'region default', 'no-' + LANDSDEL[d.fylke]]);
-    if (state.regionDefault === 'fylke') L.push(['k', 'region default', 'no-' + d.fylke]);
-    if (state.regionDefault === 'kommune') L.push(['k', 'region default', 'no-' + d.kommune]);
-    if (state.regionDefault === 'city' && d.metro.length)
+    if (cfg.regionDefault === 'fylke') L.push(['k', 'region default', 'no-' + d.fylke]);
+    if (cfg.regionDefault === 'kommune') L.push(['k', 'region default', 'no-' + d.kommune]);
+    if (cfg.regionDefault === 'city' && d.metro.length)
       L.push(['k', 'region default', d.metro[0].key]);   
     L.push(['k', 'region save', '']);
     for (const w of rangeWarnings(L)) L.unshift(['c', w]);
@@ -3696,25 +3715,12 @@
     return out;
   }
 
-  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
   const renderLines = (L = buildLines()) => L.map(([ty, cmd, arg]) =>
     ty === 'c' ? `<span class="c">${esc(cmd)}</span>`
                : `<span class="k">${esc(cmd)}</span>${arg ? ' ' + esc(arg) : ''}`
   ).join('\n');
 
-  
-  
-  
-  
-  
-  
-  function paintBlock() {
-    const L = buildLines();
-    $('cmdOut').innerHTML = renderLines(L);
-    const n = L.filter(([ty]) => ty === 'k').length;
-    $('cmdCount').textContent = `${n} command${n === 1 ? '' : 's'}`;
-  }
 
   
   
@@ -3727,378 +3733,31 @@
   
   
   
-  const nodeName = (ctx = liveCtx()) => {
+  const nodeName = (ctx = Ctx.ctxFor(ui.device)) => {
     const base = 'NO-' + (ctx.post || ctx.kommune);
-    const desc = state.desc.trim().replace(/\s+/g, ' ');
+    const desc = cfg.desc.trim().replace(/\s+/g, ' ');
     return desc ? `${base} ${desc}` : base;
   };
-  const byteLen = s => new TextEncoder().encode(s).length;
 
-  
-  
-  
-  let refreshShare = null;
-
-  function render() {
-    
-    
-    
-    if (refreshShare) refreshShare();
-    
-    
-    
-    const placed = !!state.kommune;
-    document.body.classList.toggle('unplaced', !placed);
-    
-    
-    
-    if (placed) $('mapStart').classList.add('seen');
-    
-    
-    
-    
-    
-    
-    
-    
-    const rd = ctxFor('repeater'), cd = ctxFor('companion');
-    
-    
-    const isRep = state.device === 'repeater';
-    $('mapHead').textContent = isRep ? 'Region' : 'Home';
-    $('mapSub').textContent = isRep
-      ? 'Where the node stands decides which regions it relays for.'
-      : 'Roughly where you are. Decides which channels you are offered.';
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    const other = state.device === 'repeater' ? cd : rd;
-    ghostAt = placed && other ? [other.x, other.y] : null;
-    renderGhost();
-    $('devRep').textContent = !rd ? 'no node placed'
-      : state.desc.trim() ? nodeName(rd) : 'not named yet';
-    const nch = cd ? channels(cd).length : 0;
-    $('devCom').textContent = nch ? `${nch} channels` : 'no channels yet';
-    renderPinNote();
-    renderChannels();
-    
-    
-    
-    $('unscHopsBox').hidden = state.unscoped !== 'cap';
-    $('unscHelp').innerHTML =
-      state.unscoped === 'cap'
-        ? `Local untagged traffic still spreads, but only ${state.unscopedHops || '?'} hops. The neighbourhood, not the country.`
-      : state.unscoped === 'deny'
-        ? '<b class="bad">Drops every untagged packet.</b> Use it only after the mesh around you carries regions, or it isolates nodes that have not set regions.'
-        : 'Untagged traffic floods normally. Nothing is cut off.';
-    
-    
-    
-    
-    if ($('nodeDesc').value !== state.desc) $('nodeDesc').value = state.desc;
-    
-    $('locSeg').querySelector('[data-loc="map"]').disabled = !placed;
-    $('nodeDesc').disabled = !placed;
-    if (!placed) {
-      
-      
-      
-      if (state.locMode === 'map') state.locMode = 'none';
-      $('locSeg').querySelectorAll('button').forEach(x =>
-        x.classList.toggle('on', x.dataset.loc === state.locMode));
-      $('posRead').value = '';
-      $('pin').setAttribute('hidden', '');
-      renderMapKey(new Set());
-      
-      $('namePrefix').textContent = 'NO-…';
-      
-      
-      
-      $('nmBars').hidden = true;
-      $('nmTag').textContent = '';
-      $('nmFy').textContent = '';
-      $('nmKm').textContent = '';
-      $('nodeDesc').placeholder = 'e.g. Årvollåsen';
-      $('mtPost').textContent = '';
-      $('nameBytes').textContent = '';
-      $('nameBytes').className = 'bytes';
-      $('nameHint').className = 'nmwhy';
-      $('nameHint').textContent = 'Place the node on the map to name it.';
-      $('locNote').textContent = 'Place the node on the map to publish a location.';
-      $('kommName').textContent = '';
-      $('fylkeLabel').textContent = '';
-      
-      
-      $('kommTag').textContent = '';
-      $('scope').innerHTML =
-        '<span class="empty">Place the node on the map and its regions appear here. '
-        + 'Everything else configures without one.</span>';
-      paintBlock();
-      
-      $('selKomm').setAttribute('d', '');
-      $('nbkLine').setAttribute('d', '');
-      
-      
-      
-      
-      
-      KOMMUNER.forEach(k => k.el.classList.remove(...TIERS));
-      
-      
-      $('coordNote').textContent = '';
-      $('coordNote').className = 'help';
-      CITY_PTS.forEach(c => c.el.classList.remove('on'));
-      document.querySelectorAll('#profiles .profile').forEach(el =>
-        el.classList.toggle('on', el.dataset.p === state.profile));
-      applyView();
-      return;
-    }
-
-    const fy = 'no-' + state.fylke, km = 'no-' + state.kommune;
-    $('kommName').textContent = state.kommuneName;
-    $('fylkeLabel').textContent = FYLKE_NAMES[state.fylke];
-    $('kommTag').textContent = km;
-    
-    
-    const ll = unproject(state.x, state.y);
-    const box = $('posRead');
-    
-    if (document.activeElement !== box) {
-      box.value = `${ll[0].toFixed(5)}, ${ll[1].toFixed(5)}`;
-      box.classList.remove('bad');
-    }
-
-
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    const ann = {};
-    const dist = d => `${Math.round(d)} km`;
-    ann['no-' + LANDSDEL[state.fylke]] =
-      `own landsdel — ${esc(LANDSDEL_NAMES[LANDSDEL[state.fylke]])}`;
-    for (const x of state.border.landsdel)
-      ann['no-' + x.nr] = `neighbour — ${esc(LANDSDEL_NAMES[x.nr])} ${dist(x.d)}`;
-    for (const x of state.border.fylke)
-      ann['no-' + x.nr] = `neighbour — ${esc(FYLKE_NAMES[x.nr])} ${dist(x.d)}`;
-    for (const x of state.border.kommune)
-      ann['no-' + x.nr] = `neighbour — ${esc(x.name)} ${dist(x.d)}`;
-    ann['no-' + state.fylke] =
-      `own <b>fylkesnummer</b> — ${esc(FYLKE_NAMES[state.fylke])}`;
-    ann['no-' + state.kommune] =
-      `own <b>kommunenummer</b> — ${esc(state.kommuneName)}`;
-    
-    
-    for (const m of state.metro)
-      ann[m.key] = `city — ${esc(CITIES[m.key])} ${dist(m.d)}`;
-    
-    
-    if (state.airport)
-      ann[state.airport.tag] =
-        `airport — ${esc(state.airport.name)} ${dist(state.airport.d)}`;
-
-    
-    
-    const t = tags(liveCtx());
-    const rows = [['', 'eu', ''], ['└─ ', 'no', '']]
-      .concat(t.map((x, i) => [i === t.length - 1 ? '   └─ ' : '   ├─ ', x, ann[x]]))
-      .concat([['', 'europe', '']]);
-    
-    const wide = Math.max(...rows.map(([i, x]) => i.length + x.length)) + 2;
-    $('scope').innerHTML = rows.map(([indent, tag, note]) =>
-      `<span class="t"><span class="br">${indent}</span>`
-      + tag + ' '.repeat(Math.max(1, wide - indent.length - tag.length))
-      + (note ? `<span class="an">${note}</span>` : '') + '</span>').join('');
-
-    paintBlock();
-
-    
-    
-    
-    const named = !!state.desc.trim();
-    const nm = nodeName(), nb = byteLen(nm);
-    
-    
-    const publishesLoc = state.locMode !== 'none';
-    const cap = publishesLoc ? 24 : 32;
-    
-    
-    
-    const futureRisk = named && !publishesLoc && nb > 24 && nb <= 32;
-    
-    
-    const tail = named ? esc(state.desc.trim().replace(/\s+/g, ' ')) : '…';
-    const pn = state.post || state.kommune;
-    const sted = POST_BY_NR[pn] ? POST_BY_NR[pn][1] : state.kommuneName;
-    
-    
-    $('namePrefix').innerHTML = `NO-<span class="s-pn">${pn}</span>`;
-    
-    
-    
-    
-    
-    
-    
-    $('nodeDesc').placeholder = stedVague(pn)
-      ? 'e.g. a bydel, hill or street'
-      : `e.g. ${sted}`;
-    
-    
-    
-    
-    $('nmBars').hidden = false;
-    $('nmTag').innerHTML =
-      `no-<span class="s-fy">${state.fylke}</span>${state.kommune.slice(2)}`;
-    $('nmFy').textContent = `${state.fylke} — ${FYLKE_NAMES[state.fylke]}`;
-    $('nmKm').textContent = `${state.kommune} — ${state.kommuneName}`;
-
-    
-    
-    
-    $('mtPost').textContent = POST_BY_NR[pn] ? `${pn} ${sted}` : '';
-    
-    
-    const bEl = $('nameBytes'), over = named && nb > cap;
-    bEl.textContent = named ? `${nb} / ${cap}` : '';
-    
-    
-    bEl.className = 'bytes' + (over ? ' over'
-      : (futureRisk || (named && nb > cap - 4)) ? ' warn' : '');
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    const hint = $('nameHint');
-    hint.className = 'nmwhy' + (over ? ' bad' : '');
-    hint.innerHTML = over
-      ? `Too long — trim it to ${cap} bytes. Norwegian letters cost two each.`
-      : !named
-        ? 'Add a place — the number on its own identifies nothing, so no '
-          + '<code>set name</code> is emitted yet.'
-        : futureRisk
-          ? `Fits now at ${nb} bytes, but publishing a location caps the name `
-            + 'at 24. Trim it to be safe.'
-        : (state.descAuto && stedVague(pn))
-          ? `<b>${esc(sted)}</b> covers ${STED_N[sted]} postnummer — `
-            + 'try a bydel, hill or street.'
-          : 'The four digits are your <b class="a">postnummer</b>.';
-
-    const ll2 = unproject(state.x, state.y);
-    $('locNote').textContent = state.locMode === 'map'
-      ? `Publishes ${ll2[0].toFixed(5)}°N ${ll2[1].toFixed(5)}°E. Name limit is 24 bytes.`
-      : state.locMode === 'gps'
-        ? 'The node publishes its own GPS position. Name limit is 24 bytes.'
-        : 'No location published. Name limit is 32 bytes.';
-
-    const selK = KOMMUNER.find(k => k.nr === state.kommune);
-    $('selKomm').setAttribute('d', selK ? selK.el.getAttribute('d') : '');
-    
-    
-    
-    
-    const present = new Set(['sel']);
-    let nbkD = '';
-    const ourLd = LANDSDEL[state.fylke];
-    const nbK = new Set(state.border.kommune.map(x => x.nr));
-    const nbF = new Set(state.border.fylke.map(x => x.nr));
-    const nbL = new Set(state.border.landsdel.map(x => x.nr));
-    KOMMUNER.forEach(k => {
-      const fy = k.nr.slice(0, 2);
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      const fill = k.nr === state.kommune ? null      
-        : fy === state.fylke ? 'own'
-        : nbF.has(fy) ? 'nbf'
-        : LANDSDEL[fy] === ourLd ? 'ownl'
-        : nbL.has(LANDSDEL[fy]) ? 'nbl' : null;
-      if (fill) present.add(fill);
-      for (const t of FILL_TIERS) k.el.classList.toggle(t, 't-' + fill === t);
-      
-      const tagged = nbK.has(k.nr);
-      if (tagged) { present.add('nbk'); nbkD += k.el.getAttribute('d'); }
-      k.el.classList.toggle('t-nbk', tagged);
-    });
-    
-    
-    
-    
-    
-    
-    
-    $('nbkLine').setAttribute('d', nbkD);
-    renderMapKey(present);
-    const metroKeys = state.metro.map(m => m.key);
-    CITY_PTS.forEach(c => c.el.classList.toggle('on', metroKeys.includes(c.key)));
-
-    applyView();
-
-    const pin = $('pin');
-    pin.removeAttribute('hidden');
-    pin.setAttribute('transform', `translate(${state.x},${state.y})`);
-
-    document.querySelectorAll('#profiles .profile').forEach(el =>
-      el.classList.toggle('on', el.dataset.p === state.profile));
-  }
 
   const plainText = () => buildLines().filter(([t]) => t === 'k')
     .map(([, cmd, arg]) => arg ? `${cmd} ${arg}` : cmd).join('\n');
 
-  function seg(el, attr, cb) {
-    el.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
-      el.querySelectorAll('button').forEach(x => x.classList.remove('on'));
-      b.classList.add('on');
-      cb(b.dataset[attr]);
-    }));
-  }
+  return { buildLines, plainText, renderLines, nodeName, LIMITS };
+  })();
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  const MapView = (() => {
 
   
   const map = $('map');
@@ -4201,7 +3860,7 @@
 
   function renderGhost() {
     const gh = $('pinGhost');
-    if (ghostAt && Math.hypot(ghostAt[0] - state.x, ghostAt[1] - state.y) > 14 / view.z) {
+    if (cur && ghostAt && Math.hypot(ghostAt[0] - cur.x, ghostAt[1] - cur.y) > 14 / view.z) {
       gh.setAttribute('transform', `translate(${ghostAt[0]},${ghostAt[1]})`);
       gh.removeAttribute('hidden');
     } else {
@@ -4225,13 +3884,13 @@
       `${view.cx - w / 2} ${view.cy - h / 2} ${w} ${h}`);
     renderGhost();   
     map.style.setProperty('--k', 1 / view.z);   
-    for (const k of KOMMUNER) {
-      k.el.classList.toggle('shown', k.nr.slice(0, 2) === state.drilled);
+    for (const k of Geo.KOMMUNER) {
+      k.el.classList.toggle('shown', k.nr.slice(0, 2) === ui.drilled);
     }
     
-    for (const c of CITY_PTS) {
+    for (const c of Geo.CITY_PTS) {
       c.el.classList.toggle('lab',
-        view.z >= c.minz || state.metro.some(m => m.key === c.key));
+        view.z >= c.minz || (cur ? cur.metro.some(m => m.key === c.key) : false));
     }
   }
 
@@ -4297,21 +3956,21 @@
   
   
   $('zReset').addEventListener('click', () => {
-    state.drilled = null;
+    ui.drilled = null;
     
     
     
-    const p = state.pins[state.device];
+    const p = pins[ui.device];
     p.x = p.y = p.post = p.postTyped = null; p.auto = true;
     view.z = 1; view.rest = 1; view.cx = VBX + W / 2; view.cy = VBY + H / 2;
     
     
     
     
-    if (state.device === 'repeater' && state.descAuto) state.desc = '';
+    if (ui.device === 'repeater' && cfg.descAuto) cfg.desc = '';
     
     
-    showPinFor(state.device);
+    showPinFor(ui.device);
   });
 
   
@@ -4424,7 +4083,7 @@
     let [x, y] = mapPoint(e);
     const snap = 2.5 / view.z;
     let best = null;
-    for (const c of CITY_PTS) {
+    for (const c of Geo.CITY_PTS) {
       const d = Math.hypot(c.x - x, c.y - y);
       if (d <= snap && (!best || d < best.d)) best = { c, d };
     }
@@ -4439,73 +4098,121 @@
     
     
     
-    place(x, y, true, null, view.z <= view.rest * 1.001);
+    onPlace(x, y, true, null, view.z <= view.rest * 1.001);
   });
 
-  setPan(panOn);
-  applyView();
 
   
-  CITY_PTS.forEach(c => {
+  Geo.CITY_PTS.forEach(c => {
     c.el.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); place(c.x, c.y); }
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onPlace(c.x, c.y); }
     });
   });
 
-  document.querySelectorAll('#profiles .profile').forEach(el =>
-    el.addEventListener('click', () => { state.profile = el.dataset.p; render(); }));
+  
+  
+  
+  
+  
+  const setGhost = pt => { ghostAt = pt; renderGhost(); };
 
-  seg($('crSeg'),   'cr', v => { state.cr = v; render(); });
-  seg($('hashSeg'), 'h',  v => { state.hash = v; render(); });
-  seg($('loopSeg'), 'l',  v => { state.loop = v; render(); });
-  seg($('ackSeg'),  'ma', v => { state.multiAcks = v === 'on'; render(); });
-  seg($('unscSeg'), 'u',  v => { state.unscoped = v; render(); });
-  $('unscHops').addEventListener('input', e => { state.unscopedHops = e.target.value; render(); });
-  seg($('defSeg'),  'd',  v => { state.regionDefault = v; render(); });
-  seg($('fwSeg'),   'f',  v => { state.fw = v; render(); });
-  seg($('locSeg'),  'loc', v => { state.locMode = v; render(); });
   
   
-  for (const [id, key] of [['kmLd', 'landsdel'], ['kmFy', 'fylke'],
-                           ['kmKo', 'kommune'], ['kmCi', 'city']]) {
-    $(id).addEventListener('input', () => {
-      const raw = parseFloat($(id).value);
-      state.reach[key] = Number.isFinite(raw)
-        ? Math.min(REACH_MAX, Math.max(0, raw)) : REACH_KM[key];
-      syncBorderBtns();
-      replace();
-    });
+  
+  
+  let onPlace = () => {};
+  function init(deps) {
+    onPlace = deps.place;
+    setPan(panOn);
+    applyView();
+  }
+
+  return { view, apply: applyView, zoomTo, zoomToFylke, ensureVisible, furniture,
+           mapPoint, setPan, setGhost, init };
+  })();
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  const PaintMap = (() => {
+  const FILL_TIERS = ['t-own', 't-nbf', 't-ownl', 't-nbl'];
+  const TIERS = [...FILL_TIERS, 't-nbk'];
+
+  function renderMapKey(present) {
+    const key = $('mapKey');
+    if (!present.has('sel')) { key.setAttribute('hidden', ''); return; }
     
     
-    $(id).addEventListener('blur', () => { $(id).value = state.reach[key]; });
-  }
-
-  
-  
-  
-  const kmInput = { landsdel: 'kmLd', fylke: 'kmFy', kommune: 'kmKo', city: 'kmCi' };
-  function syncBorderBtns() {
-    for (const b of document.querySelectorAll('.kms button[data-lvl]'))
-      b.textContent = state.reach[b.dataset.lvl] > 0 ? 'disable' : 'enable';
-  }
-  for (const b of document.querySelectorAll('.kms button[data-lvl]')) {
-    b.addEventListener('click', () => {
-      const key = b.dataset.lvl;
-      state.reach[key] = state.reach[key] > 0 ? 0 : REACH_KM[key];
-      $(kmInput[key]).value = state.reach[key];
-      syncBorderBtns();
-      replace();
-    });
-  }
-  syncBorderBtns();
-
-  
-  function replace() {
-    if (state.kommune) {
-      state.border = borderAt(state.x, state.y, state.kommune);
-      state.metro = metroAt(state.x, state.y);   
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    const LEVELS = [
+      ['kommune',  'sel',  'nbk'],
+      ['fylke',    'own',  'nbf'],
+      ['landsdel', 'ownl', 'nbl'],
+    ];
+    const cols = LEVELS.filter(([, own, nb]) => present.has(own) || present.has(nb));
+    const near = cols.some(([, , nb]) => present.has(nb));
+    const cell = t => present.has(t) ? `<i class="mk-sw mk-${t}"></i>` : '<i class="mk-no"></i>';
+    let h = '<span></span>' + cols.map(([n]) => `<span class="mk-c">${n}</span>`).join('');
+    h += '<span class="mk-h">own</span>' + cols.map(([, own]) => cell(own)).join('');
+    if (near) {
+      h += '<span class="mk-h">neighbour</span>'
+         + cols.map(([, , nb]) => cell(nb)).join('');
     }
-    render();
+    key.style.setProperty('--mk-cols', cols.length);
+    key.innerHTML = h;
+    key.removeAttribute('hidden');
+  }
+
+  
+  
+  function renderPinNote() {
+    const note = $('pinNote');
+    const dev = ui.device, oth = Ctx.OTHER[dev];
+    const mine = pins[dev], theirs = pins[oth];
+    let html = '';
+    if (mine.auto && theirs.x !== null) {
+      html = `Following the ${oth}'s position. Move the pin to give the `
+           + `${dev} its own.`;
+    } else if (!mine.auto && theirs.auto && theirs.x === null) {
+      html = `The ${oth} starts from this position until you move its pin.`;
+    } else if (!mine.auto && !theirs.auto) {
+      html = `Set separately from the ${oth}. `
+           + `<button type="button">follow it again</button>`;
+    }
+    note.innerHTML = html;
+    note.toggleAttribute('hidden', !html);
+  }
+
+  
+  
+  function header() {
+    const isRep = ui.device === 'repeater';
+    $('mapHead').textContent = isRep ? 'Region' : 'Home';
+    $('mapSub').textContent = isRep
+      ? 'Where the node stands decides which regions it relays for.'
+      : 'Roughly where you are. Decides which channels you are offered.';
   }
 
   
@@ -4514,112 +4221,495 @@
   
   
   
-  const THEME_KEY = 'meshno.theme';
-  const prefersDark = matchMedia('(prefers-color-scheme: dark)');
-
-  function storedTheme() {
-    let t = null;
-    try { t = localStorage.getItem(THEME_KEY); } catch (e) {   }
-    return t === 'light' || t === 'dark' ? t : 'auto';
+  function deviceSwitch(rd, cd) {
+    $('devRep').textContent = !rd ? 'no node placed'
+      : cfg.desc.trim() ? Cfg.nodeName(rd) : 'not named yet';
+    const nch = cd ? Regions.channels(cd).length : 0;
+    $('devCom').textContent = nch ? `${nch} channels` : 'no channels yet';
   }
 
-  function applyTheme(pref) {
-    document.documentElement.setAttribute('data-theme',
-      pref === 'auto' ? (prefersDark.matches ? 'dark' : 'light') : pref);
-    $('themeSeg').querySelectorAll('button').forEach(b => {
-      const on = b.dataset.t === pref;
-      b.classList.toggle('on', on);
-      b.setAttribute('aria-pressed', String(on));
-    });
-  }
-
-  seg($('themeSeg'), 't', v => {
-    
-    
-    try {
-      if (v === 'auto') localStorage.removeItem(THEME_KEY);
-      else localStorage.setItem(THEME_KEY, v);
-    } catch (e) {   }
-    applyTheme(v);
-  });
-  
-  prefersDark.addEventListener('change', () => {
-    if (storedTheme() === 'auto') applyTheme('auto');
-  });
-  applyTheme(storedTheme());
-
   
   
-  function positionEdited() {
-    const box = $('posRead'), note = $('coordNote');
-    const raw = box.value.trim();
-    const m = raw.match(/^(-?\d+(?:[.,]\d+)?)[ ,]+(-?\d+(?:[.,]\d+)?)$/);
-    const fail = msg => { box.classList.add('bad'); note.className = 'help bad'; note.textContent = msg; };
-    if (!raw) { box.classList.remove('bad'); note.className = 'help'; note.textContent = ''; return; }
-    
-    
-    
-    if (/^\d{4}$/.test(raw)) {
-      const p = POST_BY_NR[raw];
-      if (!p) return fail(`${raw} is not a Norwegian postnummer.`);
-      if (!place(p[3], p[4], true, raw)) return fail(`${raw} ${p[1]} is not on the map.`);
-      box.classList.remove('bad');
-      note.className = 'help';
+  
+  function tag(ctx) {
+    if (!ctx) {
+      $('kommName').textContent = '';
+      $('fylkeLabel').textContent = '';
       
       
-      note.textContent = `Placed at the centre of ${raw} ${p[1]}. `
-        + 'Click the exact spot on the map, or type a lat, lon.';
+      $('kommTag').textContent = '';
+      $('mtPost').textContent = '';
       return;
     }
-    if (!m) return fail('Type a position as latitude, longitude — e.g. 59.91229, '
-      + '10.75187 — or a postnummer, e.g. 1354');
-    const la = parseFloat(m[1].replace(',', '.')), lo = parseFloat(m[2].replace(',', '.'));
-    const [x, y] = project(la, lo);
-    if (!place(x, y)) return fail(`${la.toFixed(5)}, ${lo.toFixed(5)} is not inside Norway.`);
-    box.classList.remove('bad');
-    note.className = 'help';
-    note.textContent = '';
+    $('kommName').textContent = ctx.kommuneName;
+    $('fylkeLabel').textContent = FYLKE_NAMES[ctx.fylke];
+    $('kommTag').textContent = 'no-' + ctx.kommune;
+    const pn = ctx.post || ctx.kommune;
+    const sted = POST_BY_NR[pn] ? POST_BY_NR[pn][1] : ctx.kommuneName;
+    $('mtPost').textContent = POST_BY_NR[pn] ? `${pn} ${sted}` : '';
   }
-  $('posRead').addEventListener('input', positionEdited);
-  $('posRead').addEventListener('blur', () => { $('posRead').classList.remove('bad'); render(); });
 
   
   
-  $('nodeDesc').addEventListener('input', e => {
-    state.desc = e.target.value;
-    state.descAuto = false;
-    render();
-  });
-  $('ownerInfo').addEventListener('input', e => { state.owner = e.target.value; render(); });
-  $('guestPw').addEventListener('input',  e => { state.guest = e.target.value; render(); });
-  $('txPow').addEventListener('input',    e => { state.tx = e.target.value; render(); });
-  $('adminPw').addEventListener('input',  e => { state.admin = e.target.value; render(); });
+  function position(ctx) {
+    const box = $('posRead');
+    if (!ctx) {
+      box.value = '';
+      
+      
+      $('coordNote').textContent = '';
+      $('coordNote').className = 'help';
+      return;
+    }
+    
+    if (document.activeElement === box) return;
+    const ll = Proj.unproject(ctx.x, ctx.y);
+    box.value = `${ll[0].toFixed(5)}, ${ll[1].toFixed(5)}`;
+    box.classList.remove('bad');
+  }
+
+  
+  function pin(ctx) {
+    const el = $('pin');
+    if (!ctx) { el.setAttribute('hidden', ''); return; }
+    el.removeAttribute('hidden');
+    el.setAttribute('transform', `translate(${ctx.x},${ctx.y})`);
+  }
 
   
   
   
-  $('devSw').querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
-    state.device = b.dataset.dev;
-    $('devSw').querySelectorAll('button').forEach(x => {
-      const on = x === b;
-      x.classList.toggle('on', on);
-      x.setAttribute('aria-selected', on ? 'true' : 'false');
+  function tints(ctx) {
+    if (!ctx) {
+      $('selKomm').setAttribute('d', '');
+      $('nbkLine').setAttribute('d', '');
+      
+      
+      
+      
+      
+      Geo.KOMMUNER.forEach(k => k.el.classList.remove(...TIERS));
+      Geo.CITY_PTS.forEach(c => c.el.classList.remove('on'));
+      renderMapKey(new Set());
+      return;
+    }
+    
+    
+    
+    const selK = Geo.KOMMUNER.find(k => k.nr === ctx.kommune);
+    $('selKomm').setAttribute('d', selK ? selK.el.getAttribute('d') : '');
+    
+    
+    
+    
+    const present = new Set(['sel']);
+    let nbkD = '';
+    const ourLd = LANDSDEL[ctx.fylke];
+    const nbK = new Set(ctx.border.kommune.map(x => x.nr));
+    const nbF = new Set(ctx.border.fylke.map(x => x.nr));
+    const nbL = new Set(ctx.border.landsdel.map(x => x.nr));
+    Geo.KOMMUNER.forEach(k => {
+      const fy = k.nr.slice(0, 2);
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      const fill = k.nr === ctx.kommune ? null      
+        : fy === ctx.fylke ? 'own'
+        : nbF.has(fy) ? 'nbf'
+        : LANDSDEL[fy] === ourLd ? 'ownl'
+        : nbL.has(LANDSDEL[fy]) ? 'nbl' : null;
+      if (fill) present.add(fill);
+      for (const t of FILL_TIERS) k.el.classList.toggle(t, 't-' + fill === t);
+      
+      const tagged = nbK.has(k.nr);
+      if (tagged) { present.add('nbk'); nbkD += k.el.getAttribute('d'); }
+      k.el.classList.toggle('t-nbk', tagged);
     });
-    $('paneRep').toggleAttribute('hidden', state.device !== 'repeater');
-    $('paneCom').toggleAttribute('hidden', state.device !== 'companion');
     
     
-    showPinFor(state.device, true);
-  }));
+    
+    
+    
+    
+    
+    $('nbkLine').setAttribute('d', nbkD);
+    renderMapKey(present);
+    const metroKeys = ctx.metro.map(m => m.key);
+    Geo.CITY_PTS.forEach(c => c.el.classList.toggle('on', metroKeys.includes(c.key)));
+  }
+
+  return { key: renderMapKey, pinNote: renderPinNote, header, deviceSwitch,
+           tag, position, pin, tints, TIERS, FILL_TIERS };
+  })();
 
   
   
-  $('pinNote').addEventListener('click', e => {
-    if (!e.target.closest('button')) return;
-    const p = state.pins[state.device];
-    p.x = p.y = p.post = p.postTyped = null; p.auto = true;
-    showPinFor(state.device, true);
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  const PaintCfg = (() => {
+
+  
+  
+  
+  
+  
+  
+  function block() {
+    const L = Cfg.buildLines();
+    $('cmdOut').innerHTML = Cfg.renderLines(L);
+    const n = L.filter(([ty]) => ty === 'k').length;
+    $('cmdCount').textContent = `${n} command${n === 1 ? '' : 's'}`;
+  }
+
+  
+  
+  function name(ctx) {
+    
+    
+    
+    
+    if ($('nodeDesc').value !== cfg.desc) $('nodeDesc').value = cfg.desc;
+    $('nodeDesc').disabled = !ctx;
+
+    if (!ctx) {
+      
+      $('namePrefix').textContent = 'NO-…';
+      
+      
+      
+      $('nmBars').hidden = true;
+      $('nmTag').textContent = '';
+      $('nmFy').textContent = '';
+      $('nmKm').textContent = '';
+      $('nodeDesc').placeholder = 'e.g. Årvollåsen';
+      $('nameBytes').textContent = '';
+      $('nameBytes').className = 'bytes';
+      $('nameHint').className = 'nmwhy';
+      $('nameHint').textContent = 'Place the node on the map to name it.';
+      return;
+    }
+
+    const named = !!cfg.desc.trim();
+    const nb = byteLen(Cfg.nodeName(ctx));
+    
+    
+    const publishesLoc = cfg.locMode !== 'none';
+    const cap = publishesLoc ? 24 : 32;
+    
+    
+    
+    const futureRisk = named && !publishesLoc && nb > 24 && nb <= 32;
+    const pn = ctx.post || ctx.kommune;
+    const sted = POST_BY_NR[pn] ? POST_BY_NR[pn][1] : ctx.kommuneName;
+    
+    
+    $('namePrefix').innerHTML = `NO-<span class="s-pn">${pn}</span>`;
+    
+    
+    
+    
+    
+    
+    
+    $('nodeDesc').placeholder = stedVague(pn)
+      ? 'e.g. a bydel, hill or street'
+      : `e.g. ${sted}`;
+    
+    
+    
+    
+    $('nmBars').hidden = false;
+    $('nmTag').innerHTML =
+      `no-<span class="s-fy">${ctx.fylke}</span>${ctx.kommune.slice(2)}`;
+    $('nmFy').textContent = `${ctx.fylke} — ${FYLKE_NAMES[ctx.fylke]}`;
+    $('nmKm').textContent = `${ctx.kommune} — ${ctx.kommuneName}`;
+
+    
+    
+    const bEl = $('nameBytes'), over = named && nb > cap;
+    bEl.textContent = named ? `${nb} / ${cap}` : '';
+    
+    
+    bEl.className = 'bytes' + (over ? ' over'
+      : (futureRisk || (named && nb > cap - 4)) ? ' warn' : '');
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    const hint = $('nameHint');
+    hint.className = 'nmwhy' + (over ? ' bad' : '');
+    hint.innerHTML = over
+      ? `Too long — trim it to ${cap} bytes. Norwegian letters cost two each.`
+      : !named
+        ? 'Add a place — the number on its own identifies nothing, so no '
+          + '<code>set name</code> is emitted yet.'
+        : futureRisk
+          ? `Fits now at ${nb} bytes, but publishing a location caps the name `
+            + 'at 24. Trim it to be safe.'
+        : (cfg.descAuto && stedVague(pn))
+          ? `<b>${esc(sted)}</b> covers ${STED_N[sted]} postnummer — `
+            + 'try a bydel, hill or street.'
+          : 'The four digits are your <b class="a">postnummer</b>.';
+  }
+
+  
+  
+  function location(ctx) {
+    
+    $('locSeg').querySelector('[data-loc="map"]').disabled = !ctx;
+    if (!ctx) {
+      
+      
+      if (cfg.locMode === 'map') cfg.locMode = 'none';
+      $('locSeg').querySelectorAll('button').forEach(x =>
+        x.classList.toggle('on', x.dataset.loc === cfg.locMode));
+      $('locNote').textContent = 'Place the node on the map to publish a location.';
+      return;
+    }
+    const ll = Proj.unproject(ctx.x, ctx.y);
+    $('locNote').textContent = cfg.locMode === 'map'
+      ? `Publishes ${ll[0].toFixed(5)}°N ${ll[1].toFixed(5)}°E. Name limit is 24 bytes.`
+      : cfg.locMode === 'gps'
+        ? 'The node publishes its own GPS position. Name limit is 24 bytes.'
+        : 'No location published. Name limit is 32 bytes.';
+  }
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  function tree(ctx) {
+    if (!ctx) {
+      $('scope').innerHTML =
+        '<span class="empty">Place the node on the map and its regions appear here. '
+        + 'Everything else configures without one.</span>';
+      return;
+    }
+    const ann = {};
+    const dist = d => `${Math.round(d)} km`;
+    ann['no-' + LANDSDEL[ctx.fylke]] =
+      `own landsdel — ${esc(LANDSDEL_NAMES[LANDSDEL[ctx.fylke]])}`;
+    for (const x of ctx.border.landsdel)
+      ann['no-' + x.nr] = `neighbour — ${esc(LANDSDEL_NAMES[x.nr])} ${dist(x.d)}`;
+    for (const x of ctx.border.fylke)
+      ann['no-' + x.nr] = `neighbour — ${esc(FYLKE_NAMES[x.nr])} ${dist(x.d)}`;
+    for (const x of ctx.border.kommune)
+      ann['no-' + x.nr] = `neighbour — ${esc(x.name)} ${dist(x.d)}`;
+    ann['no-' + ctx.fylke] =
+      `own <b>fylkesnummer</b> — ${esc(FYLKE_NAMES[ctx.fylke])}`;
+    ann['no-' + ctx.kommune] =
+      `own <b>kommunenummer</b> — ${esc(ctx.kommuneName)}`;
+    
+    
+    for (const m of ctx.metro)
+      ann[m.key] = `city — ${esc(CITIES[m.key])} ${dist(m.d)}`;
+    
+    
+    if (ctx.airport)
+      ann[ctx.airport.tag] =
+        `airport — ${esc(ctx.airport.name)} ${dist(ctx.airport.d)}`;
+
+    
+    
+    const t = Regions.tags(ctx);
+    const rows = [['', 'eu', ''], ['└─ ', 'no', '']]
+      .concat(t.map((x, i) => [i === t.length - 1 ? '   └─ ' : '   ├─ ', x, ann[x]]))
+      .concat([['', 'europe', '']]);
+    
+    const wide = Math.max(...rows.map(([i, x]) => i.length + x.length)) + 2;
+    $('scope').innerHTML = rows.map(([indent, tag, note]) =>
+      `<span class="t"><span class="br">${indent}</span>`
+      + tag + ' '.repeat(Math.max(1, wide - indent.length - tag.length))
+      + (note ? `<span class="an">${note}</span>` : '') + '</span>').join('');
+  }
+
+  
+  
+  
+  function unscoped() {
+    $('unscHopsBox').hidden = cfg.unscoped !== 'cap';
+    $('unscHelp').innerHTML =
+      cfg.unscoped === 'cap'
+        ? `Local untagged traffic still spreads, but only ${cfg.unscopedHops || '?'} hops. The neighbourhood, not the country.`
+      : cfg.unscoped === 'deny'
+        ? '<b class="bad">Drops every untagged packet.</b> Use it only after the mesh around you carries regions, or it isolates nodes that have not set regions.'
+        : 'Untagged traffic floods normally. Nothing is cut off.';
+  }
+
+  
+  const profiles = () =>
+    document.querySelectorAll('#profiles .profile').forEach(el =>
+      el.classList.toggle('on', el.dataset.p === cfg.profile));
+
+  return { block, name, location, tree, unscoped, profiles };
+  })();
+
+  
+  
+  
+  
+  
+  
+  
+  const ChanUI = (() => {
+
+  
+  
+  function qrSvg(text) {
+    const m = QR.matrix(text), n = m.length;
+    let d = '';
+    for (let r = 0; r < n; r++) {
+      let c = 0;
+      while (c < n) {
+        if (!m[r][c]) { c++; continue; }
+        let w = 0;
+        while (c + w < n && m[r][c + w]) w++;
+        d += `M${c} ${r}h${w}v1h-${w}z`;
+        c += w;
+      }
+    }
+    
+    
+    return `<svg viewBox="-2 -2 ${n + 4} ${n + 4}" shape-rendering="crispEdges" `
+         + `aria-hidden="true"><path d="${d}"/></svg>`;
+  }
+
+  function renderChannels() {
+    const box = $('chans');
+    
+    
+    const list = Regions.channels(Ctx.ctxFor(ui.device));
+    if (!list.length) {
+      box.innerHTML = '<p class="empty">Place the node on the map and the channels for '
+        + 'that area appear here.</p>';
+      return;
+    }
+    const row = (c, i) => `<div class="chan">
+        <button type="button" class="cqr" data-i="${i}"
+                aria-label="Enlarge the QR code for #${esc(c.name)}">
+          <span class="qr">${qrSvg(Regions.channelUrl(c))}</span>
+        </button>
+        <div class="cm">
+          <span class="cn">#${esc(c.name)}</span>
+          <span class="ca"><b>${esc(c.kind)}</b> · ${esc(c.an)}</span>
+        </div>
+        <a class="cadd" href="${esc(Regions.channelUrl(c))}">Add &rarr;</a>
+      </div>`;
+    
+    
+    const home = list.map((c, i) => [c, i]).filter(([c]) => !c.nb);
+    const near = list.map((c, i) => [c, i]).filter(([c]) => c.nb);
+    let html = home.map(([c, i]) => row(c, i)).join('');
+    if (near.length) {
+      html += '<div class="chgroup"><span>Neighbouring regions</span>'
+            + '<p>Close enough that your node relays for them. Worth joining if you want '
+            + 'their traffic too — skip them if you only care about where you are.</p></div>'
+            + near.map(([c, i]) => row(c, i)).join('');
+    }
+    box.innerHTML = html;
+  }
+
+  
+  
+  
+  
+  let qrShown = null;
+  function showQr(c) {
+    qrShown = c;
+    const url = Regions.channelUrl(c);
+    $('qrBig').innerHTML = qrSvg(url);
+    $('qrName').textContent = '#' + c.name;
+    $('qrKind').textContent = cfg.chanScope
+      ? `${c.kind} · scoped to ${c.scope}`
+      : `${c.kind} · unscoped`;
+    $('qrSecret').textContent = Regions.channelSecret(c.name);
+    $('qrGo').href = url;
+    $('qrDlg').querySelectorAll('#qrScope button').forEach(x =>
+      x.classList.toggle('on', (x.dataset.sc === 'on') === cfg.chanScope));
+  }
+  $('chans').addEventListener('click', e => {
+    const b = e.target.closest('.cqr');
+    if (!b) return;
+    showQr(Regions.channels(Ctx.ctxFor(ui.device))[+b.dataset.i]);
+    $('qrDlg').showModal();
   });
+  
+  
+  function setScope(on) {
+    cfg.chanScope = on;
+    $('scopeSeg').querySelectorAll('button').forEach(x =>
+      x.classList.toggle('on', (x.dataset.sc === 'on') === on));
+    
+    
+    
+    $('scopeNote').innerHTML = on
+      ? 'Each channel carries its region, so only repeaters that carry it pass those messages on. '
+      + 'Local traffic stays local instead of spending everyone’s airtime. <b>Most repeaters don’t '
+      + 'carry regions yet, so check what is around you.</b> Unset region scope in the app if '
+      + 'messages stop getting through.'
+      : 'No region tag, so a message travels as far as the mesh carries it. <b>Skipped by default '
+      + 'while most repeaters don’t carry regions</b> — turn it on once the ones around you do.';
+    render();
+    if (qrShown) showQr(qrShown);
+  }
+  seg($('scopeSeg'), 'sc', v => setScope(v === 'on'));
+  seg($('qrScope'), 'sc', v => setScope(v === 'on'));
+
+  $('qrClose').addEventListener('click', () => $('qrDlg').close());
+  
+  
+  $('qrDlg').addEventListener('click', e => { if (e.target === $('qrDlg')) $('qrDlg').close(); });
+
+  
+  
+  
+
+  return { qrSvg, list: renderChannels, showQr, setScope };
+  })();
+
+  
 
   
   
@@ -4752,8 +4842,8 @@
       const m = /(\d+)\.(\d+)\.(\d+)/.exec(reply || '');
       if (!m) return null;
       const wants = (+m[1] > 1 || (+m[1] === 1 && +m[2] >= 16)) ? 'new' : 'old';
-      if (state.fw !== wants) {
-        state.fw = wants;
+      if (cfg.fw !== wants) {
+        cfg.fw = wants;
         for (const b of $('fwSeg').querySelectorAll('button'))
           b.classList.toggle('on', b.dataset.f === wants);
         render();   
@@ -4863,7 +4953,7 @@
         busy = false; btn.disabled = consoleBtn.disabled = false; btn.textContent = 'Send over USB';
         return;
       }
-      const cmds = plainText().split('\n').filter(Boolean);
+      const cmds = Cfg.plainText().split('\n').filter(Boolean);
       setProg(0, cmds.length); setMsg('Sending…');
       let errs = 0;
       for (let i = 0; i < cmds.length; i++) {
@@ -4952,6 +5042,17 @@
   
   
   
+  const Share = (() => {
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   
   
@@ -4990,14 +5091,14 @@
   
   const SH_LAT0 = 57, SH_LON0 = 3;
   const encPos = (x, y) => {
-    const [la, lo] = unproject(x, y);
+    const [la, lo] = Proj.unproject(x, y);
     return b64n(Math.round((la - SH_LAT0) * 1e5), 4)
          + b64n(Math.round((lo - SH_LON0) * 1e5), 4);
   };
   const decPos = s => {
     const a = nb64(s.slice(0, 4)), o = nb64(s.slice(4, 8));
     if (!Number.isFinite(a) || !Number.isFinite(o)) return null;
-    return project(SH_LAT0 + a / 1e5, SH_LON0 + o / 1e5);
+    return Proj.project(SH_LAT0 + a / 1e5, SH_LON0 + o / 1e5);
   };
 
   
@@ -5056,30 +5157,28 @@
   
   
   
-  const SH_ENUM = {
-    p: ['profile',       'neighborhood', ['local', 'neighborhood', 'hilltop', 'mountaintop']],
-    c: ['cr',            '8',            ['5', '6', '7', '8']],
-    h: ['hash',          '1',            ['0', '1', '2']],
-    l: ['loop',          'minimal',      ['minimal', 'moderate', 'strict']],
-    d: ['regionDefault', 'none',         ['no', 'landsdel', 'fylke', 'kommune', 'city', 'none']],
-    f: ['fw',            'new',          ['new', 'old']],
-    L: ['locMode',       'none',         ['none', 'map', 'gps']],
-    u: ['unscoped',      'allow',        ['allow', 'cap', 'deny']],
-    v: ['device',        'repeater',     ['repeater', 'companion']]
-  };
-  
-  
-  const SH_BOOL = { m: ['multiAcks', false], s: ['chanScope', false] };
   
   
   
-  const SH_NUM  = { t: ['tx', '22'], U: ['unscopedHops', '3'] };
-  const SH_REACH = { 1: 'landsdel', 2: 'fylke', 3: 'kommune', 4: 'city' };
+  const byKey = pred => Object.fromEntries(
+    FIELDS.filter(r => r.w && pred(r)).map(r => [r.w, r]));
+
+  
+  const SH_ENUM = byKey(r => r.vals);
+  
+  
+  const SH_BOOL = byKey(r => r.def === false && !r.vals);
+  
+  const SH_NUM = byKey(r => r.kind === 'num');
+  
+  
+  const SH_TEXT = byKey(r => r.kind === 'text' && !r.delta);
   
   
   
-  const SH_TEXT = { n: 'desc', o: 'owner', g: 'guest', a: 'admin' };
-  const SH_PIN  = { '@': 'repeater', $: 'companion' };
+  const SH_DESC = FIELDS.find(r => r.delta);
+  const SH_REACH = Object.fromEntries(REACH_FIELDS.map(r => [r.w, r.lvl]));
+  const SH_PIN = { '@': 'repeater', $: 'companion' };
 
   function shareHash() {
     const F = [];
@@ -5087,23 +5186,21 @@
     
     
     for (const [k, dev] of Object.entries(SH_PIN)) {
-      const p = state.pins[dev];
+      const p = pins[dev];
       if (p.x === null || p.auto) continue;
       F.push(k + encPos(p.x, p.y) + (p.postTyped || ''));
     }
-    for (const [k, [f, def, vals]] of Object.entries(SH_ENUM))
-      if (state[f] !== def && vals.indexOf(state[f]) >= 0)
-        F.push(k + vals.indexOf(state[f]));
-    for (const [k, [f, def]] of Object.entries(SH_BOOL))
-      if (state[f] !== def) F.push(k);
-    for (const [k, [f, def]] of Object.entries(SH_NUM))
-      if (String(state[f]) !== def) F.push(k + shEnc(String(state[f])));
+    for (const [k, r] of Object.entries(SH_ENUM))
+      if (bagOf(r)[r.f] !== r.def && r.vals.indexOf(bagOf(r)[r.f]) >= 0)
+        F.push(k + r.vals.indexOf(bagOf(r)[r.f]));
+    for (const [k, r] of Object.entries(SH_BOOL))
+      if (bagOf(r)[r.f] !== r.def) F.push(k);
+    for (const [k, r] of Object.entries(SH_NUM))
+      if (String(bagOf(r)[r.f]) !== r.def) F.push(k + shEnc(String(bagOf(r)[r.f])));
     for (const [k, lvl] of Object.entries(SH_REACH))
-      if (state.reach[lvl] !== REACH_DEF[lvl]) F.push(k + state.reach[lvl]);
-    for (const [k, f] of Object.entries(SH_TEXT)) {
-      if (f === 'desc') continue;         
-      if (state[f]) F.push(k + shEnc(state[f]));
-    }
+      if (reach[lvl] !== REACH_DEF[lvl]) F.push(k + reach[lvl]);
+    for (const [k, r] of Object.entries(SH_TEXT))
+      if (cfg[r.f]) F.push(k + shEnc(cfg[r.f]));
     
     
     
@@ -5121,49 +5218,16 @@
     
     
     
-    if (!state.descAuto) {
-      const rd = ctxFor('repeater'), rp = rd && POST_BY_NR[rd.post];
-      if (state.desc && rp && state.desc === rp[1]) F.push('N');
-      else if (state.desc) F.push('n' + shEnc(state.desc));
-      else F.push('n');
+    if (!cfg.descAuto) {
+      const rd = Ctx.ctxFor('repeater'), rp = rd && POST_BY_NR[rd.post];
+      if (cfg.desc && rp && cfg.desc === rp[1]) F.push('N');
+      else if (cfg.desc) F.push(SH_DESC.w + shEnc(cfg.desc));
+      else F.push(SH_DESC.w);
     }
     return F.join('~');
   }
 
-  
-  
-  
-  
-  function setSeg(id, attr, val) {
-    for (const b of $(id).querySelectorAll('button'))
-      b.classList.toggle('on', b.dataset[attr] === val);
-  }
-  function syncControls() {
-    setSeg('crSeg', 'cr', state.cr);
-    setSeg('hashSeg', 'h', state.hash);
-    setSeg('loopSeg', 'l', state.loop);
-    setSeg('ackSeg', 'ma', state.multiAcks ? 'on' : 'off');
-    setSeg('unscSeg', 'u', state.unscoped);
-    setSeg('defSeg', 'd', state.regionDefault);
-    setSeg('fwSeg', 'f', state.fw);
-    setSeg('locSeg', 'loc', state.locMode);
-    $('txPow').value = state.tx;
-    $('unscHops').value = state.unscopedHops;
-    $('ownerInfo').value = state.owner;
-    $('guestPw').value = state.guest;
-    $('adminPw').value = state.admin;
-    for (const key of Object.keys(kmInput)) $(kmInput[key]).value = state.reach[key];
-    syncBorderBtns();
-    
-    
-    for (const b of $('devSw').querySelectorAll('button')) {
-      const on = b.dataset.dev === state.device;
-      b.classList.toggle('on', on);
-      b.setAttribute('aria-selected', on ? 'true' : 'false');
-    }
-    $('paneRep').toggleAttribute('hidden', state.device !== 'repeater');
-    $('paneCom').toggleAttribute('hidden', state.device !== 'companion');
-  }
+
 
   
   
@@ -5177,26 +5241,29 @@
     const ver = fields.find(f => f[0] === 'V');
     if (ver && ver.slice(1) !== SH_VER) return 'newer';
     let used = false, ownName = false;
-    const pins = {};
+    
+    
+    
+    const got = {};
     for (const fld of fields) {
       if (!fld) continue;
       const k = fld[0], v = fld.slice(1);
       if (SH_PIN[k]) {
         const xy = decPos(v);
         if (!xy) continue;
-        pins[SH_PIN[k]] = { xy, pn: /^\d{4}$/.test(v.slice(8)) ? v.slice(8) : null };
+        got[SH_PIN[k]] = { xy, pn: /^\d{4}$/.test(v.slice(8)) ? v.slice(8) : null };
         used = true;
       } else if (SH_ENUM[k]) {
-        const [f, , vals] = SH_ENUM[k];
-        if (vals[+v] !== undefined) { state[f] = vals[+v]; used = true; }
+        const r = SH_ENUM[k];
+        if (r.vals[+v] !== undefined) { bagOf(r)[r.f] = r.vals[+v]; used = true; }
       } else if (SH_BOOL[k]) {
-        state[SH_BOOL[k][0]] = !SH_BOOL[k][1]; used = true;
+        cfg[SH_BOOL[k].f] = !SH_BOOL[k].def; used = true;
       } else if (SH_NUM[k]) {
-        state[SH_NUM[k][0]] = shDec(v); used = true;
+        cfg[SH_NUM[k].f] = shDec(v); used = true;
       } else if (SH_REACH[k]) {
         const n = parseFloat(v);
         if (Number.isFinite(n)) {
-          state.reach[SH_REACH[k]] = Math.min(REACH_MAX, Math.max(0, n));
+          reach[SH_REACH[k]] = Math.min(REACH_MAX, Math.max(0, n));
           used = true;
         }
       } else if (k === 'N') {
@@ -5204,20 +5271,20 @@
         
         ownName = true; used = true;
       } else if (SH_TEXT[k]) {
-        state[SH_TEXT[k]] = shDec(v);
+        cfg[SH_TEXT[k].f] = shDec(v); used = true;
+      } else if (k === SH_DESC.w) {
         
         
-        if (SH_TEXT[k] === 'desc') state.descAuto = false;
-        used = true;
+        cfg.desc = shDec(v); cfg.descAuto = false; used = true;
       }
       
     }
     if (!used) return false;
-    for (const [dev, p] of Object.entries(pins)) {
-      const pin = state.pins[dev];
+    for (const [dev, p] of Object.entries(got)) {
+      const pin = pins[dev];
       pin.x = p.xy[0]; pin.y = p.xy[1]; pin.postTyped = p.pn; pin.auto = false;
     }
-    syncControls();
+    Controls.sync();
     
     
     
@@ -5226,15 +5293,15 @@
     
     
     
-    showPinFor(state.device, true);
+    showPinFor(ui.device, true);
     
     
     
     
     
     if (ownName) {
-      const rd = ctxFor('repeater'), rp = rd && POST_BY_NR[rd.post];
-      if (rp) { state.desc = rp[1]; state.descAuto = false; render(); }
+      const rd = Ctx.ctxFor('repeater'), rp = rd && POST_BY_NR[rd.post];
+      if (rp) { cfg.desc = rp[1]; cfg.descAuto = false; render(); }
     }
     return true;
   }
@@ -5277,7 +5344,230 @@
       catch (e) {   }
     }, 400);
   }
-  refreshShare = syncUrl;
+  
+  
+  
+  
+  
+  function freeze() {
+    urlFrozen = true;
+    const thaw = () => { urlFrozen = false; };
+    addEventListener('pointerdown', thaw, { once: true });
+    addEventListener('keydown', thaw, { once: true });
+  }
+
+  
+  
+  
+  const seed = () => { urlLast = shareHash(); };
+
+  return { hash: shareHash, apply: applyShare, schedule: syncUrl, freeze, seed };
+  })();
+
+  
+  
+  
+  
+  
+  
+  
+  const Controls = (() => {
+
+  
+  
+  
+  
+  
+  
+  let render = () => {}, place = () => false,
+      replace = () => {}, showPinFor = () => {};
+  const wire = deps => { ({ render, place, replace, showPinFor } = deps); };
+
+  
+  
+  
+  for (const r of FIELDS) {
+    const set = v => { bagOf(r)[r.f] = v; render(); };
+    if (r.kind === 'seg') seg($(r.el), r.attr, set);
+    else if (r.kind === 'segbool') seg($(r.el), r.attr, v => set(v === 'on'));
+    else if (r.kind === 'cards')
+      document.querySelectorAll('#profiles .profile').forEach(el =>
+        el.addEventListener('click', () => set(el.dataset[r.attr])));
+    else if (r.kind === 'num' || r.kind === 'text')
+      $(r.el).addEventListener('input', e => set(e.target.value));
+    
+  }
+
+  
+  
+  
+  function sync() {
+    for (const r of FIELDS) {
+      const v = bagOf(r)[r.f];
+      if (r.kind === 'seg') setSeg(r.el, r.attr, v);
+      else if (r.kind === 'segbool') setSeg(r.el, r.attr, v ? 'on' : 'off');
+      else if (r.kind === 'num' || r.kind === 'text') $(r.el).value = v;
+      
+      
+    }
+    for (const r of REACH_FIELDS) $(r.el).value = reach[r.lvl];
+    syncBorderBtns();
+    
+    
+    for (const b of $('devSw').querySelectorAll('button')) {
+      const on = b.dataset.dev === ui.device;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    }
+    $('paneRep').toggleAttribute('hidden', ui.device !== 'repeater');
+    $('paneCom').toggleAttribute('hidden', ui.device !== 'companion');
+  }
+
+  
+  
+  
+  $('nodeDesc').addEventListener('input', e => {
+    cfg.desc = e.target.value;
+    cfg.descAuto = false;
+    render();
+  });
+
+  
+  
+  for (const r of REACH_FIELDS) {
+    $(r.el).addEventListener('input', () => {
+      const raw = parseFloat($(r.el).value);
+      reach[r.lvl] = Number.isFinite(raw)
+        ? Math.min(REACH_MAX, Math.max(0, raw)) : REACH_KM[r.lvl];
+      syncBorderBtns();
+      replace();
+    });
+    
+    
+    $(r.el).addEventListener('blur', () => { $(r.el).value = reach[r.lvl]; });
+  }
+
+  
+  
+  
+  function syncBorderBtns() {
+    for (const b of document.querySelectorAll('.kms button[data-lvl]'))
+      b.textContent = reach[b.dataset.lvl] > 0 ? 'disable' : 'enable';
+  }
+  for (const b of document.querySelectorAll('.kms button[data-lvl]')) {
+    b.addEventListener('click', () => {
+      const key = b.dataset.lvl;
+      reach[key] = reach[key] > 0 ? 0 : REACH_KM[key];
+      $(REACH_FIELDS.find(r => r.lvl === key).el).value = reach[key];
+      syncBorderBtns();
+      replace();
+    });
+  }
+  syncBorderBtns();
+
+
+  
+  
+  
+  
+  
+  
+  const THEME_KEY = 'meshno.theme';
+  const prefersDark = matchMedia('(prefers-color-scheme: dark)');
+
+  function storedTheme() {
+    let t = null;
+    try { t = localStorage.getItem(THEME_KEY); } catch (e) {   }
+    return t === 'light' || t === 'dark' ? t : 'auto';
+  }
+
+  function applyTheme(pref) {
+    document.documentElement.setAttribute('data-theme',
+      pref === 'auto' ? (prefersDark.matches ? 'dark' : 'light') : pref);
+    $('themeSeg').querySelectorAll('button').forEach(b => {
+      const on = b.dataset.t === pref;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
+  }
+
+  seg($('themeSeg'), 't', v => {
+    
+    
+    try {
+      if (v === 'auto') localStorage.removeItem(THEME_KEY);
+      else localStorage.setItem(THEME_KEY, v);
+    } catch (e) {   }
+    applyTheme(v);
+  });
+  
+  prefersDark.addEventListener('change', () => {
+    if (storedTheme() === 'auto') applyTheme('auto');
+  });
+  applyTheme(storedTheme());
+
+  
+  
+  function positionEdited() {
+    const box = $('posRead'), note = $('coordNote');
+    const raw = box.value.trim();
+    const m = raw.match(/^(-?\d+(?:[.,]\d+)?)[ ,]+(-?\d+(?:[.,]\d+)?)$/);
+    const fail = msg => { box.classList.add('bad'); note.className = 'help bad'; note.textContent = msg; };
+    if (!raw) { box.classList.remove('bad'); note.className = 'help'; note.textContent = ''; return; }
+    
+    
+    
+    if (/^\d{4}$/.test(raw)) {
+      const p = POST_BY_NR[raw];
+      if (!p) return fail(`${raw} is not a Norwegian postnummer.`);
+      if (!place(p[3], p[4], true, raw)) return fail(`${raw} ${p[1]} is not on the map.`);
+      box.classList.remove('bad');
+      note.className = 'help';
+      
+      
+      note.textContent = `Placed at the centre of ${raw} ${p[1]}. `
+        + 'Click the exact spot on the map, or type a lat, lon.';
+      return;
+    }
+    if (!m) return fail('Type a position as latitude, longitude — e.g. 59.91229, '
+      + '10.75187 — or a postnummer, e.g. 1354');
+    const la = parseFloat(m[1].replace(',', '.')), lo = parseFloat(m[2].replace(',', '.'));
+    const [x, y] = Proj.project(la, lo);
+    if (!place(x, y)) return fail(`${la.toFixed(5)}, ${lo.toFixed(5)} is not inside Norway.`);
+    box.classList.remove('bad');
+    note.className = 'help';
+    note.textContent = '';
+  }
+  $('posRead').addEventListener('input', positionEdited);
+  $('posRead').addEventListener('blur', () => { $('posRead').classList.remove('bad'); render(); });
+
+
+  
+  
+  
+  $('devSw').querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    ui.device = b.dataset.dev;
+    $('devSw').querySelectorAll('button').forEach(x => {
+      const on = x === b;
+      x.classList.toggle('on', on);
+      x.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    $('paneRep').toggleAttribute('hidden', ui.device !== 'repeater');
+    $('paneCom').toggleAttribute('hidden', ui.device !== 'companion');
+    
+    
+    showPinFor(ui.device, true);
+  }));
+
+  
+  
+  $('pinNote').addEventListener('click', e => {
+    if (!e.target.closest('button')) return;
+    const p = pins[ui.device];
+    p.x = p.y = p.post = p.postTyped = null; p.auto = true;
+    showPinFor(ui.device, true);
+  });
+
 
   
   
@@ -5307,14 +5597,203 @@
     box.dispatchEvent(new Event('input', { bubbles: true }));
   });
 
-  
-  
-  
-  
-  
-  const shared = applyShare(location.hash);
+  return { wire, sync, syncBorderBtns, applyTheme, storedTheme };
+  })();
 
-  setScope(state.chanScope);
+  
+  
+  
+  
+  
+  
+  
+  
+
+  
+  
+  
+  
+  
+  function applyPin(d, drill, reframe = true) {
+    cur = d;
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    if (ui.device === 'repeater' && cfg.descAuto) {
+      const p = POST_BY_NR[cur.post];
+      if (p) cfg.desc = p[1];
+    }
+    const entered = drill && cur.fylke !== ui.drilled;
+    if (entered) ui.drilled = cur.fylke;
+    render();
+    
+    
+    
+    
+    if (entered && reframe) MapView.zoomToFylke(cur.fylke);
+  }
+
+  
+  
+  function place(x, y, drill = true, pn = null, reframe = true) {
+    const d = Ctx.deriveAt(x, y, pn);
+    if (!d) return false;              
+    const p = pins[ui.device];
+    
+    p.x = x; p.y = y; p.auto = false;
+    applyPin(d, drill, reframe);
+    
+    p.post = cur.post; p.postTyped = cur.postTyped;
+    
+    Ctx.invalidate();
+    return true;
+  }
+
+  
+  
+  
+  
+  
+  
+  
+  
+  function showPinFor(dev, jump = false) {
+    const p = Ctx.livePin(dev);
+    
+    
+    const d = p.x === null ? null : Ctx.deriveAt(p.x, p.y, p.postTyped);
+    Ctx.invalidate();                  
+    
+    
+    if (!d) { cur = null; render(); return; }
+    applyPin(d, jump);
+    if (jump) MapView.ensureVisible(d.x, d.y);
+  }
+
+  
+  
+  
+  
+  
+  
+  
+  function refreshPost() {
+    Ctx.invalidate();               
+    if (!cur) return;
+    const d = Ctx.deriveAt(cur.x, cur.y, cur.postTyped);
+    if (d) applyPin(d, false, false);
+  }
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  function render() {
+    
+    
+    
+    Share.schedule();
+
+    
+    
+    
+    
+    const ctx = Ctx.ctxFor(ui.device);
+    document.body.classList.toggle('unplaced', !ctx);
+    
+    
+    
+    if (ctx) $('mapStart').classList.add('seen');
+
+    
+    
+    const rd = Ctx.ctxFor('repeater'), cd = Ctx.ctxFor('companion');
+    const other = ui.device === 'repeater' ? cd : rd;
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    MapView.setGhost(ctx && other ? [other.x, other.y] : null);
+
+    PaintMap.header();
+    PaintMap.deviceSwitch(rd, cd);
+    PaintMap.pinNote();
+    PaintMap.tag(ctx);
+    PaintMap.position(ctx);
+    PaintMap.tints(ctx);
+    PaintMap.pin(ctx);
+
+    PaintCfg.name(ctx);
+    PaintCfg.location(ctx);
+    PaintCfg.tree(ctx);
+    PaintCfg.unscoped();
+    PaintCfg.profiles();
+    
+    
+    PaintCfg.block();
+
+    ChanUI.list();
+    MapView.apply();
+  }
+
+
+
+  
+  function replace() {
+    
+    
+    
+    
+    if (cur) cur = Ctx.deriveAt(cur.x, cur.y, cur.postTyped) || cur;
+    Ctx.invalidate();                  
+    render();
+  }
+
+
+  
+  
+  
+  
+  
+  
+  MapView.init({ place });
+  Controls.wire({ render, place, replace, showPinFor });
+
+  
+  
+  
+  
+  
+  render();
+
+  
+  
+  
+  
+  
+  const shared = Share.apply(location.hash);
+
+  ChanUI.setScope(cfg.chanScope);
 
   
   
@@ -5324,23 +5803,18 @@
       + 'of this page.</b> Nothing has been applied. Reload to pick up the current '
       + 'version, then open the link again.';
     
-    urlFrozen = true;
-    const thaw = () => { urlFrozen = false; };
-    addEventListener('pointerdown', thaw, { once: true });
-    addEventListener('keydown', thaw, { once: true });
+    Share.freeze();
   }
 
-  
-  
-  
-  urlLast = shareHash();
+  Share.seed();
 
   
   
   
   
   
-  (window.requestIdleCallback || (fn => setTimeout(fn, 200)))(loadPostGeo);
+  (window.requestIdleCallback || (fn => setTimeout(fn, 200)))(
+    () => Geo.loadPostGeo(refreshPost));
 </script>
 </body>
 </html>
