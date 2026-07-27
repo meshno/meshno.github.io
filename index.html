@@ -1419,9 +1419,9 @@
       </div>
       <div class="theme">
         <div class="seg" id="themeSeg" role="group" aria-label="Colour theme">
-          <button type="button" data-t="auto">Auto</button>
-          <button type="button" data-t="light">Light</button>
-          <button type="button" data-t="dark">Dark</button>
+          <button type="button" data-t="auto" class="on" aria-pressed="true">Auto</button>
+          <button type="button" data-t="light" aria-pressed="false">Light</button>
+          <button type="button" data-t="dark" aria-pressed="false">Dark</button>
         </div>
       </div>
     </div>
@@ -1429,6 +1429,7 @@
 
   <main id="main">
     
+      
     <div class="col">
       
       <div class="dsw" id="devSw" role="tablist" aria-label="Device to configure">
@@ -1436,13 +1437,13 @@
                 aria-selected="true" aria-controls="paneRep" id="tabRep">
           <span class="node" aria-hidden="true"></span>
           <span class="dn">Repeater</span>
-          <span class="dv" id="devRep"></span>
+          <span class="dv" id="devRep">no node placed</span>
         </button>
         <button type="button" role="tab" data-dev="companion"
                 aria-selected="false" aria-controls="paneCom" id="tabCom">
           <span class="node" aria-hidden="true"></span>
           <span class="dn">Companion</span>
-          <span class="dv" id="devCom">not set up yet</span>
+          <span class="dv" id="devCom">no channels yet</span>
         </button>
       </div>
 
@@ -1460,7 +1461,8 @@
                      aria-label="Node name" aria-describedby="namePrefix nameBytes">
               <span class="bytes" id="nameBytes"></span>
             </div>
-            <p class="nmwhy" id="nameHint">The four digits are your <b class="a">postnummer</b>.</p>
+            
+            <p class="nmwhy" id="nameHint">Place the node on the map to name it.</p>
           </div>
         </div>
         <div class="row">
@@ -1468,7 +1470,7 @@
           <div class="v">
             <div class="seg" id="locSeg">
               <button data-loc="none" class="on">none</button>
-              <button data-loc="map">map</button>
+              <button data-loc="map" disabled>map</button>
               <button data-loc="gps">gps</button>
             </div>
           </div>
@@ -1493,7 +1495,7 @@
         </div>
         <details class="explain">
           <summary>About the name and location</summary>
-          <p id="locNote"></p>
+          <p id="locNote">Place the node on the map to publish a location.</p>
           <p>Convention: <code>NO-&lt;postnummer&gt; &lt;place&gt;</code> — a node on Skuiåsen in
              Bærums Verk is <code>NO-1354 Skuiåsen</code>. <b>32 bytes, or 24 if you publish a
              location.</b> Norwegian letters cost two each. Takes effect after a reboot.</p>
@@ -1654,7 +1656,7 @@
             <div class="numf" id="unscHopsBox" hidden>
               <input type="number" id="unscHops" inputmode="numeric" min="0" max="64" step="1" value="3" aria-label="unscoped flood hop limit"><i>hops</i>
             </div>
-            <p class="help" id="unscHelp"></p>
+            <p class="help" id="unscHelp">Untagged traffic floods normally. Nothing is cut off.</p>
           </div>
         </div>
         <details class="explain">
@@ -1798,7 +1800,7 @@
                 <button data-sc="off" class="on">skip</button>
                 <button data-sc="on">include</button>
               </div>
-              <p class="help" id="scopeNote"></p>
+              <p class="help" id="scopeNote">No region tag, so a message travels as far as the mesh carries it. <b>Skipped by default while most repeaters don’t carry regions</b> — turn it on once the ones around you do.</p>
             </div>
           </div>
           
@@ -1829,7 +1831,7 @@
           <h2>QR codes</h2>
           <p class="sub">Scan one with the MeshCore app to join. Reading this on the phone you are
              setting up? Tap <b>Add</b> instead.</p>
-          <div class="chans" id="chans"></div>
+          <div class="chans" id="chans"><p class="empty">Place the node on the map and the channels for that area appear here.</p></div>
         </section>
       </div>
     </div>
@@ -2255,22 +2257,22 @@
           <path class="nbk-line" id="nbkLine" d=""></path>
           <path class="sel-komm" id="selKomm" d=""></path>
         </g>
-      <g class="city" data-key="no-kristiansand" data-minz="1" transform="translate(68.0,542.1)" tabindex="0" role="button" aria-label="Kristiansand"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Kristiansand</text></g>
-      <g class="city" data-key="no-sandnes" data-minz="1" transform="translate(24.2,506.7)" tabindex="0" role="button" aria-label="Sandnes"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Sandnes</text></g>
-      <g class="city" data-key="no-fredrikstad" data-minz="1" transform="translate(134.3,505.0)" tabindex="0" role="button" aria-label="Fredrikstad"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Fredrikstad</text></g>
+      <g class="city lab" data-key="no-kristiansand" data-minz="1" transform="translate(68.0,542.1)" tabindex="0" role="button" aria-label="Kristiansand"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Kristiansand</text></g>
+      <g class="city lab" data-key="no-sandnes" data-minz="1" transform="translate(24.2,506.7)" tabindex="0" role="button" aria-label="Sandnes"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Sandnes</text></g>
+      <g class="city lab" data-key="no-fredrikstad" data-minz="1" transform="translate(134.3,505.0)" tabindex="0" role="button" aria-label="Fredrikstad"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Fredrikstad</text></g>
       <g class="city" data-key="no-skien" data-minz="1.6" transform="translate(106.6,503.0)" tabindex="0" role="button" aria-label="Skien"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:0.0;--dy:16.5" text-anchor="middle">Skien</text></g>
       <g class="city" data-key="no-tonsberg" data-minz="2.5" transform="translate(123.5,502.2)" tabindex="0" role="button" aria-label="Tønsberg"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:0.0;--dy:-6.0" text-anchor="middle">Tønsberg</text></g>
       <g class="city" data-key="no-stavanger" data-minz="2.5" transform="translate(24.9,502.0)" tabindex="0" role="button" aria-label="Stavanger"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:-10.0;--dy:4.0" text-anchor="end">Stavanger</text></g>
-      <g class="city" data-key="no-drammen" data-minz="1" transform="translate(120.9,482.5)" tabindex="0" role="button" aria-label="Drammen"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:-10.0;--dy:4.0" text-anchor="end">Drammen</text></g>
-      <g class="city" data-key="no-oslo" data-minz="1" transform="translate(132.7,476.6)" tabindex="0" role="button" aria-label="Oslo"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Oslo</text></g>
-      <g class="city" data-key="no-bergen" data-minz="1" transform="translate(25.7,443.4)" tabindex="0" role="button" aria-label="Bergen"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Bergen</text></g>
-      <g class="city" data-key="no-hamar" data-minz="1" transform="translate(141.9,441.2)" tabindex="0" role="button" aria-label="Hamar"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Hamar</text></g>
-      <g class="city" data-key="no-molde" data-minz="1" transform="translate(75.2,354.2)" tabindex="0" role="button" aria-label="Molde"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Molde</text></g>
-      <g class="city" data-key="no-trondheim" data-minz="1" transform="translate(137.8,332.9)" tabindex="0" role="button" aria-label="Trondheim"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Trondheim</text></g>
-      <g class="city" data-key="no-bodo" data-minz="1" transform="translate(214.9,179.7)" tabindex="0" role="button" aria-label="Bodø"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Bodø</text></g>
-      <g class="city" data-key="no-tromso" data-minz="1" transform="translate(282.1,82.5)" tabindex="0" role="button" aria-label="Tromsø"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Tromsø</text></g>
-      <g class="city" data-key="no-alta" data-minz="1" transform="translate(341.7,64.6)" tabindex="0" role="button" aria-label="Alta"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Alta</text></g>
-      <g class="city" data-key="no-kirkenes" data-minz="1" transform="translate(437.1,58.4)" tabindex="0" role="button" aria-label="Kirkenes"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:0.0;--dy:-6.0" text-anchor="middle">Kirkenes</text></g>
+      <g class="city lab" data-key="no-drammen" data-minz="1" transform="translate(120.9,482.5)" tabindex="0" role="button" aria-label="Drammen"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:-10.0;--dy:4.0" text-anchor="end">Drammen</text></g>
+      <g class="city lab" data-key="no-oslo" data-minz="1" transform="translate(132.7,476.6)" tabindex="0" role="button" aria-label="Oslo"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Oslo</text></g>
+      <g class="city lab" data-key="no-bergen" data-minz="1" transform="translate(25.7,443.4)" tabindex="0" role="button" aria-label="Bergen"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Bergen</text></g>
+      <g class="city lab" data-key="no-hamar" data-minz="1" transform="translate(141.9,441.2)" tabindex="0" role="button" aria-label="Hamar"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Hamar</text></g>
+      <g class="city lab" data-key="no-molde" data-minz="1" transform="translate(75.2,354.2)" tabindex="0" role="button" aria-label="Molde"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Molde</text></g>
+      <g class="city lab" data-key="no-trondheim" data-minz="1" transform="translate(137.8,332.9)" tabindex="0" role="button" aria-label="Trondheim"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Trondheim</text></g>
+      <g class="city lab" data-key="no-bodo" data-minz="1" transform="translate(214.9,179.7)" tabindex="0" role="button" aria-label="Bodø"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Bodø</text></g>
+      <g class="city lab" data-key="no-tromso" data-minz="1" transform="translate(282.1,82.5)" tabindex="0" role="button" aria-label="Tromsø"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Tromsø</text></g>
+      <g class="city lab" data-key="no-alta" data-minz="1" transform="translate(341.7,64.6)" tabindex="0" role="button" aria-label="Alta"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:10.0;--dy:4.0" text-anchor="start">Alta</text></g>
+      <g class="city lab" data-key="no-kirkenes" data-minz="1" transform="translate(437.1,58.4)" tabindex="0" role="button" aria-label="Kirkenes"><circle class="halo" r="9"></circle><circle class="hit" r="13"></circle><circle class="dot" r="4"></circle><text class="name" x="0" y="0" style="--dx:0.0;--dy:-6.0" text-anchor="middle">Kirkenes</text></g>
         
         <g class="pin ghost" id="pinGhost" aria-hidden="true" hidden>
           <circle class="ghost-dot"></circle>
@@ -4237,6 +4239,12 @@
   
   
   const PaintMap = (() => {
+
+  
+  
+  
+  const REST_REP = $('devRep').textContent;
+  const REST_COM = $('devCom').textContent;
   const FILL_TIERS = ['t-own', 't-nbf', 't-ownl', 't-nbl'];
   const TIERS = [...FILL_TIERS, 't-nbk'];
 
@@ -4317,10 +4325,10 @@
   
   
   function deviceSwitch(rd, cd) {
-    $('devRep').textContent = !rd ? 'no node placed'
+    $('devRep').textContent = !rd ? REST_REP
       : cfg.desc.trim() ? Cfg.nodeName(rd) : 'not named yet';
     const nch = cd ? Regions.channels(cd).length : 0;
-    $('devCom').textContent = nch ? `${nch} channels` : 'no channels yet';
+    $('devCom').textContent = nch ? `${nch} channels` : REST_COM;
   }
 
   
@@ -4472,6 +4480,12 @@
 
   
   
+  const NAME_HINT = $('nameHint').innerHTML;
+  const REST_LOC = $('locNote').textContent;
+  const REST_UNSC = $('unscHelp').innerHTML;
+
+  
+  
   
   
   
@@ -4507,7 +4521,8 @@
       $('nameBytes').textContent = '';
       $('nameBytes').className = 'bytes';
       $('nameHint').className = 'nmwhy';
-      $('nameHint').textContent = 'Place the node on the map to name it.';
+      
+      if ($('nameHint').innerHTML !== NAME_HINT) $('nameHint').innerHTML = NAME_HINT;
       return;
     }
 
@@ -4590,7 +4605,7 @@
       if (cfg.locMode === 'map') cfg.locMode = 'none';
       $('locSeg').querySelectorAll('button').forEach(x =>
         x.classList.toggle('on', x.dataset.loc === cfg.locMode));
-      $('locNote').textContent = 'Place the node on the map to publish a location.';
+      $('locNote').textContent = REST_LOC;
       return;
     }
     const ll = Proj.unproject(ctx.x, ctx.y);
@@ -4676,7 +4691,7 @@
         ? `Local untagged traffic still spreads, but only ${cfg.unscopedHops || '?'} hops. The neighbourhood, not the country.`
       : cfg.unscoped === 'deny'
         ? '<b class="bad">Drops every untagged packet.</b> Use it only after the mesh around you carries regions, or it isolates nodes that have not set regions.'
-        : 'Untagged traffic floods normally. Nothing is cut off.';
+        : REST_UNSC;
   }
 
   
@@ -4695,6 +4710,10 @@
   
   
   const ChanUI = (() => {
+
+  
+  const REST_SCOPE = $('scopeNote').innerHTML;
+  const REST_CHANS = $('chans').innerHTML;
 
   
   
@@ -4723,8 +4742,7 @@
     
     const list = Regions.channels(Ctx.ctxFor(ui.device));
     if (!list.length) {
-      box.innerHTML = '<p class="empty">Place the node on the map and the channels for '
-        + 'that area appear here.</p>';
+      box.innerHTML = REST_CHANS;
       return;
     }
     const row = (c, i) => `<div class="chan">
@@ -4790,8 +4808,7 @@
       + 'Local traffic stays local instead of spending everyone’s airtime. <b>Most repeaters don’t '
       + 'carry regions yet, so check what is around you.</b> Unset region scope in the app if '
       + 'messages stop getting through.'
-      : 'No region tag, so a message travels as far as the mesh carries it. <b>Skipped by default '
-      + 'while most repeaters don’t carry regions</b> — turn it on once the ones around you do.';
+      : REST_SCOPE;
     render();
     if (qrShown) showQr(qrShown);
   }
