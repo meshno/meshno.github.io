@@ -214,6 +214,16 @@
      larger of the two so the hierarchy reads title-under-brand, not the
      reverse. Single line, so align-items: center is safe here. */
   .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 13px; }
+  /* The mark is a link back to a blank page — see the note in page.html. It
+     carries no link colour or underline: it is the identity, and the only cue
+     it needs is the pointer. `display: flex` kills the inline-baseline gap that
+     would otherwise push the wordmark off centre. */
+  .home {
+    display: flex; flex: none; border-radius: 6px; color: inherit;
+    text-decoration: none; cursor: pointer;
+  }
+  .home:hover .lg-a { r: 5.5; }
+  .home:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   .logo { width: 26px; height: 26px; flex: none; }
   .wordmark { font-size: 19px; font-weight: 600; letter-spacing: -0.005em; }
   /* the NO carries the accent, the same tie the mark's accent node makes */
@@ -247,12 +257,19 @@
        of the breakpoint in JS. One source of truth; do not add a matchMedia
        with the same number in it. */
     --cols: 2;
-    /* The map column's resting height, reserved so the footer does not move
-       when the column arrives — it is last in the source now. The track is a
-       fixed 380px and the SVG is that times its viewBox ratio (470.3/550.5 ->
-       1.1705), leaving 299px of furniture measured at this width. A floor
-       only: placing a node grows the region tree past it. */
-    --map-reserve-col: calc(380px * 1.1705 + 299px);
+    /* NO HEIGHT RESERVATION ON DESKTOP, deliberately — see the narrow block,
+       which needs one. There was one here briefly and it was a real bug:
+       MIN-HEIGHT BEATS MAX-HEIGHT in CSS, so a floor of 744px overrode the
+       `max-height: calc(100vh - 48px)` that lets this column scroll inside a
+       short viewport. Below about 792px tall the column then stood 744px
+       regardless, hanging past the bottom of a sticky element you cannot
+       scroll to — reported as strange padding under the left column.
+
+       It bought nothing anyway: measured CLS is identical with and without it
+       (0.0315 / 0.0358 / 0.0562 at 1280x1000, 1280x700 and 1024x800), because
+       the shift it was added for turned out to be the region tree box growing
+       and was fixed at the source. If a reservation is ever needed here again,
+       cap it: min(reserve, calc(100vh - 48px)). */
   }
   /* grid items default to min-width:auto and refuse to shrink below their
      content, so they burst out of the track and past the page padding */
@@ -272,8 +289,7 @@
      both tracks takes it back to 0.02. Do not remove one without the other,
      and note they must be released when the columns stack (see the narrow
      block, which is one column and would otherwise grow a phantom second). */
-  .map-col { position: sticky; top: 24px; order: -1; grid-column: 1;
-             min-height: var(--map-reserve-col); }
+  .map-col { position: sticky; top: 24px; order: -1; grid-column: 1; }
   .col { grid-column: 2; }
   .map-col > h2 { margin-bottom: 6px; }
   .map-col > .sub { margin-bottom: 14px; }
@@ -716,7 +732,14 @@
 
   /* ---- sections ---- */
   section { border-top: 1px solid var(--rule); padding: 22px 0 26px; }
-  .needs-node { position: relative; padding-top: 18px; }
+  /* NO BOTTOM PADDING: this is the last thing in the map column, so the 26px
+     that `section` gives every block to separate it from the next one has
+     nothing to separate it from. It sat at the end of the column's own scroll
+     area as a strip of dead space you could scroll to and find empty —
+     reported as strange padding under the left column on a short viewport,
+     where the column scrolls internally and you actually reach its end.
+     Sections in the right-hand column keep it; they have neighbours. */
+  .needs-node { position: relative; padding-top: 18px; padding-bottom: 0; }
 
   /* A node without a position still gets a config — radio and timing do not
      depend on where it stands. The region tree just says what is missing. */
@@ -1267,7 +1290,7 @@
   @media (max-width: 900px) {
     main { grid-template-columns: minmax(0, 1fr); gap: 28px; --cols: 1;
            --map-reserve: var(--map-reserve-col);
-           --map-reserve-col: calc((100vw - 36px) * 1.1705 + 367px); }
+           --map-reserve-col: calc((100vw - 36px) * 1.1705 + 251px); }
     /* THE FURNITURE IS A STEP FUNCTION OF WIDTH, not a constant, because the
        heading, the sub and the position row wrap at different points. Measured
        across the range: 386px at 320, 376px at 360, 353px from 375 to 500, and
@@ -1277,52 +1300,47 @@
        Two tiers cover it with at most 14px of slack, and slack is free here:
        it is a floor, so it shows up as a slightly wider gap above the config
        column and never as movement. */
-    @media (max-width: 374px) {
-      main { --map-reserve-col: calc((100vw - 36px) * 1.1705 + 386px); }
-    }
-    /* one column here, so the pinned tracks above would put the config column
+        /* one column here, so the pinned tracks above would put the config column
        in a second track that does not exist and the grid would invent one */
     .map-col, .col { grid-column: auto; }
 
     /* RESERVE THE MAP COLUMN'S HEIGHT WHILE ITS CONTENT IS STILL ARRIVING.
-       Stacked, the map sits on top (order: -1) but is last in the source, so
-       it grows underneath the already-visible config column and shoves it down
-       — measured CLS 0.37 without this. Desktop has no such problem: the two
-       columns are separate grid tracks, so neither moves the other.
+       Stacked, the map sits on top (order: -1) but is last in the source, so it
+       grows underneath the already-visible config column and shoves it down.
+       Measured without this: CLS 0.27 at 320px rising to 0.61 at 700px.
+       Desktop needs nothing — the columns are separate grid tracks, so neither
+       moves the other, and a floor there is actively harmful (see .map-col).
 
-       IT GOES ON THE COLUMN, NOT ON `main`. Two earlier attempts padded `main`
-       while the column was absent, and both made things worse (0.48 against
-       0.37), because the column is NOT absent for most of that window: the
-       `<svg viewBox>` gives the browser the map's aspect ratio at its opening
-       tag, so 560 of the eventual 767px are already reserved by 1.9s and the
-       padding simply double-counted them. What actually streams in after that
-       is the ~200px of furniture around the map — heading, sub, position row,
-       map tag.
+       IT TAKES TWO RULES, AND BOTH ARE NEEDED. They cover the two halves of the
+       window and hand over in the same frame:
 
-       The height is the SVG's own aspect ratio (viewBox 470.3x550.5 -> 1.1705)
-       plus that furniture, measured at 353px at 390px wide and 332-376px
-       across 360-430px as the headings wrap. It is a floor, not a size: too
-       low and the column simply grows past it, too high and it leaves a little
-       dead space under the map tag. Re-measure if that furniture changes.
+         main padding-top    before the column's opening tag exists at all,
+                             when there is nothing to put a height on. Released
+                             by the one-line inline script immediately before
+                             .map-col in page.html, which is the only way to hit
+                             that instant exactly. `:has()` looks right and is
+                             not: Chrome does not re-evaluate it on insertion,
+                             so it held the padding until the column's CONTENT
+                             finished, measuring worse than no reservation.
 
-       IT TAKES TWO RULES, AND BOTH ARE NEEDED — this cost four measured
-       attempts. They cover the two halves of the window and hand over in the
-       same frame:
+         .map-col min-height from that opening tag onward, while the furniture
+                             streams in. Without it the padding drops at the
+                             opening tag and the config column falls in one frame.
 
-         main padding-top          before the column's opening tag exists at
-                                   all, when there is nothing to put a height
-                                   on. Released by the one-line inline script
-                                   immediately before `.map-col` in page.html,
-                                   which is the only way to hit that instant
-                                   exactly — see the comment there for the
-                                   CSS-only version that looks right and is not.
+       THE HEIGHT IS THE SVG PLUS THE FURNITURE'S FLOOR, and the floor is the
+       point. The SVG part is exact — viewBox 470.3x550.5, so it is the column
+       width times 1.1705. The furniture round it (heading, sub, position row,
+       tree box) is text, and text is a STEP FUNCTION of width as it rewraps:
+       measured 360px at 320 wide, 349 at 350, 326 at 370, 305 at 400, 274 at
+       600, 251 from 650 up. Six steps is six magic numbers that rot the moment
+       any of that copy changes.
 
-         .map-col min-height       from that opening tag onward, while the
-                                   furniture streams in. Without it the padding
-                                   drops at the opening tag and the config
-                                   column falls 767px in one frame (0.50).
-
-       Together: 0.04, i.e. no worse than before the reorder. */
+       So reserve the smallest it ever is — 251 — and let the rest grow. Being
+       SHORT costs almost nothing, because the overflow happens below the fold
+       on a phone: measured CLS 0.0000 from 320 to 700px, 0.0175 at 899. Being
+       LONG costs dead space you can scroll to and find empty, which is exactly
+       what was reported here once. At 251 that is 0px up to 600 and 14px above.
+       Do not "improve" this by fitting the constant to a wide viewport. */
     main { padding-top: var(--map-reserve); }
     .map-col { min-height: var(--map-reserve-col); }
     /* the columns stack here, so the left one must not be its own scroll
@@ -1405,13 +1423,17 @@
       <div class="mast-text">
         
         <div class="brand">
-          <svg class="logo" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
-            <path class="lg-link" d="M10 10 V30 M10 10 L30 30 M30 30 V10"/>
-            <circle class="lg-n" cx="10" cy="10" r="4"/>
-            <circle class="lg-n" cx="10" cy="30" r="4"/>
-            <circle class="lg-n" cx="30" cy="30" r="4"/>
-            <circle class="lg-a" cx="30" cy="10" r="4"/>
-          </svg>
+          
+          <a class="home" href="./" aria-label="Start over: clear the config and reload"
+             title="Start over — clears every setting and both pins">
+            <svg class="logo" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+              <path class="lg-link" d="M10 10 V30 M10 10 L30 30 M30 30 V10"/>
+              <circle class="lg-n" cx="10" cy="10" r="4"/>
+              <circle class="lg-n" cx="10" cy="30" r="4"/>
+              <circle class="lg-n" cx="30" cy="30" r="4"/>
+              <circle class="lg-a" cx="30" cy="10" r="4"/>
+            </svg>
+          </a>
           <span class="wordmark">Mesh<b>NO</b></span>
         </div>
         <h1>MeshCore node configurator</h1>
@@ -1457,7 +1479,8 @@
             
             <div class="namebox">
               <span class="np" id="namePrefix">NO-…</span>
-              <input type="text" id="nodeDesc" placeholder="e.g. Årvollåsen" maxlength="40"
+              
+              <input type="text" id="nodeDesc" disabled placeholder="e.g. Årvollåsen" maxlength="40"
                      aria-label="Node name" aria-describedby="namePrefix nameBytes">
               <span class="bytes" id="nameBytes"></span>
             </div>
@@ -2336,7 +2359,8 @@
              inside <code>no-32</code> by construction, and you can widen a flood from kommune to
              fylke without a lookup table.</p>
           
-          <div class="nmbars" id="nmBars">
+          
+          <div class="nmbars" id="nmBars" hidden>
             <div class="nmtag" id="nmTag"></div>
             <i class="br f" aria-hidden="true"></i>
             <span class="tm f">fylkesnummer</span><span class="vl" id="nmFy"></span>
