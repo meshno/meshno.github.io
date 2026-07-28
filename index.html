@@ -248,15 +248,23 @@
   .lede { color: var(--muted); max-width: 70ch; margin: 0; font-size: 15px; line-height: 1.55; }
   .lede code, code { font-family: var(--mono); font-size: 12.5px; color: var(--ink); }
 
+  /* How many columns the layout is in, published for the page to read. The
+     map's pan lock starts on in the two-column view and off in the one-column
+     one, and this is how it knows which it is WITHOUT a second copy of the
+     breakpoint in JS. One source of truth; do not add a matchMedia with the
+     same number in it.
+
+     ON :root, NOT ON main, AND THAT IS ABOUT COST. Reading it forces a style
+     recalc, so the one read happens in the head script, where the document is
+     still two elements — against `main` the read could not happen until `main`
+     existed, which is mid-body with the whole config column already parsed, and
+     PageSpeed measured that recalc at 23 ms. It inherits, so anything under
+     :root still sees it. */
+  :root { --cols: 2; }
+
   main {
     display: grid; grid-template-columns: 380px minmax(0, 1fr);
     gap: 40px; align-items: start; padding-bottom: 60px;
-    /* How many columns the layout is in, published for mapview.js to read. The
-       map's pan lock starts on in the two-column view and off in the one-
-       column one, and this is how it knows which it is WITHOUT a second copy
-       of the breakpoint in JS. One source of truth; do not add a matchMedia
-       with the same number in it. */
-    --cols: 2;
     /* NO HEIGHT RESERVATION ON DESKTOP, deliberately — see the narrow block,
        which needs one. There was one here briefly and it was a real bug:
        MIN-HEIGHT BEATS MAX-HEIGHT in CSS, so a floor of 744px overrode the
@@ -1304,7 +1312,8 @@
 
   /* ---- narrow ---- */
   @media (max-width: 900px) {
-    main { grid-template-columns: minmax(0, 1fr); gap: 28px; --cols: 1;
+    :root { --cols: 1; }
+    main { grid-template-columns: minmax(0, 1fr); gap: 28px;
            --map-reserve: var(--map-reserve-col);
            --map-reserve-col: calc((100vw - 36px) * 1.1705 + 367px); }
     /* THE FURNITURE IS A STEP FUNCTION OF WIDTH, not a constant, because the
@@ -1430,6 +1439,20 @@
       t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
     document.documentElement.setAttribute('data-theme', t);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    document.documentElement.dataset.cols =
+      parseInt(getComputedStyle(document.documentElement)
+                 .getPropertyValue('--cols'), 10);
   })();
 </script>
 </head>
@@ -1939,7 +1962,7 @@
         </g>
       </svg>
       
-      <script>document.getElementById('zPan').setAttribute('aria-pressed', String(parseInt(getComputedStyle(document.getElementById('main')).getPropertyValue('--cols'), 10) > 1))</script>
+      <script>document.getElementById('zPan').setAttribute('aria-pressed', String(document.documentElement.dataset.cols > 1))</script>
         
         
         
