@@ -2622,18 +2622,51 @@ const hit = Proj.areaAt(POST_GEO[kommune] || [], x, y);
 return hit ? hit.nr : null;
 }
 async function loadPostGeo(onReady) {
-let g;
+let b;
 try {
-const r = await fetch('postnr-geo.json');
+const r = await fetch('postnr-geo.bin');
 if (!r.ok) return;
-g = await r.json();
+b = new Uint8Array(await r.arrayBuffer());
 } catch (e) { return; }
-const [minx, miny, step] = g.t;
-const arcs = g.arcs.map(da => {
-let ix = 0, iy = 0; const pts = [];
-for (const [dx, dy] of da) { ix += dx; iy += dy; pts.push([minx + ix * step, miny + iy * step]); }
-return pts;
-});
+if (b.length < 4 || b[0] !== 80 || b[1] !== 78 || b[2] !== 82 || b[3] !== 49)
+return;
+let p = 4;
+const uvar = () => {
+let n = 0, s = 0, c;
+do { c = b[p++]; n |= (c & 0x7F) << s; s += 7; } while (c & 0x80);
+return n >>> 0;
+};
+const svar = () => { const n = uvar(); return (n >>> 1) ^ -(n & 1); };
+const minx = svar() / 100, miny = svar() / 100, step = svar() / 1e6;
+const arcs = new Array(uvar());
+let px = 0, py = 0;
+for (let i = 0; i < arcs.length; i++) {
+const n = uvar();
+px += svar(); py += svar();
+let ix = px, iy = py;
+const pts = [[minx + ix * step, miny + iy * step]];
+for (let k = 1; k < n; k++) {
+ix += svar(); iy += svar();
+pts.push([minx + ix * step, miny + iy * step]);
+}
+arcs[i] = pts;
+}
+const polys = new Array(uvar());
+let prev = 0;
+for (let i = 0; i < polys.length; i++) {
+const nr = String(uvar()).padStart(4, '0');
+const parts = new Array(uvar());
+for (let a = 0; a < parts.length; a++) {
+const part = new Array(uvar());
+for (let c = 0; c < part.length; c++) {
+const ids = new Array(uvar());
+for (let d = 0; d < ids.length; d++) { prev += svar(); ids[d] = prev; }
+part[c] = ids;
+}
+parts[a] = part;
+}
+polys[i] = [nr, parts];
+}
 const ring = ids => {
 const pts = [];
 for (const id of ids) {
@@ -2645,7 +2678,7 @@ for (let i = s; i < a.length; i++) pts.push(a[i]);
 return pts;
 };
 const byKomm = {};
-for (const [nr, parts] of g.polys) {
+for (const [nr, parts] of polys) {
 const rec = POST_BY_NR[nr];
 if (!rec) continue;
 const komm = rec[2];
