@@ -156,11 +156,12 @@
   h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.015em; margin: 0 0 10px; }
   
 
-  .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 13px; }
+  .brand { display: flex; align-items: center; margin-bottom: 13px; }
   
 
   .home {
-    display: flex; flex: none; border-radius: 6px; color: inherit;
+    display: flex; align-items: center; gap: 10px;
+    flex: none; border-radius: 6px; color: inherit;
     text-decoration: none; cursor: pointer;
   }
   .home:hover .lg-a { r: 5.5; }
@@ -1195,7 +1196,7 @@ parseInt(getComputedStyle(document.documentElement)
         
         <div class="brand">
           
-          <a class="home" href="./" aria-label="Start over: clear the config and reload"
+          <a class="home" href="./" aria-label="MeshNO — start over: clear the config and reload"
              title="Start over — clears every setting and both pins">
             <svg class="logo" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
               <path class="lg-link" d="M10 10 V30 M10 10 L30 30 M30 30 V10"/>
@@ -1204,8 +1205,8 @@ parseInt(getComputedStyle(document.documentElement)
               <circle class="lg-n" cx="30" cy="30" r="4"/>
               <circle class="lg-a" cx="30" cy="10" r="4"/>
             </svg>
+            <span class="wordmark">Mesh<b>NO</b></span>
           </a>
-          <span class="wordmark">Mesh<b>NO</b></span>
         </div>
         <h1>MeshCore node configurator</h1>
         <p class="lede">Config for Norwegian MeshCore nodes, following the conventions Denmark and the Netherlands use. It targets the <code>EU/UK Narrow</code> preset already running here — 869.618&nbsp;MHz at 62.5&nbsp;kHz. Set up a <b>repeater</b> with the regions it relays for, or a <b>companion</b> with the channels for where you are.</p>
@@ -2460,6 +2461,8 @@ return { KOMMUNER, CITY_PTS, resolve, borderAt, metroAt, airportAt, exactPost, l
 const Ctx = (() => {
 const OTHER = { repeater: 'companion', companion: 'repeater' };
 const livePin = dev => pins[dev].auto ? pins[OTHER[dev]] : pins[dev];
+const clearPin = dev => Object.assign(pins[dev],
+{ x: null, y: null, post: null, postTyped: null, auto: true });
 function deriveAt(x, y, pn) {
 const k = Geo.resolve(x, y);
 if (!k) return null;
@@ -2486,7 +2489,7 @@ if (otherCtx.key !== key) otherCtx = { key, ctx: deriveAt(p.x, p.y, p.postTyped)
 return otherCtx.ctx;
 }
 const invalidate = () => { otherCtx = { key: null, ctx: null }; };
-return { deriveAt, livePin, ctxFor, invalidate, OTHER };
+return { deriveAt, livePin, clearPin, ctxFor, invalidate, OTHER };
 })();
 const Regions = (() => {
 const channelSecret = name => Sha.hex('#' + name).slice(0, 32);
@@ -2679,6 +2682,10 @@ bottom: ft ? Math.max(0, r.bottom - ft.top + FURN_GAP) : 0,
 h: r.height, w: r.width,
 };
 }
+function home() {
+view.z = 1; view.rest = 1;
+view.cx = VBX + W / 2; view.cy = VBY + H / 2;
+}
 function ensureVisible(x, y) {
 const w = W / view.z, h = H / view.z;
 const f = furniture(), u = f.h ? (h / f.h) : 0;
@@ -2752,9 +2759,8 @@ $('zIn').addEventListener('click', () => zoomTo(view.z * 1.6));
 $('zOut').addEventListener('click', () => zoomTo(view.z / 1.6));
 $('zReset').addEventListener('click', () => {
 ui.drilled = null;
-const p = pins[ui.device];
-p.x = p.y = p.post = p.postTyped = null; p.auto = true;
-view.z = 1; view.rest = 1; view.cx = VBX + W / 2; view.cy = VBY + H / 2;
+Ctx.clearPin(ui.device);
+home();
 if (ui.device === 'repeater' && cfg.descAuto) cfg.desc = '';
 showPinFor(ui.device);
 });
@@ -2837,8 +2843,8 @@ onPlace = deps.place;
 setPan(panOn);
 applyView();
 }
-return { view, apply: applyView, zoomTo, zoomToFylke, ensureVisible, furniture,
-mapPoint, setPan, setGhost, init };
+return { view, apply: applyView, zoomTo, zoomToFylke, ensureVisible, home,
+furniture, mapPoint, setPan, setGhost, init };
 })();
 const PaintMap = (() => {
 const REST_REP = $('devRep').textContent;
@@ -3559,7 +3565,35 @@ addEventListener('pointerdown', thaw, { once: true });
 addEventListener('keydown', thaw, { once: true });
 }
 const seed = () => { urlLast = shareHash(); };
-return { hash: shareHash, apply: applyShare, schedule: syncUrl, freeze, seed };
+function toDefaults() {
+for (const r of FIELDS) bagOf(r)[r.f] = r.def;
+Object.assign(reach, REACH_DEF);
+for (const dev of Object.keys(pins)) Ctx.clearPin(dev);
+ui.drilled = null;
+MapView.home();
+}
+function adopt(first = false) {
+if (!first) {
+if (location.hash.replace(/^#/, '') === urlLast) return;
+toDefaults();
+}
+const shared = applyShare(location.hash);
+if (!first && shared !== true) { Controls.sync(); showPinFor(ui.device); }
+ChanUI.setScope(cfg.chanScope);
+const note = $('linkNote');
+note.hidden = shared !== 'newer';
+if (shared === 'newer') {
+note.innerHTML = '<b class="bad">This link was made by a newer version '
++ 'of this page.</b> Nothing has been applied. Reload to pick up the current '
++ 'version, then open the link again.';
+freeze();
+} else {
+urlFrozen = false;
+}
+seed();
+}
+addEventListener('hashchange', () => adopt());
+return { hash: shareHash, adopt, schedule: syncUrl };
 })();
 const Controls = (() => {
 let render = () => {}, place = () => false,
@@ -3688,8 +3722,7 @@ showPinFor(ui.device, true);
 }));
 $('pinNote').addEventListener('click', e => {
 if (!e.target.closest('button')) return;
-const p = pins[ui.device];
-p.x = p.y = p.post = p.postTyped = null; p.auto = true;
+Ctx.clearPin(ui.device);
 showPinFor(ui.device, true);
 });
 $('mapStart').addEventListener('click', () => $('mapStart').classList.add('seen'), { once: true });
@@ -3775,16 +3808,7 @@ render();
 MapView.init({ place });
 Controls.wire({ render, place, replace, showPinFor });
 render();
-const shared = Share.apply(location.hash);
-ChanUI.setScope(cfg.chanScope);
-if (shared === 'newer') {
-$('linkNote').hidden = false;
-$('linkNote').innerHTML = '<b class="bad">This link was made by a newer version '
-+ 'of this page.</b> Nothing has been applied. Reload to pick up the current '
-+ 'version, then open the link again.';
-Share.freeze();
-}
-Share.seed();
+Share.adopt(true);
 (window.requestIdleCallback || (fn => setTimeout(fn, 200)))(
 () => Geo.loadPostGeo(refreshPost));
 </script>
