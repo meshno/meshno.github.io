@@ -70,6 +70,13 @@
     --glass:   rgba(255,255,255,0.88);
     
 
+    --lift:    0 1px 12px rgba(13,27,38,0.12);
+    
+
+    --sun:     block;
+    --moon:    none;
+    
+
     --frost:   rgba(251,252,252,0.58);
     --bad:     #b3261e;
     --warn:    #8a5300;
@@ -114,6 +121,11 @@
     --slot:    rgba(94,234,212,0.30);
     --slot-b:  rgba(94,234,212,0.45);
     --glass:   rgba(10,18,32,0.80);
+    
+
+    --lift:    0 1px 0 rgba(0,0,0,0.55), 0 6px 16px rgba(0,0,0,0.40);
+    --sun:     none;
+    --moon:    block;
     --frost:   rgba(10,18,32,0.55);
     --bad:     #ff8f8f;
     --warn:    #ffb454;
@@ -149,14 +161,112 @@
 
   .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
 
-   
-  header {
-    border-bottom: 1px solid var(--rule); padding: 30px 0 20px; margin-bottom: 26px;
-  }
-  h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.015em; margin: 0 0 10px; }
   
 
-  .brand { display: flex; align-items: center; margin-bottom: 13px; }
+  .navbar {
+    position: sticky; top: 0; z-index: 20;
+    background: var(--bg); border-bottom: 1px solid var(--rule);
+  }
+  
+
+  .navbar.stuck { box-shadow: var(--lift); }
+  .nav-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0 14px; min-height: 58px; }
+  .nav-row > .home { order: 1; margin-right: auto; }
+  .nav-links { order: 2; display: flex; align-items: center; gap: 2px; }
+  .tcycle { order: 3; }
+  .burger { order: 4; }
+
+  
+
+  .nl {
+    color: var(--muted); text-decoration: none; font-size: 13.5px;
+    padding: 8px 12px; border-bottom: 1px solid transparent;
+  }
+  .nl:hover { color: var(--ink); border-bottom-color: var(--accent); }
+  .nl:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  
+
+  .tcycle {
+    display: flex; align-items: center; gap: 7px;
+    min-height: 30px; padding: 4px 10px; margin-left: 4px;
+    font-family: var(--mono); font-size: 12px; color: var(--muted);
+    background: transparent; border: 1px solid var(--rule); cursor: pointer;
+  }
+  .tcycle:hover { border-color: var(--muted); color: var(--ink); }
+  .tcycle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .ticon {
+    width: 14px; height: 14px; flex: none; fill: none; stroke: currentColor;
+    stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
+  }
+  
+
+  .sun { display: var(--sun); }
+  .moon { display: var(--moon); }
+   
+  .tlabel { min-width: 3.4em; text-align: left; }
+  
+
+  .tkey { display: none; }
+
+  
+
+  .burger {
+    display: none; width: 40px; height: 40px; padding: 0;
+    background: transparent; border: 1px solid var(--rule); cursor: pointer;
+    flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  }
+  .burger:hover { border-color: var(--muted); }
+  .burger:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .bl {
+    display: block; width: 17px; height: 1.5px; background: var(--muted);
+    transition: transform 0.18s ease, opacity 0.12s ease;
+  }
+  .burger:hover .bl { background: var(--ink); }
+  .burger[aria-expanded="true"] .bl:nth-child(1) { transform: translateY(5.5px) rotate(45deg); }
+  .burger[aria-expanded="true"] .bl:nth-child(2) { opacity: 0; }
+  .burger[aria-expanded="true"] .bl:nth-child(3) { transform: translateY(-5.5px) rotate(-45deg); }
+  @media (prefers-reduced-motion: reduce) { .bl { transition: none; } }
+
+  
+
+  @media (max-width: 720px) {
+    .nav-row { min-height: 54px; }
+    
+
+    .burger { display: flex; width: 44px; height: 44px; }
+    
+
+    .nav-links, .tcycle { display: none; }
+    .navbar.open .nav-links {
+      order: 5; display: flex; flex-direction: column; align-items: stretch;
+      width: 100%; gap: 0;
+      border-top: 1px solid var(--rule-2);
+    }
+    
+
+    .nl {
+      display: flex; align-items: center; min-height: 48px;
+      padding: 0; font-size: 15px; color: var(--ink);
+      border-bottom: 1px solid var(--rule-2);
+    }
+    .nl:hover { border-bottom-color: var(--rule-2); }
+    .nl:focus-visible { outline-offset: -2px; }
+    
+
+    .navbar.open .tcycle {
+      order: 6; display: flex; width: 100%; min-height: 48px;
+      margin: 0; padding: 0 0 14px; border: 0; background: transparent;
+    }
+    .tkey { display: block; margin-right: auto; font-family: var(--sans); font-size: 15px; color: var(--ink); }
+  }
+
+  
+
+  header {
+    border-bottom: 1px solid var(--rule); padding: 28px 0 20px; margin-bottom: 26px;
+  }
+  h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.015em; margin: 0 0 10px; }
   
 
   .home {
@@ -178,15 +288,6 @@
   }
   .lg-n { fill: currentColor; }
   .lg-a { fill: var(--accent); }
-  
-
-  .masthead { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
-  .masthead h1 { margin-bottom: 10px; }
-  
-
-  .mast-text { min-width: 0; }
-  .theme { flex: none; }
-  .theme .seg button { font-size: 12px; padding: 4px 9px; min-height: 26px; }
   .lede { color: var(--muted); max-width: 70ch; margin: 0; font-size: 15px; line-height: 1.55; }
   .lede code, code { font-family: var(--mono); font-size: 12.5px; color: var(--ink); }
 
@@ -197,6 +298,9 @@
   main {
     display: grid; grid-template-columns: 380px minmax(0, 1fr);
     gap: 40px; align-items: start; padding-bottom: 60px;
+    
+
+    scroll-margin-top: 62px;
     
 
   }
@@ -1133,13 +1237,7 @@
     .seg button { min-height: 44px; }
     
 
-    .masthead { flex-direction: column; gap: 18px; }
-    .theme { width: 100%; }
-    .theme .seg { grid-template-columns: repeat(3, 1fr); }
-    .theme .seg button { min-height: 44px; font-size: 13px; }
-    
-
-    .theme .seg button:nth-child(odd):last-child { grid-column: auto; }
+    .nav-row { min-height: 50px; }
     input[type="text"] { min-height: 44px; }
     
 
@@ -1188,37 +1286,54 @@ parseInt(getComputedStyle(document.documentElement)
 <body class="unplaced">
 <a class="skip-link" href="#main">Skip to configurator</a>
 
+
+<div class="navbar" id="navbar">
+  <div class="wrap nav-row">
+    
+    <a class="home" href="./" aria-label="MeshNO — start over: clear the config and reload"
+       title="Start over — clears every setting and both pins">
+      <svg class="logo" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+        <path class="lg-link" d="M10 10 V30 M10 10 L30 30 M30 30 V10"/>
+        <circle class="lg-n" cx="10" cy="10" r="4"/>
+        <circle class="lg-n" cx="10" cy="30" r="4"/>
+        <circle class="lg-n" cx="30" cy="30" r="4"/>
+        <circle class="lg-a" cx="30" cy="10" r="4"/>
+      </svg>
+      <span class="wordmark">Mesh<b>NO</b></span>
+    </a>
+
+    
+    <button type="button" class="tcycle" id="themeBtn"
+            aria-label="Auto — appearance; press to switch to Light">
+      <span class="tkey">Appearance</span>
+      <svg class="ticon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <g class="sun">
+          <circle cx="12" cy="12" r="5"/>
+          <path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M19.4 4.6l-2.1 2.1M6.7 17.3l-2.1 2.1"/>
+        </g>
+        <path class="moon" d="M20 14.5A9 9 0 0 1 9.5 4 8.6 8.6 0 1 0 20 14.5z"/>
+      </svg>
+      <span class="tlabel" id="themeLabel">Auto</span>
+    </button>
+
+    
+    <button type="button" class="burger" id="burger" aria-expanded="false"
+            aria-controls="navLinks" aria-label="Menu">
+      <span class="bl"></span><span class="bl"></span><span class="bl"></span>
+    </button>
+
+    <nav class="nav-links" id="navLinks" aria-label="Elsewhere">
+      <a class="nl" href="https://meshwiki.no/" target="_blank" rel="noopener">Wiki</a>
+      <a class="nl" href="https://discord.gg/2X4C9J4PR" target="_blank" rel="noopener">Discord</a>
+      <a class="nl" href="mailto:meshno.cloning239@passmail.com">Email</a>
+    </nav>
+  </div>
+</div>
+
 <div class="wrap">
   <header>
-    <div class="masthead">
-      
-      <div class="mast-text">
-        
-        <div class="brand">
-          
-          <a class="home" href="./" aria-label="MeshNO — start over: clear the config and reload"
-             title="Start over — clears every setting and both pins">
-            <svg class="logo" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
-              <path class="lg-link" d="M10 10 V30 M10 10 L30 30 M30 30 V10"/>
-              <circle class="lg-n" cx="10" cy="10" r="4"/>
-              <circle class="lg-n" cx="10" cy="30" r="4"/>
-              <circle class="lg-n" cx="30" cy="30" r="4"/>
-              <circle class="lg-a" cx="30" cy="10" r="4"/>
-            </svg>
-            <span class="wordmark">Mesh<b>NO</b></span>
-          </a>
-        </div>
-        <h1>MeshCore node configurator</h1>
-        <p class="lede">Config for Norwegian MeshCore nodes, following the conventions Denmark and the Netherlands use. It targets the <code>EU/UK Narrow</code> preset already running here — 869.618&nbsp;MHz at 62.5&nbsp;kHz. Set up a <b>repeater</b> with the regions it relays for, or a <b>companion</b> with the channels for where you are.</p>
-      </div>
-      <div class="theme">
-        <div class="seg" id="themeSeg" role="group" aria-label="Colour theme">
-          <button type="button" data-t="auto" class="on" aria-pressed="true">Auto</button>
-          <button type="button" data-t="light" aria-pressed="false">Light</button>
-          <button type="button" data-t="dark" aria-pressed="false">Dark</button>
-        </div>
-      </div>
-    </div>
+    <h1>MeshCore node configurator</h1>
+    <p class="lede">Config for Norwegian MeshCore nodes, following the conventions Denmark and the Netherlands use. It targets the <code>EU/UK Narrow</code> preset already running here — 869.618&nbsp;MHz at 62.5&nbsp;kHz. Set up a <b>repeater</b> with the regions it relays for, or a <b>companion</b> with the channels for where you are.</p>
   </header>
 
   <main id="main">
@@ -1564,22 +1679,12 @@ parseInt(getComputedStyle(document.documentElement)
 
       
       <section>
-        <h2>Contact</h2>
-        <p class="sub">The region convention on this page is a proposal, not a standard — push back on it.</p>
-        <div class="row plain">
-          <div class="k">discord</div>
-          <div class="v">
-            <a href="https://discord.gg/2X4C9J4PR" target="_blank" rel="noopener">Norwegian MeshCore community</a>
-            <p class="help">Where the convention gets discussed and agreed. Best place for anything about the mesh itself.</p>
-          </div>
-        </div>
-        <div class="row plain">
-          <div class="k">email</div>
-          <div class="v">
-            <a href="mailto:meshno.cloning239@passmail.com">meshno.cloning239@passmail.com</a>
-            <p class="help">The site operator, for corrections to this page.</p>
-          </div>
-        </div>
+        <h2>Push back</h2>
+        <p class="sub">The region convention on this page is a proposal, not a standard.</p>
+        <p class="help">Anything about the mesh itself — whether these region names are the right
+           ones, or should exist at all — belongs on <b>Discord</b>, where the convention gets
+           discussed and agreed. <b>Email</b> is for corrections to this page. Both are at the top
+           of the page.</p>
       </section>
       </div>
 
@@ -3662,16 +3767,18 @@ let t = null;
 try { t = localStorage.getItem(THEME_KEY); } catch (e) {   }
 return t === 'light' || t === 'dark' ? t : 'auto';
 }
+const THEMES = ['auto', 'light', 'dark'];
+const THEME_TEXT = { auto: 'Auto', light: 'Light', dark: 'Dark' };
 function applyTheme(pref) {
 document.documentElement.setAttribute('data-theme',
 pref === 'auto' ? (prefersDark.matches ? 'dark' : 'light') : pref);
-$('themeSeg').querySelectorAll('button').forEach(b => {
-const on = b.dataset.t === pref;
-b.classList.toggle('on', on);
-b.setAttribute('aria-pressed', String(on));
-});
+const next = THEMES[(THEMES.indexOf(pref) + 1) % THEMES.length];
+$('themeLabel').textContent = THEME_TEXT[pref];
+$('themeBtn').setAttribute('aria-label',
+`${THEME_TEXT[pref]} — appearance; press to switch to ${THEME_TEXT[next]}`);
 }
-seg($('themeSeg'), 't', v => {
+$('themeBtn').addEventListener('click', () => {
+const v = THEMES[(THEMES.indexOf(storedTheme()) + 1) % THEMES.length];
 try {
 if (v === 'auto') localStorage.removeItem(THEME_KEY);
 else localStorage.setItem(THEME_KEY, v);
@@ -3682,6 +3789,29 @@ prefersDark.addEventListener('change', () => {
 if (storedTheme() === 'auto') applyTheme('auto');
 });
 applyTheme(storedTheme());
+const burger = $('burger'), navbar = $('navbar');
+function setMenu(open) {
+burger.setAttribute('aria-expanded', String(open));
+navbar.classList.toggle('open', open);
+}
+burger.addEventListener('click', () => {
+setMenu(burger.getAttribute('aria-expanded') !== 'true');
+});
+$('navLinks').addEventListener('click', e => {
+if (e.target.closest('a')) setMenu(false);
+});
+addEventListener('keydown', e => {
+if (e.key === 'Escape' && burger.getAttribute('aria-expanded') === 'true') {
+setMenu(false);
+burger.focus();
+}
+});
+addEventListener('resize', () => {
+if (!burger.offsetParent) setMenu(false);
+});
+const onScroll = () => navbar.classList.toggle('stuck', scrollY > 4);
+addEventListener('scroll', onScroll, { passive: true });
+onScroll();
 function positionEdited() {
 const box = $('posRead'), note = $('coordNote');
 const raw = box.value.trim();
