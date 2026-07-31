@@ -163,6 +163,9 @@
 
   
 
+  
+
+  :root { --bar-h: 59px; }
   .navbar {
     position: sticky; top: 0; z-index: 20;
     background: var(--bg); border-bottom: 1px solid var(--rule);
@@ -170,11 +173,18 @@
   
 
   .navbar.stuck { box-shadow: var(--lift); }
+  
+
   .nav-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0 14px; min-height: 58px; }
-  .nav-row > .home { order: 1; margin-right: auto; }
-  .nav-links { order: 2; display: flex; align-items: center; gap: 2px; }
-  .tcycle { order: 3; }
-  .burger { order: 4; }
+  .nav-row > .home { order: 1; }
+  .nav-links { order: 2; margin-right: auto; display: flex; align-items: center; gap: 2px; }
+  
+
+  .lang { order: 3; }
+  .tcycle { order: 4; }
+  
+
+  .burger { order: 5; margin-left: auto; }
 
   
 
@@ -184,6 +194,37 @@
   }
   .nl:hover { color: var(--ink); border-bottom-color: var(--accent); }
   .nl:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  
+
+  .nl[aria-current="page"] { color: var(--ink); border-bottom-color: var(--accent); }
+
+  
+
+  .lang {
+    display: flex; align-items: stretch;
+    border: 1px solid var(--rule); border-bottom: 0;
+  }
+  .lc {
+    display: flex; align-items: center;
+    padding: 4px 8px; min-height: 28px;
+    font-family: var(--mono); font-size: 12px; line-height: 1;
+    color: var(--dim); text-decoration: none;
+    border-bottom: 1px solid var(--rule);
+  }
+   
+  .lc + .lc { border-left: 1px solid var(--rule-2); }
+  .lc:hover { color: var(--ink); }
+  .lc:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  
+
+  .lc[aria-current="true"] {
+    color: var(--ink); border-bottom-color: var(--accent);
+    
+
+    box-shadow: inset 0 -2px 0 var(--accent);
+  }
+   
+  .lkey { display: none; }
 
   
 
@@ -237,7 +278,7 @@
     .burger { display: flex; width: 44px; height: 44px; }
     
 
-    .nav-links, .tcycle { display: none; }
+    .nav-links, .tcycle, .lang { display: none; }
     .navbar.open .nav-links {
       order: 5; display: flex; flex-direction: column; align-items: stretch;
       width: 100%; gap: 0;
@@ -254,12 +295,36 @@
     .nl:focus-visible { outline-offset: -2px; }
     
 
+    .nl[aria-current="page"] {
+      border-bottom-color: var(--rule-2);
+      box-shadow: inset 3px 0 0 var(--accent); padding-left: 12px;
+    }
+    
+
     .navbar.open .tcycle {
-      order: 6; display: flex; width: 100%; min-height: 48px;
+      order: 7; display: flex; width: 100%; min-height: 48px;
       margin: 0; padding: 0 0 14px; border: 0; background: transparent;
     }
-    .tkey { display: block; margin-right: auto; font-family: var(--sans); font-size: 15px; color: var(--ink); }
+    
+
+    .navbar.open .lang {
+      order: 6; display: flex; align-items: center; width: 100%; min-height: 48px;
+      border: 0; border-bottom: 1px solid var(--rule-2);
+    }
+    .navbar.open .lc {
+      min-height: 44px; padding: 0 14px; margin: 0; font-size: 14px;
+      border: 1px solid var(--rule-2); border-right-width: 0;
+    }
+    .navbar.open .lc:last-child { border-right-width: 1px; }
+    
+
+    .lkey, .tkey { display: block; margin-right: auto; font-family: var(--sans); font-size: 15px; color: var(--ink); }
   }
+
+  
+
+  html[data-lang="en"] [lang="nb"],
+  html[data-lang="nb"] [lang="en"] { display: none; }
 
   
 
@@ -267,6 +332,9 @@
     border-bottom: 1px solid var(--rule); padding: 28px 0 20px; margin-bottom: 26px;
   }
   h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.015em; margin: 0 0 10px; }
+  
+
+  h1 .cty { color: var(--accent); }
   
 
   .home {
@@ -293,6 +361,56 @@
 
   
 
+  #main[hidden], #mast[hidden], .page[hidden], .skip-link[hidden] { display: none; }
+
+  
+
+  :root[data-page] #mast,
+  :root[data-page] #main,
+  :root[data-page] .skip-link { display: none; }
+  :root[data-page="about"] #pgAbout,
+  :root[data-page="contact"] #pgContact { display: block; }
+
+  
+
+  .page { max-width: 66ch; padding-bottom: 60px; }
+  .page section:first-of-type { border-top: none; padding-top: 0; }
+  
+
+  .page .row > .v > .help:first-child { margin-top: 0; }
+  
+
+  .page .row { grid-template-columns: 130px minmax(0, 1fr); margin-bottom: 14px; }
+  
+
+  .page .help + .row { margin-top: 18px; }
+  .page .help + .help { margin-top: 12px; }
+  
+
+  .page .lede + .lede { margin-top: 12px; }
+  
+
+  .page h1:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+  .page h1:focus:not(:focus-visible) { outline: none; }
+
+  
+
+  .page p a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+  .page p a:hover { text-decoration-color: var(--accent); }
+  .addr { font-family: var(--mono); font-size: 13.5px; margin: 14px 0 0; }
+  .page .addr a { text-decoration: none; border-bottom: 1px solid var(--accent); }
+  .page .addr a:hover { background: var(--wash); }
+
+  
+
+  .mblock {
+    font-family: var(--mono); font-size: 12.5px; line-height: 1.7; color: var(--ink);
+    background: var(--inset); border: 1px solid var(--rule);
+    padding: 14px 16px; margin: 14px 0 0; overflow-x: auto;
+  }
+
+  
+
   :root { --cols: 2; }
 
   main {
@@ -311,7 +429,9 @@
    
   
 
-  .map-col { position: sticky; top: 24px; order: -1; grid-column: 1; }
+  
+
+  .map-col { position: sticky; top: calc(var(--bar-h) + 24px); order: -1; grid-column: 1; }
   .col { grid-column: 2; }
   .map-col > h2 { margin-bottom: 6px; }
   .map-col > .sub { margin-bottom: 14px; }
@@ -711,7 +831,7 @@
 
   
 
-  .map-col { max-height: calc(100vh - 48px); overflow-y: auto; }
+  .map-col { max-height: calc(100vh - var(--bar-h) - 48px); overflow-y: auto; }
   section:first-child { border-top: none; padding-top: 0; }
   h2 {
     font-family: var(--sans); font-size: 17px; font-weight: 600;
@@ -1279,12 +1399,28 @@ document.documentElement.setAttribute('data-theme', t);
 document.documentElement.dataset.cols =
 parseInt(getComputedStyle(document.documentElement)
 .getPropertyValue('--cols'), 10);
+var q = new URLSearchParams(location.search);
+var p = q.get('p');
+if (p === 'about' || p === 'contact') document.documentElement.dataset.page = p;
+var L = q.get('lang');
+if (L !== 'nb' && L !== 'en') {
+try { L = localStorage.getItem('meshno.lang'); } catch (e) {   }
+if (L !== 'nb' && L !== 'en')
+L = /^(nb|nn|no)\b/i.test(navigator.language || '') ? 'nb' : 'en';
+if (L === 'nb') {
+q.set('lang', 'nb');
+try { history.replaceState(null, '', location.pathname + '?' + q + location.hash); }
+catch (e) {   }
+}
+}
+document.documentElement.dataset.lang = L;
 })();
 </script>
 </head>
 
 <body class="unplaced">
-<a class="skip-link" href="#main">Skip to configurator</a>
+
+<a class="skip-link" id="skipLink" href="#main">Skip to configurator</a>
 
 
 <div class="navbar" id="navbar">
@@ -1303,9 +1439,16 @@ parseInt(getComputedStyle(document.documentElement)
     </a>
 
     
+    <nav class="lang" id="langSw" aria-label="Language">
+      <span class="lkey" lang="en">Language</span><span class="lkey" lang="nb">Språk</span>
+      <a class="lc" href="?lang=nb" hreflang="nb" aria-label="Norsk">no</a>
+      <a class="lc" href="./" hreflang="en" aria-label="English" aria-current="true">en</a>
+    </nav>
+
+    
     <button type="button" class="tcycle" id="themeBtn"
             aria-label="Auto — appearance; press to switch to Light">
-      <span class="tkey">Appearance</span>
+      <span class="tkey" lang="en">Appearance</span><span class="tkey" lang="nb">Utseende</span>
       <svg class="ticon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <g class="sun">
           <circle cx="12" cy="12" r="5"/>
@@ -1313,7 +1456,7 @@ parseInt(getComputedStyle(document.documentElement)
         </g>
         <path class="moon" d="M20 14.5A9 9 0 0 1 9.5 4 8.6 8.6 0 1 0 20 14.5z"/>
       </svg>
-      <span class="tlabel" id="themeLabel">Auto</span>
+      <span class="tlabel" id="themeLabel" lang="en">Auto</span><span class="tlabel" id="themeLabelNb" lang="nb">Auto</span>
     </button>
 
     
@@ -1322,18 +1465,44 @@ parseInt(getComputedStyle(document.documentElement)
       <span class="bl"></span><span class="bl"></span><span class="bl"></span>
     </button>
 
-    <nav class="nav-links" id="navLinks" aria-label="Elsewhere">
-      <a class="nl" href="https://meshwiki.no/" target="_blank" rel="noopener">Wiki</a>
-      <a class="nl" href="https://discord.gg/2X4C9J4PR" target="_blank" rel="noopener">Discord</a>
-      <a class="nl" href="mailto:meshno.cloning239@passmail.com">Email</a>
+    
+    
+    <nav class="nav-links" id="navLinks" aria-label="Pages">
+      <a class="nl" href="./" aria-current="page"><span lang="en">Home</span><span lang="nb">Hjem</span></a>
+      <a class="nl" href="?p=contact"><span lang="en">Contact</span><span lang="nb">Kontakt</span></a>
+      <a class="nl" href="?p=about"><span lang="en">About</span><span lang="nb">Om</span></a>
     </nav>
+    
+    <script>(function () {
+var d = document.documentElement.dataset, p = d.page, i;
+if (p) {
+var a = document.getElementById('navLinks').children;
+for (i = 0; i < a.length; i++) {
+if (a[i].getAttribute('href') === '?p=' + p) a[i].setAttribute('aria-current', 'page');
+else a[i].removeAttribute('aria-current');
+}
+}
+var l = document.getElementById('langSw').getElementsByTagName('a'), nb;
+for (i = 0; i < l.length; i++) {
+nb = l[i].getAttribute('hreflang') === 'nb';
+l[i].setAttribute('href', p ? '?p=' + p + (nb ? '&lang=nb' : '')
+: nb ? '?lang=nb' : './');
+if (nb === (d.lang === 'nb')) l[i].setAttribute('aria-current', 'true');
+else l[i].removeAttribute('aria-current');
+}
+})();
+</script>
   </div>
 </div>
 
 <div class="wrap">
-  <header>
-    <h1>MeshCore node configurator</h1>
-    <p class="lede">Config for Norwegian MeshCore nodes, following the conventions Denmark and the Netherlands use. It targets the <code>EU/UK Narrow</code> preset already running here — 869.618&nbsp;MHz at 62.5&nbsp;kHz. Set up a <b>repeater</b> with the regions it relays for, or a <b>companion</b> with the channels for where you are.</p>
+  
+  <header id="mast">
+    
+    
+    <h1 tabindex="-1"><span lang="en">MeshCore node configurator for <span class="cty">Norway</span></span><span lang="nb">MeshCore node-konfigurator for <span class="cty">Norge</span></span></h1>
+    <p class="lede" lang="en">Config for Norwegian MeshCore nodes, following the conventions Denmark and the Netherlands use. It targets the <code>EU/UK Narrow</code> preset already running here — 869.618&nbsp;MHz at 62.5&nbsp;kHz. Set up a <b>repeater</b> with the regions it relays for, or a <b>companion</b> with the channels for where you are.</p>
+    <p class="lede" lang="nb">Config for norske MeshCore-noder, etter konvensjonene Danmark og Nederland bruker. Den sikter på <code>EU/UK Narrow</code>-preseten som allerede kjører her — 869,618&nbsp;MHz på 62,5&nbsp;kHz. Sett opp en <b>repeater</b> med regionene den videresender for, eller en <b>companion</b> med de channels som gjelder der du er.</p>
   </header>
 
   <main id="main">
@@ -1346,20 +1515,21 @@ parseInt(getComputedStyle(document.documentElement)
                 aria-selected="true" aria-controls="paneRep" id="tabRep">
           <span class="node" aria-hidden="true"></span>
           <span class="dn">Repeater</span>
-          <span class="dv" id="devRep">no node placed</span>
+          <span class="dv" id="devRep" lang="en">no node placed</span><span class="dv" id="devRepNb" lang="nb">ingen node satt</span>
         </button>
         <button type="button" role="tab" data-dev="companion"
                 aria-selected="false" aria-controls="paneCom" id="tabCom">
           <span class="node" aria-hidden="true"></span>
           <span class="dn">Companion</span>
-          <span class="dv" id="devCom">no channels yet</span>
+          <span class="dv" id="devCom" lang="en">no channels yet</span><span class="dv" id="devComNb" lang="nb">ingen channels ennå</span>
         </button>
       </div>
 
       <div class="pane" id="paneRep" role="tabpanel" aria-labelledby="tabRep">
       <section>
         <h2>Identity</h2>
-        <p class="sub">What the node calls itself, and whether it says where it is.</p>
+        <p class="sub" lang="en">What the node calls itself, and whether it says where it is.</p>
+        <p class="sub" lang="nb">Hva noden kaller seg selv, og om den sier hvor den står.</p>
         <div class="row">
           <div class="k">name</div>
           <div class="v">
@@ -1372,7 +1542,8 @@ parseInt(getComputedStyle(document.documentElement)
               <span class="bytes" id="nameBytes"></span>
             </div>
             
-            <p class="nmwhy" id="nameHint">Place the node on the map to name it.</p>
+            <p class="nmwhy" id="nameHint" lang="en">Place the node on the map to name it.</p>
+            <p class="nmwhy" id="nameHintNb" lang="nb">Sett noden på kartet for å gi den navn.</p>
           </div>
         </div>
         <div class="row">
@@ -1404,29 +1575,46 @@ parseInt(getComputedStyle(document.documentElement)
           </div>
         </div>
         <details class="explain">
-          <summary>About the name and location</summary>
-          <p id="locNote">Place the node on the map to publish a location.</p>
-          <p>Convention: <code>NO-&lt;postnummer&gt; &lt;place&gt;</code> — a node on Skuiåsen in
+          <summary><span lang="en">About the name and location</span><span lang="nb">Om navnet og posisjonen</span></summary>
+          
+          <p id="locNote" lang="en">Place the node on the map to publish a location.</p>
+          <p id="locNoteNb" lang="nb">Sett noden på kartet for å publisere en posisjon.</p>
+          <p lang="en">Convention: <code>NO-&lt;postnummer&gt; &lt;place&gt;</code> — a node on Skuiåsen in
              Bærums Verk is <code>NO-1354 Skuiåsen</code>. <b>32 bytes, or 24 if you publish a
              location.</b> Norwegian letters cost two each. Takes effect after a reboot.</p>
-          <p>A map click now finds your postnummer <b>exactly</b>, from the real area borders — the
+          <p lang="nb">Konvensjon: <code>NO-&lt;postnummer&gt; &lt;sted&gt;</code> — en node på Skuiåsen i
+             Bærums Verk blir <code>NO-1354 Skuiåsen</code>. <b>32 bytes, eller 24 hvis du publiserer
+             posisjon.</b> Norske bokstaver koster to hver. Trer i kraft etter en reboot.</p>
+          <p lang="en">A map click now finds your postnummer <b>exactly</b>, from the real area borders — the
              bar under the map shows it. If you already know it, <b>type it into the position
              field</b> and the node lands in the middle of that area. Either way is exact; typing is
              just faster when you know the number.</p>
+          <p lang="nb">Et klikk på kartet finner postnummeret ditt <b>eksakt</b>, fra de virkelige
+             områdegrensene — baren under kartet viser det. Vet du det allerede, <b>skriv det inn i
+             posisjonsfeltet</b>, så havner noden midt i det området. Begge veier er eksakte; å
+             skrive er bare raskere når du kan nummeret.</p>
           <p></p>
-          <p><b>location</b> sets where the node says it is, three ways. <b>none</b> is the default
+          <p lang="en"><b>location</b> sets where the node says it is, three ways. <b>none</b> is the default
              and publishes nothing. <b>map</b> uses the pin you placed, which is only accurate to
              about a hundred metres, so treat it as rough. <b>gps</b> lets the node find its own
              position, and set its clock from the satellites, on a build with GPS. Any published
              location puts the node on mesh maps and <b>drops the name limit to 24 bytes</b>.</p>
-          <p><b>owner.info</b> is contact, antenna, power, mount. Visible to anyone who queries the node, so no personal info.</p>
-          <p><b>Passwords.</b> Guest lets members query the node; admin lets them reconfigure it. The factory admin password is <code>password</code>, so set your own. Both appear in the config in the clear.</p>
+          <p lang="nb"><b>location</b> bestemmer hvor noden sier den står, på tre måter. <b>none</b> er
+             standard og publiserer ingenting. <b>map</b> bruker pinnen du satte, som bare er nøyaktig
+             på rundt hundre meter, så regn den som omtrentlig. <b>gps</b> lar noden finne sin egen
+             posisjon, og stille klokka fra satellittene, på en build med GPS. All publisert posisjon
+             setter noden på mesh-kart og <b>senker navnegrensa til 24 bytes</b>.</p>
+          <p lang="en"><b>owner.info</b> is contact, antenna, power, mount. Visible to anyone who queries the node, so no personal info.</p>
+          <p lang="nb"><b>owner.info</b> er kontakt, antenne, strøm, montering. Synlig for alle som spør noden, så ingen personopplysninger.</p>
+          <p lang="en"><b>Passwords.</b> Guest lets members query the node; admin lets them reconfigure it. The factory admin password is <code>password</code>, so set your own. Both appear in the config in the clear.</p>
+          <p lang="nb"><b>Passord.</b> Guest lar medlemmer spørre noden; admin lar dem konfigurere den om. Fabrikkpassordet for admin er <code>password</code>, så sett ditt eget. Begge står i klartekst i configen.</p>
         </details>
       </section>
 
       <section>
         <h2>Radio</h2>
-        <p class="sub">Advanced radio settings. Defaults are fine.</p>
+        <p class="sub" lang="en">Advanced radio settings. Defaults are fine.</p>
+        <p class="sub" lang="nb">Avanserte radioinnstillinger. Standardverdiene holder.</p>
         <div class="row">
           <div class="k">tx power</div>
           <div class="v">
@@ -1476,17 +1664,22 @@ parseInt(getComputedStyle(document.documentElement)
           </div>
         </div>
         <details class="explain">
-          <summary>What these radio settings do</summary>
-          <p>Tx power is the LoRa chip's output, defaulted to <b>20 dBm</b>. Boards with an amplifier put out more, so check the manual, and blank the field to keep the board's own default. <b>Staying inside your local legal limit is on you.</b></p>
-          <p>CR is the one radio parameter that may differ between nodes — receivers decode any CR. Higher = more redundancy, better survival through noise, but slower and more channel load. <b>Well-connected repeater: consider 5.</b> Frequency, bandwidth, and SF must match the mesh and are fixed here.</p>
-          <p>1-byte hashes collide quickly as repeater count grows; 2-byte (65 536 values) makes collisions practically impossible at this mesh's scale and makes network debugging far easier. 3-byte only matters at millions of nodes.</p>
-          <p>multi.acks sends a spare copy of each acknowledgement so it survives a collision. Steadier on a weak link, at the cost of a little more airtime. Off unless a link needs it.</p>
+          <summary><span lang="en">What these radio settings do</span><span lang="nb">Hva disse radioinnstillingene gjør</span></summary>
+          <p lang="en">Tx power is the LoRa chip's output, defaulted to <b>20 dBm</b>. Boards with an amplifier put out more, so check the manual, and blank the field to keep the board's own default. <b>Staying inside your local legal limit is on you.</b></p>
+          <p lang="nb">Tx power er utgangseffekten fra LoRa-brikka, satt til <b>20 dBm</b> som standard. Kort med forsterker gir mer, så sjekk manualen, og blank feltet for å beholde kortets egen standard. <b>Å holde deg innenfor lokal lovlig grense er ditt ansvar.</b></p>
+          <p lang="en">CR is the one radio parameter that may differ between nodes — receivers decode any CR. Higher = more redundancy, better survival through noise, but slower and more channel load. <b>Well-connected repeater: consider 5.</b> Frequency, bandwidth, and SF must match the mesh and are fixed here.</p>
+          <p lang="nb">CR er den ene radioparameteren som kan avvike mellom noder — mottakere dekoder hvilken som helst CR. Høyere = mer redundans, bedre overlevelse gjennom støy, men tregere og mer last på kanalen. <b>Godt tilkoblet repeater: vurder 5.</b> Frekvens, bandwidth og SF må stemme med meshet og er låst her.</p>
+          <p lang="en">1-byte hashes collide quickly as repeater count grows; 2-byte (65 536 values) makes collisions practically impossible at this mesh's scale and makes network debugging far easier. 3-byte only matters at millions of nodes.</p>
+          <p lang="nb">1-byte hasher kolliderer raskt etter hvert som antallet repeatere vokser; 2-byte (65 536 verdier) gjør kollisjoner praktisk talt umulige i dette meshets skala og gjør nettverksdebugging mye enklere. 3-byte betyr først noe ved millioner av noder.</p>
+          <p lang="en">multi.acks sends a spare copy of each acknowledgement so it survives a collision. Steadier on a weak link, at the cost of a little more airtime. Off unless a link needs it.</p>
+          <p lang="nb">multi.acks sender en ekstra kopi av hver acknowledgement så den overlever en kollisjon. Stødigere på en svak link, mot litt mer airtime. Av med mindre en link trenger det.</p>
         </details>
       </section>
 
       <section>
         <h2>Node profile</h2>
-        <p class="sub">Sizes the random back-off before repeating a flood. Based on neighbour count with SNR above 0.</p>
+        <p class="sub" lang="en">Sizes the random back-off before repeating a flood. Based on neighbour count with SNR above 0.</p>
+        <p class="sub" lang="nb">Setter størrelsen på den tilfeldige back-offen før en flood sendes videre. Basert på antall naboer med SNR over 0.</p>
         <div class="row">
           <div class="k">txdelay<br>rxdelay</div>
           <div class="v">
@@ -1519,21 +1712,37 @@ parseInt(getComputedStyle(document.documentElement)
           </div>
         </div>
         <details class="explain">
-          <summary>How the back-off works, and how to choose</summary>
-          <p><b>Several repeaters hear the same flood.</b> Each waits a random moment before
+          <summary><span lang="en">How the back-off works, and how to choose</span><span lang="nb">Hvordan back-off virker, og hvordan du velger</span></summary>
+          <p lang="en"><b>Several repeaters hear the same flood.</b> Each waits a random moment before
              repeating it so they do not transmit over each other. The profile scales that window:
              the more repeaters around you, the wider it needs to be. It costs a little latency and
              nothing else — it does not change what your node repeats, or who can reach it.</p>
-          <p><code>rxdelay 3</code> is on every profile. It works from the receiving side: a packet
+          <p lang="nb"><b>Flere repeatere hører den samme flooden.</b> Hver venter et tilfeldig
+             øyeblikk før den sender den videre, så de ikke sender oppå hverandre. Profilen skalerer
+             det vinduet: jo flere repeatere rundt deg, jo bredere må det være. Det koster litt
+             latency og ingenting annet — det endrer ikke hva noden din videresender, eller hvem som
+             når den.</p>
+          <p lang="en"><code>rxdelay 3</code> is on every profile. It works from the receiving side: a packet
              that arrived weakly is held back briefly so a repeater that heard it clearly gets there
              first, and the weak copy is dropped as a duplicate.</p>
-          <p><b>A repeater should not move.</b> One that travels keeps changing which nodes it can
+          <p lang="nb"><code>rxdelay 3</code> ligger på alle profilene. Den virker fra mottakersiden: en
+             pakke som kom inn svakt holdes kort tilbake så en repeater som hørte den tydelig kommer
+             fram først, og den svake kopien forkastes som duplikat.</p>
+          <p lang="en"><b>A repeater should not move.</b> One that travels keeps changing which nodes it can
              hear, so routes through it break as fast as they form. Set one up on the <b>Companion</b> tab instead — you
              still get the mesh, without adding an unstable relay to it.</p>
-          <p>Run <code>neighbors</code> on the node and count how many have SNR above 0. Reported:
+          <p lang="nb"><b>En repeater bør ikke flytte på seg.</b> En som er i bevegelse endrer hele
+             tiden hvilke noder den hører, så ruter gjennom den brekker like fort som de dannes. Sett
+             opp en på <b>Companion</b>-fanen i stedet — du får fortsatt meshet, uten å legge et
+             ustabilt ledd inn i det.</p>
+          <p lang="en">Run <code>neighbors</code> on the node and count how many have SNR above 0. Reported:
              16 neighbours with 4 above 0 is sparse; 50 with 19 above 0 is dense.</p>
-          <p><code>txdelay</code> moves in steps of <b>0.2</b> and both delays cap at <b>2</b> —
+          <p lang="nb">Kjør <code>neighbors</code> på noden og tell hvor mange som har SNR over 0.
+             Rapportert: 16 naboer med 4 over 0 er tynt; 50 med 19 over 0 er tett.</p>
+          <p lang="en"><code>txdelay</code> moves in steps of <b>0.2</b> and both delays cap at <b>2</b> —
              that is firmware behaviour, not opinion. Everything else here is local convention.</p>
+          <p lang="nb"><code>txdelay</code> går i steg på <b>0,2</b> og begge delays stopper på <b>2</b>
+             — det er firmware-oppførsel, ikke en mening. Alt annet her er lokal konvensjon.</p>
         </details>
       </section>
 
@@ -1541,7 +1750,8 @@ parseInt(getComputedStyle(document.documentElement)
 
       <section>
         <h2>Regions</h2>
-        <p class="sub">The region tag on this node's own traffic. Off for now.</p>
+        <p class="sub" lang="en">The region tag on this node's own traffic. Off for now.</p>
+        <p class="sub" lang="nb">Region-taggen på denne nodens egen trafikk. Av foreløpig.</p>
         <div class="row">
           <div class="k">region default</div>
           <div class="v">
@@ -1566,25 +1776,41 @@ parseInt(getComputedStyle(document.documentElement)
             <div class="numf" id="unscHopsBox" hidden>
               <input type="number" id="unscHops" inputmode="numeric" min="0" max="64" step="1" value="3" aria-label="unscoped flood hop limit"><i>hops</i>
             </div>
-            <p class="help" id="unscHelp">Untagged traffic floods normally. Nothing is cut off.</p>
+            <p class="help" id="unscHelp" lang="en">Untagged traffic floods normally. Nothing is cut off.</p>
+            <p class="help" id="unscHelpNb" lang="nb">Utagget trafikk flooder som normalt. Ingenting skjæres av.</p>
           </div>
         </div>
         <details class="explain">
-          <summary>What default scope changes</summary>
-          <p><b>Tags what this node sends on its own</b> — for a repeater, mostly its adverts. It
+          <summary><span lang="en">What default scope changes</span><span lang="nb">Hva default scope endrer</span></summary>
+          <p lang="en"><b>Tags what this node sends on its own</b> — for a repeater, mostly its adverts. It
              does not change which regions the node <em>relays</em> for; that is the tree on the
              left.</p>
-          <p><b>off</b> for now. The mesh is still getting repeaters onto a base set of regions, and
+          <p lang="nb"><b>Tagger det denne noden sender selv</b> — for en repeater stort sett
+             advertene dens. Det endrer ikke hvilke regioner noden <em>videresender</em> for; det er
+             treet til venstre.</p>
+          <p lang="en"><b>off</b> for now. The mesh is still getting repeaters onto a base set of regions, and
              until enough of them carry it, scoping a node's own traffic risks it being dropped. So
              adverts go out unscoped, which every repeater passes. Once the repeaters around you carry
              regions, set <b>country</b> (<code>no</code>) or narrower to scope what this node sends.
              Kommune and city are for special-purpose nodes and channels.</p>
-          <p><b>Unscoped floods</b> sets how much untagged traffic this repeater carries: messages
+          <p lang="nb"><b>off</b> foreløpig. Meshet holder fortsatt på å få repeaterne over på et
+             grunnsett av regioner, og før nok av dem bærer det, risikerer du at nodens egen trafikk
+             blir forkastet hvis den scopes. Så adverts går ut unscoped, som hver repeater slipper
+             gjennom. Når repeaterne rundt deg bærer regioner, sett <b>country</b> (<code>no</code>)
+             eller smalere for å scope det denne noden sender. Kommune og city er for noder og
+             channels med et spesielt formål.</p>
+          <p lang="en"><b>Unscoped floods</b> sets how much untagged traffic this repeater carries: messages
              from nodes with no region set. <b>allow</b> is today's mesh, where everything floods and
              nobody is cut off. <b>cap</b> keeps local untagged traffic but stops it crossing the
              country. <b>deny</b> drops it outright. Leave it on <b>allow</b> until the nodes around
              you carry regions; turning <code>deny</code> on early isolates any node that has not set
              regions yet.</p>
+          <p lang="nb"><b>Unscoped floods</b> bestemmer hvor mye utagget trafikk denne repeateren
+             bærer: meldinger fra noder uten region satt. <b>allow</b> er meshet slik det er i dag,
+             der alt flooder og ingen blir avskåret. <b>cap</b> beholder lokal utagget trafikk, men
+             stopper den fra å krysse landet. <b>deny</b> forkaster den rett ut. La den stå på
+             <b>allow</b> til nodene rundt deg bærer regioner; å slå på <code>deny</code> for tidlig
+             isolerer enhver node som ikke har satt regioner ennå.</p>
         </details>
       </section>
 
@@ -1594,10 +1820,13 @@ parseInt(getComputedStyle(document.documentElement)
           <h2>Full node config</h2>
         </div>
         
-        <p class="sub">Send it over USB, type the lines into the app's remote admin CLI,
+        <p class="sub" lang="en">Send it over USB, type the lines into the app's remote admin CLI,
            or share the whole setup by copying this page's address.</p>
+        <p class="sub" lang="nb">Send den over USB, skriv linjene inn i remote admin-CLI-en i appen,
+           eller del hele oppsettet ved å kopiere adressen til denne siden.</p>
         
-        <p class="help link-note" id="linkNote" role="status" aria-live="polite" hidden></p>
+        <p class="help link-note" id="linkNote" role="status" aria-live="polite" hidden lang="en"></p>
+        <p class="help link-note" id="linkNoteNb" role="status" aria-live="polite" hidden lang="nb"></p>
         
         <p class="usb-stat" id="usbStat" role="status" aria-live="polite" hidden></p>
         
@@ -1647,44 +1876,75 @@ parseInt(getComputedStyle(document.documentElement)
         </div>
         
         <details class="explain">
-          <summary>Sending this to a node</summary>
-          <p><b>Over USB.</b> On Chrome, Edge or Opera, <b>Send over USB</b> writes the whole block
+          <summary><span lang="en">Sending this to a node</span><span lang="nb">Å sende dette til en node</span></summary>
+          <p lang="en"><b>Over USB.</b> On Chrome, Edge or Opera, <b>Send over USB</b> writes the whole block
              for you — it reads the firmware version off the node, picks the matching form, sends
              each line and reboots when every one is accepted. <b>Console</b> opens the same
              connection without sending anything, so you can type commands yourself.</p>
-          <p><b>Line by line, over the air.</b> In the MeshCore app, open the repeater under
+          <p lang="nb"><b>Over USB.</b> I Chrome, Edge eller Opera skriver <b>Send over USB</b> hele
+             blokka for deg — den leser firmware-versjonen av noden, velger riktig form, sender hver
+             linje og rebooter når alle er godtatt. <b>Console</b> åpner den samme forbindelsen uten
+             å sende noe, så du kan skrive kommandoer selv.</p>
+          <p lang="en"><b>Line by line, over the air.</b> In the MeshCore app, open the repeater under
              <i>Contacts</i> and use its remote admin CLI. There is no paste — send one command per
              message, in the order they appear above, and check each reply before the next.
              Remote admin caps a command at <b>160 characters</b>, the same limit the block is
              built to; a longer line is silently truncated and comes back as a
              <code>put failed</code> or <code>unknown jump</code> error rather than a complaint
              about length. Finish with <code>region save</code>, then <code>reboot</code>.</p>
-          <p><b>To another person.</b> This page's address carries the whole setup — both pins,
+          <p lang="nb"><b>Linje for linje, over lufta.</b> I MeshCore-appen, åpne repeateren under
+             <i>Contacts</i> og bruk remote admin-CLI-en dens. Det finnes ingen lim inn — send én
+             kommando per melding, i rekkefølgen de står over, og sjekk hvert svar før neste. Remote
+             admin har en grense på <b>160 tegn</b> per kommando, den samme grensa blokka er bygget
+             til; en lengre linje kuttes stille og kommer tilbake som en <code>put failed</code>
+             eller <code>unknown jump</code> framfor en klage på lengden. Avslutt med
+             <code>region save</code>, så <code>reboot</code>.</p>
+          <p lang="en"><b>To another person.</b> This page's address carries the whole setup — both pins,
              every setting you have changed and both devices — and updates as you work. Copy it
              from the address bar and send it; opening it sets their page up the same way. It is
              short enough to fit in a mesh message. <b>It also carries any passwords you have
              set</b>, so treat it as you would those.</p>
-          <p><b>Which firmware.</b> 1.16.0 added the one-line <code>region def</code> syntax;
+          <p lang="nb"><b>Til et annet menneske.</b> Adressen til denne siden bærer hele oppsettet —
+             begge pinnene, hver innstilling du har endret og begge enhetene — og oppdaterer seg mens
+             du jobber. Kopier den fra adressefeltet og send den; åpner de den, settes siden deres
+             opp likt. Den er kort nok til å få plass i en mesh-melding. <b>Den bærer også passordene
+             du har satt</b>, så behandle den som dem.</p>
+          <p lang="en"><b>Which firmware.</b> 1.16.0 added the one-line <code>region def</code> syntax;
              1.15.x builds the same tree one <code>region put</code> at a time. Both forms create
              each region flood-allowed, so no per-region <code>allowf</code> is needed.
              <b>Region commands only exist from 1.15</b> — on older firmware the radio and timing
              settings still apply, but the region block does not. Sending over USB picks the form
              for you; setting it by hand, run <code>ver</code> if you are not sure.</p>
-          <p><code>set dutycycle 10</code> is the legal maximum on this sub-band and the preset
+          <p lang="nb"><b>Hvilken firmware.</b> 1.16.0 la til ett-linjes <code>region def</code>-syntaks;
+             1.15.x bygger det samme treet én <code>region put</code> om gangen. Begge formene lager
+             hver region flood-allowed, så ingen <code>allowf</code> per region trengs.
+             <b>Region-kommandoene finnes først fra 1.15</b> — på eldre firmware gjelder radio- og
+             timing-innstillingene fortsatt, men ikke region-blokka. Sending over USB velger formen
+             for deg; setter du det for hånd, kjør <code>ver</code> hvis du er usikker.</p>
+          <p lang="en"><code>set dutycycle 10</code> is the legal maximum on this sub-band and the preset
              ships with 50, so it has to be set explicitly. <b>Norway is EEA/EFTA, not EU</b> —
              nesting <code>no</code> under <code>eu</code> follows the existing convention, not
              geopolitics. Reboot after radio changes.</p>
+          <p lang="nb"><code>set dutycycle 10</code> er det lovlige maksimum på dette underbåndet, og
+             preseten leveres med 50, så den må settes eksplisitt. <b>Norge er EØS/EFTA, ikke EU</b> —
+             å nøste <code>no</code> under <code>eu</code> følger den etablerte konvensjonen, ikke
+             geopolitikken. Reboot etter radioendringer.</p>
         </details>
       </section>
 
       
       <section>
         <h2>Push back</h2>
-        <p class="sub">The region convention on this page is a proposal, not a standard.</p>
-        <p class="help">Anything about the mesh itself — whether these region names are the right
+        <p class="sub" lang="en">The region convention on this page is a proposal, not a standard.</p>
+        <p class="sub" lang="nb">Regionkonvensjonen på denne siden er et forslag, ikke en standard.</p>
+        <p class="help" lang="en">Anything about the mesh itself — whether these region names are the right
            ones, or should exist at all — belongs on <b>Discord</b>, where the convention gets
-           discussed and agreed. <b>Email</b> is for corrections to this page. Both are at the top
-           of the page.</p>
+           discussed and agreed. <b>Email</b> is for corrections to this page.
+           <a href="?p=contact">Both are on Contact →</a></p>
+        <p class="help" lang="nb">Alt som gjelder selve meshet — om disse regionnavnene er de
+           riktige, eller bør finnes i det hele tatt — hører hjemme på <b>Discord</b>, der
+           konvensjonen diskuteres og avtales. <b>E-post</b> er for rettelser til denne siden.
+           <a href="?p=contact">Begge står på Kontakt →</a></p>
       </section>
       </div>
 
@@ -1692,7 +1952,8 @@ parseInt(getComputedStyle(document.documentElement)
       <div class="pane" id="paneCom" role="tabpanel" aria-labelledby="tabCom" hidden>
         <section>
           <h2>Channels</h2>
-          <p class="sub">One channel per region you are in, taken from the map.</p>
+          <p class="sub" lang="en">One channel per region you are in, taken from the map.</p>
+          <p class="sub" lang="nb">Én channel per region du er i, hentet fra kartet.</p>
           <div class="row">
             <div class="k">region scope</div>
             <div class="v">
@@ -1700,38 +1961,54 @@ parseInt(getComputedStyle(document.documentElement)
                 <button data-sc="off" class="on">skip</button>
                 <button data-sc="on">include</button>
               </div>
-              <p class="help" id="scopeNote">No region tag, so a message travels as far as the mesh carries it. <b>Skipped by default while most repeaters don’t carry regions</b> — turn it on once the ones around you do.</p>
+              <p class="help" id="scopeNote" lang="en">No region tag, so a message travels as far as the mesh carries it. <b>Skipped by default while most repeaters don’t carry regions</b> — turn it on once the ones around you do.</p>
+              <p class="help" id="scopeNoteNb" lang="nb">Ingen region-tagg, så en melding går så langt meshet bærer den. <b>Skippes som standard mens de fleste repeatere ikke bærer regioner</b> — slå den på når de rundt deg gjør det.</p>
             </div>
           </div>
           
           <div class="row plain">
             <div class="k">default region</div>
             <div class="v">
-              <p class="help">In the app: <b>Experimental Settings → Default Region → <code>no</code></b>.
+              <p class="help" lang="en">In the app: <b>Experimental Settings → Default Region → <code>no</code></b>.
                  Direct messages and
                  unscoped channels go out carrying this tag. Only repeaters that carry
                  <code>no</code> will repeat them — ask your local operators to add it.</p>
+              
+              <p class="help" lang="nb">I appen: <b>Experimental Settings → Default Region → <code>no</code></b>.
+                 Direkte meldinger og unscopede channels går ut med denne taggen. Bare repeatere som
+                 bærer <code>no</code> vil sende dem videre — be de lokale operatørene legge den
+                 inn.</p>
             </div>
           </div>
           <details class="explain">
-            <summary>How these channels work, and who else is on them</summary>
-            <p><b>The name is the channel.</b> A channel starting with <code>#</code> derives its
+            <summary><span lang="en">How these channels work, and who else is on them</span><span lang="nb">Hvordan disse channels virker, og hvem andre som er på dem</span></summary>
+            <p lang="en"><b>The name is the channel.</b> A channel starting with <code>#</code> derives its
                own key from its name, so everyone who types <code>#baerum</code> lands on the same
                one. There is no key to send anybody. The app accepts only <code>a-z</code>,
                <code>0-9</code> and <code>-</code>, which is why these are written
                <code>ostlandet</code> and <code>baerum</code>.</p>
-            <p><b>Which is why they are not private.</b> Anyone who knows the name can work out the
+            <p lang="nb"><b>Navnet er kanalen.</b> En channel som starter med <code>#</code> utleder
+               sin egen nøkkel fra navnet, så alle som skriver <code>#baerum</code> havner på den
+               samme. Det finnes ingen nøkkel å sende noen. Appen godtar bare <code>a-z</code>,
+               <code>0-9</code> og <code>-</code>, og det er derfor disse skrives
+               <code>ostlandet</code> og <code>baerum</code>.</p>
+            <p lang="en"><b>Which is why they are not private.</b> Anyone who knows the name can work out the
                key. Treat them as an open calling frequency; for something private, make a channel
                with a random secret and hand it out yourself.</p>
+            <p lang="nb"><b>Og det er derfor de ikke er private.</b> Alle som kjenner navnet kan regne
+               ut nøkkelen. Behandle dem som en åpen kallefrekvens; skal noe være privat, lag en
+               channel med en tilfeldig secret og del den ut selv.</p>
           </details>
         </section>
 
         
         <section>
           <h2>QR codes</h2>
-          <p class="sub">Scan one with the MeshCore app to join. Reading this on the phone you are
+          <p class="sub" lang="en">Scan one with the MeshCore app to join. Reading this on the phone you are
              setting up? Tap <b>Add</b> instead.</p>
-          <div class="chans" id="chans"><p class="empty">Place the node on the map and the channels for that area appear here.</p></div>
+          <p class="sub" lang="nb">Skann en med MeshCore-appen for å bli med. Leser du dette på
+             telefonen du setter opp? Trykk <b>Add</b> i stedet.</p>
+          <div class="chans" id="chans"><p class="empty" lang="en">Place the node on the map and the channels for that area appear here.</p><p class="empty" lang="nb">Sett noden på kartet, så dukker de channels som gjelder der opp her.</p></div>
         </section>
       </div>
     </div>
@@ -1741,7 +2018,8 @@ parseInt(getComputedStyle(document.documentElement)
     <div class="map-col">
       
       <h2 id="mapHead">Region</h2>
-      <p class="sub" id="mapSub">Where the node stands decides which regions it relays for.</p>
+      <p class="sub" id="mapSub" lang="en">Where the node stands decides which regions it relays for.</p>
+      <p class="sub" id="mapSubNb" lang="nb">Hvor noden står avgjør hvilke regioner den videresender for.</p>
       <div class="map-head">
         <label for="posRead">Position</label>
         
@@ -1817,38 +2095,63 @@ parseInt(getComputedStyle(document.documentElement)
         <div class="treebox">
           <div class="treehead">Region tree</div>
           
-          <div class="scope" id="scope"><span class="empty">Place the node on the map and its regions appear here. Everything else configures without one.</span></div>
+          
+          <div class="scope" id="scope"><span class="empty" lang="en">Place the node on the map and its regions appear here. Everything else configures without one.</span><span class="empty" lang="nb">Sett noden på kartet, så dukker regionene dens opp her. Alt annet konfigureres uten.</span></div>
           <details class="explain treefoot">
-          <summary>Region settings, and what the numbers mean</summary>
+          <summary><span lang="en">Region settings, and what the numbers mean</span><span lang="nb">Region-innstillinger, og hva tallene betyr</span></summary>
           <div class="kmsbox">
             
-            <p class="kmslede"><b>Neighbour reach.</b> A node near a border serves both sides of
+            <p class="kmslede" lang="en"><b>Neighbour reach.</b> A node near a border serves both sides of
                it. These say how near counts: a repeater 5&nbsp;km from the next fylke relays for
                that fylke too, and a companion that close is offered its channels. Your node always
                keeps the regions it actually stands in — this only ever adds.</p>
+            <p class="kmslede" lang="nb"><b>Nabo-rekkevidde.</b> En node nær en grense betjener begge
+               sider av den. Disse sier hvor nær som teller: en repeater 5&nbsp;km fra neste fylke
+               videresender for det fylket også, og en companion så nær får tilbud om channels
+               derfra. Noden din beholder alltid regionene den faktisk står i — dette legger bare
+               til.</p>
             <div class="kms">
               <label for="kmLd">landsdel</label><input type="number" id="kmLd" inputmode="numeric" min="0" max="300" step="5" value="50"><i>km</i><button type="button" data-lvl="landsdel">disable</button>
               <label for="kmFy">fylke</label><input type="number" id="kmFy" inputmode="numeric" min="0" max="300" step="5" value="25"><i>km</i><button type="button" data-lvl="fylke">disable</button>
               <label for="kmKo">kommune</label><input type="number" id="kmKo" inputmode="numeric" min="0" max="300" step="5" value="0"><i>km</i><button type="button" data-lvl="kommune">enable</button>
               <label for="kmCi">city</label><input type="number" id="kmCi" inputmode="numeric" min="0" max="300" step="5" value="25"><i>km</i><button type="button" data-lvl="city">disable</button>
             </div>
-            <p class="help"><b>0 turns a level off.</b> Kommune starts there: at this mesh size a
+            <p class="help" lang="en"><b>0 turns a level off.</b> Kommune starts there: at this mesh size a
                kommune region has almost no members to filter, and its tags are the longest.</p>
+            <p class="help" lang="nb"><b>0 slår av et nivå.</b> Kommune starter der: i denne
+               meshstørrelsen har en kommuneregion nesten ingen medlemmer å filtrere, og taggene
+               dens er de lengste.</p>
           </div>
-          <p>A region tells repeaters which floods to pass on. <b>It does not limit who you can
+          <p lang="en">A region tells repeaters which floods to pass on. <b>It does not limit who you can
              reach</b> — every node carries <code>eu</code> and <code>no</code>, so wide traffic
              still crosses the whole mesh. Narrow tags stop a local channel flooding the country.</p>
-          <p><b>By default, nothing here cuts anyone off.</b> Tags only add, and this node keeps
+          <p lang="nb">En region forteller repeatere hvilke floods de skal sende videre. <b>Den
+             begrenser ikke hvem du kan nå</b> — hver node bærer <code>eu</code> og <code>no</code>,
+             så bred trafikk krysser fortsatt hele meshet. Smale tagger hindrer en lokal channel i å
+             floode hele landet.</p>
+          <p lang="en"><b>By default, nothing here cuts anyone off.</b> Tags only add, and this node keeps
              passing untagged traffic. The one command that stops that, <code>region denyf *</code>,
              stays off unless you pick it under <b>unscoped floods</b>. Save it for once the mesh
              around you carries regions.</p>
-          <p><b>A kommunenummer is not a postnummer.</b> Both are four digits and they are unrelated.
+          <p lang="nb"><b>Som standard skjærer ingenting her noen av.</b> Tagger legger bare til, og
+             denne noden fortsetter å slippe gjennom utagget trafikk. Den ene kommandoen som stopper
+             det, <code>region denyf *</code>, står av med mindre du velger den under <b>unscoped
+             floods</b>. Spar den til meshet rundt deg bærer regioner.</p>
+          <p lang="en"><b>A kommunenummer is not a postnummer.</b> Both are four digits and they are unrelated.
              Your node <b>name</b> uses the postnummer, because that is the number you know. Your
              region <b>tags</b> use the kommunenummer, because that is the one with real borders
              behind it. <code>NO-1354 Skuiåsen</code> tagged <code>no-3201</code> is correct.</p>
-          <p><b>The first two digits are the fylke.</b> So a node tagged <code>no-3201</code> is
+          <p lang="nb"><b>Et kommunenummer er ikke et postnummer.</b> Begge har fire siffer og de har
+             ingenting med hverandre å gjøre. Node<b>navnet</b> ditt bruker postnummeret, fordi det er
+             nummeret du kan. Region<b>taggene</b> dine bruker kommunenummeret, fordi det er det med
+             virkelige grenser bak seg. <code>NO-1354 Skuiåsen</code> tagget <code>no-3201</code> er
+             riktig.</p>
+          <p lang="en"><b>The first two digits are the fylke.</b> So a node tagged <code>no-3201</code> is
              inside <code>no-32</code> by construction, and you can widen a flood from kommune to
              fylke without a lookup table.</p>
+          <p lang="nb"><b>De to første sifrene er fylket.</b> Så en node tagget <code>no-3201</code>
+             ligger inni <code>no-32</code> av konstruksjon, og du kan utvide en flood fra kommune til
+             fylke uten en oppslagstabell.</p>
           
           
           <div class="nmbars" id="nmBars" hidden>
@@ -1858,20 +2161,34 @@ parseInt(getComputedStyle(document.documentElement)
             <i class="br k" aria-hidden="true"></i>
             <span class="tm k">kommunenummer</span><span class="vl" id="nmKm"></span>
           </div>
-          <p><b>A tag means "relays for", not "is in".</b> A node inside the city radius of Oslo
+          <p lang="en"><b>A tag means "relays for", not "is in".</b> A node inside the city radius of Oslo
              carries <code>no-oslo</code> even if it sits well outside the city — a repeater on a
              ridge is often exactly what makes routing <em>inside</em> town work. Sit between two
              cities and it carries both.</p>
-          <p>A border works the same way: 5&nbsp;km from Buskerud and the node carries
+          <p lang="nb"><b>En tagg betyr "videresender for", ikke "ligger i".</b> En node innenfor
+             byradiusen til Oslo bærer <code>no-oslo</code> selv om den står godt utenfor byen — en
+             repeater på en ås er ofte nettopp det som får ruting <em>inne</em> i byen til å virke.
+             Står du mellom to byer, bærer den begge.</p>
+          <p lang="en">A border works the same way: 5&nbsp;km from Buskerud and the node carries
              <code>no-33</code> too. The numbers above set how close counts. Expect neighbours
              across water — over water is the best path a radio gets.</p>
-          <p><b>The bare three-letter tag is your nearest airport</b> — <code>osl</code>,
+          <p lang="nb">En grense virker likedan: 5&nbsp;km fra Buskerud og noden bærer
+             <code>no-33</code> også. Tallene over setter hvor nært som teller. Regn med naboer over
+             vann — over vann er den beste veien en radio får.</p>
+          <p lang="en"><b>The bare three-letter tag is your nearest airport</b> — <code>osl</code>,
              <code>bgo</code>, <code>trd</code>. A short, well-known handle, always the single
              closest one. It has no <code>no-</code> prefix on purpose: an airport code is unique
              worldwide, so it needs no country in front of it.</p>
-          <p>Landsdel, fylke, kommune, city and airport are independent overlays under
+          <p lang="nb"><b>Den bare tre-bokstavstaggen er nærmeste flyplass</b> — <code>osl</code>,
+             <code>bgo</code>, <code>trd</code>. Et kort, velkjent håndtak, alltid den ene nærmeste.
+             Den har ingen <code>no-</code> foran med vilje: en flyplasskode er unik verden over, så
+             den trenger ikke et land foran seg.</p>
+          <p lang="en">Landsdel, fylke, kommune, city and airport are independent overlays under
              <code>no</code>, not a nesting, so every tag is listed in full. The codes come from the
              map and are current since the county reform of January 2024.</p>
+          <p lang="nb">Landsdel, fylke, kommune, city og flyplass er uavhengige lag under
+             <code>no</code>, ikke en nøsting, så hver tagg listes i sin helhet. Kodene kommer fra
+             kartet og er gjeldende siden fylkesreformen i januar 2024.</p>
           </details>
         </div>
       </section>
@@ -1880,11 +2197,234 @@ parseInt(getComputedStyle(document.documentElement)
   </main>
 
   
+  <article class="page" id="pgAbout" hidden aria-labelledby="hAbout">
+    <header>
+      
+      <h1 id="hAbout" tabindex="-1"><span lang="en">About MeshNO</span><span lang="nb">Om MeshNO</span></h1>
+      <p class="lede" lang="en">A configurator for Norwegian MeshCore nodes, and a proposal for how
+         they should scope what they relay.</p>
+      
+      <p class="lede" lang="nb">MeshNO er en konfigurator for oppsett av MeshCore-noder i
+         Norge: radio og frekvens (869,618&nbsp;MHz på <code>EU/UK Narrow</code>), timing,
+         navn og regioner som én ferdig kommandoblokk å lime inn. Sett noden på kartet,
+         så får du regionene en repeater skal videresende for, og hvilke channels du
+         trenger der du står.</p>
+    </header>
+
+    
+    <section>
+      <h2 lang="en">Why it exists</h2>
+      <h2 lang="nb">Hvorfor den finnes</h2>
+      <p class="help" lang="en">Around a hundred MeshCore nodes already relay in Norway. Almost none of
+         them set a region, and there has been no agreed list of names to set — so every
+         repeater carries every flood, and a message meant for one fylke crosses the country.
+         MeshCore has had the mechanism since firmware 1.15. What was missing was a convention.</p>
+      <p class="help" lang="nb">Rundt hundre MeshCore-noder videresender allerede i Norge. Nesten
+         ingen av dem har satt en region, og det har ikke vært noen omforent liste med navn å
+         sette — så hver repeater bærer hver eneste flood, og en melding ment for ett fylke
+         krysser hele landet. MeshCore har hatt mekanismen siden firmware 1.15. Det som manglet,
+         var en konvensjon.</p>
+      <p class="help" lang="en">This page is one. It exists to make a single set of region names the
+         easiest thing to copy correctly, rather than a hundred operators each improvising
+         their own — which is the outcome that cannot be undone later.</p>
+      <p class="help" lang="nb">Denne siden er et forslag til én. Den finnes for å gjøre ett sett
+         regionnavn til det enkleste å kopiere riktig, framfor at hundre operatører finner opp
+         sitt eget — utfallet som ikke lar seg rette opp i etterkant.</p>
+    </section>
+
+    <section>
+      <h2 lang="en">What it gives you</h2>
+      <h2 lang="nb">Hva du får</h2>
+      <p class="help" lang="en">Put a pin on the map and the page works out where that is: landsdel,
+         fylke, kommune, the nearest airport, and any city it falls inside. Everything below
+         follows from that one position.</p>
+      <p class="help" lang="nb">Sett en pin på kartet, så regner siden ut hvor det er: landsdel,
+         fylke, kommune, nærmeste flyplass, og en eventuell by den ligger inni. Alt under følger
+         av den ene posisjonen.</p>
+      
+      <div class="row plain">
+        <div class="k">repeater</div>
+        <div class="v"><p class="help" lang="en">Radio, timing profile, name and region scope as one
+           paste-able CLI block. Paste it into the terminal, or send it straight over USB from
+           a browser that has WebSerial.</p>
+           <p class="help" lang="nb">Radio, timing-profil, navn og region-scope som én ferdig
+           CLI-blokk å lime inn. Lim den inn i terminalen, eller send den rett over USB fra en
+           nettleser som har WebSerial.</p></div>
+      </div>
+      <div class="row plain">
+        <div class="k">companion</div>
+        <div class="v"><p class="help" lang="en">The regional channels for where you are, each with the
+           QR code that adds it. The names come from the same region tree, so the two devices
+           agree by construction.</p>
+           <p class="help" lang="nb">De regionale channels for der du er, hver med QR-koden som
+           legger den inn. Navnene kommer fra det samme regiontreet, så de to enhetene er enige
+           av konstruksjon.</p></div>
+      </div>
+    </section>
+
+    <section>
+      <h2 lang="en">The convention</h2>
+      <h2 lang="nb">Konvensjonen</h2>
+      <p class="help" lang="en">Five levels, all of them siblings under <code>no</code> rather than
+         nested — a city's radius crosses fylke borders, and the firmware matches region names
+         exactly, so tree position never meant inheritance anyway.</p>
+      <p class="help" lang="nb">Fem nivåer, alle søsken under <code>no</code> framfor nøstet — en
+         bys radius krysser fylkesgrenser, og firmwaren matcher regionnavn eksakt, så plassering
+         i treet har uansett aldri betydd arv.</p>
+      
+      <pre class="mblock" lang="en">eu
+└─ no          everything in Norway
+   ├─ no-ost   landsdel   five of them
+   ├─ no-03    fylke      the 2024 codes
+   ├─ no-0301  kommune    fylke code, then kommune
+   ├─ no-oslo  city       inside a city radius only
+   └─ osl      airport    IATA, and bare</pre>
+      <pre class="mblock" lang="nb">eu
+└─ no          alt i Norge
+   ├─ no-ost   landsdel   fem av dem
+   ├─ no-03    fylke      2024-kodene
+   ├─ no-0301  kommune    fylkeskode, så kommune
+   ├─ no-oslo  by         kun innenfor en byradius
+   └─ osl      flyplass   IATA, og bar</pre>
+      <p class="help" lang="en">Norway sits under <code>eu</code> even though it is EEA and not EU, and
+         the tags are ASCII, so Østlandet is <code>no-ost</code>. Both mirror what the Danish
+         and Dutch communities already run; matching a neighbour was judged worth more than
+         being right alone.</p>
+      <p class="help" lang="nb">Norge ligger under <code>eu</code> selv om vi er EØS og ikke EU, og
+         taggene er ASCII, så Østlandet blir <code>no-ost</code>. Begge deler speiler det danske og
+         nederlandske miljøet allerede kjører; å være lik naboen ble vurdert som mer verdt enn å
+         ha rett alene.</p>
+    </section>
+
+    <section>
+      <h2 lang="en">What it asks of you</h2>
+      <h2 lang="nb">Hva den krever av deg</h2>
+      <p class="help" lang="en">Nothing. It is one HTML file that runs entirely in your browser.</p>
+      <p class="help" lang="nb">Ingenting. Det er én HTML-fil som kjører i sin helhet i nettleseren
+         din.</p>
+      <div class="row plain">
+        <div class="k" lang="en">requests</div>
+        <div class="k" lang="nb">forespørsler</div>
+        <div class="v"><p class="help" lang="en">None to anywhere else. The map, the fonts and the code
+           are in the file; there are no tiles, no CDN and no analytics.</p>
+           <p class="help" lang="nb">Ingen ut av siden. Kartet, fontene og koden ligger i fila; det
+           er ingen tiles, ingen CDN og ingen analytics.</p></div>
+      </div>
+      <div class="row plain">
+        <div class="k" lang="en">your position</div>
+        <div class="k" lang="nb">posisjonen din</div>
+        <div class="v"><p class="help" lang="en">Stays here. It is never sent anywhere, and the page
+           never asks the browser where you are — you place the pin.</p>
+           <p class="help" lang="nb">Blir her. Den sendes aldri noe sted, og siden spør aldri
+           nettleseren hvor du er — du setter pinnen selv.</p></div>
+      </div>
+      <div class="row plain">
+        <div class="k" lang="en">storage</div>
+        <div class="k" lang="nb">lagring</div>
+        <div class="v"><p class="help" lang="en">The light/dark preference, the language, and nothing
+           else. No cookies. A config travels in the address bar, and only if you copy the link.</p>
+           <p class="help" lang="nb">Valget av lyst eller mørkt, språket, og ikke noe mer. Ingen
+           cookies. En config reiser i adressefeltet, og bare hvis du kopierer lenken.</p></div>
+      </div>
+      <div class="row plain">
+        <div class="k" lang="en">the map</div>
+        <div class="k" lang="nb">kartet</div>
+        <div class="v"><p class="help" lang="en">Kartverket's own boundaries — fylke, kommune, coastline
+           and postnummer — cut, simplified and built into the page. <a
+           href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC&nbsp;BY&nbsp;4.0</a>.</p>
+           <p class="help" lang="nb">Kartverkets egne grenser — fylke, kommune, kystlinje og
+           postnummer — klippet, forenklet og bygget inn i siden. <a
+           href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC&nbsp;BY&nbsp;4.0</a>.</p></div>
+      </div>
+    </section>
+
+    <section>
+      <h2 lang="en">What it is not</h2>
+      <h2 lang="nb">Hva den ikke er</h2>
+      <p class="help" lang="en">It is not affiliated with the MeshCore project, and the region names on
+         it are a proposal rather than a standard — they hold only as long as operators keep
+         using them. Read the block before you paste it, and check the commands against
+         <a href="https://docs.meshcore.io/cli_commands/" target="_blank" rel="noopener">docs.meshcore.io</a>
+         before deploying a node you cannot easily reach again.</p>
+      <p class="help" lang="nb">Den er ikke tilknyttet MeshCore-prosjektet, og regionnavnene på den
+         er et forslag og ikke en standard — de holder bare så lenge operatører fortsetter å bruke
+         dem. Les blokka før du limer den inn, og sjekk kommandoene mot
+         <a href="https://docs.meshcore.io/cli_commands/" target="_blank" rel="noopener">docs.meshcore.io</a>
+         før du setter ut en node du ikke kommer lett til igjen.</p>
+      <p class="help" lang="en">If the convention is wrong, it is worth more to say so than to work
+         around it. <a href="?p=contact">Where to say it →</a></p>
+      <p class="help" lang="nb">Er konvensjonen feil, er det mer verdt å si fra enn å jobbe rundt
+         den. <a href="?p=contact">Hvor du sier det →</a></p>
+    </section>
+  </article>
+
+  
+  <article class="page" id="pgContact" hidden aria-labelledby="hContact">
+    <header>
+      <h1 id="hContact" tabindex="-1"><span lang="en">Contact</span><span lang="nb">Kontakt</span></h1>
+      <p class="lede" lang="en">The Discord is where the region convention gets argued and agreed,
+         the wiki is the reference for everything this page leaves out, and the mailbox is for
+         anything on this page that is wrong.</p>
+      <p class="lede" lang="nb">Discord er der regionkonvensjonen diskuteres og avtales, wikien er
+         referansen for alt denne siden lar ligge, og postkassa er for alt på denne siden som er
+         feil.</p>
+    </header>
+
+    <section>
+      <h2 lang="en">The convention itself</h2>
+      <h2 lang="nb">Selve konvensjonen</h2>
+      <p class="help" lang="en">Whether these region names are the right ones, or should exist at all,
+         is a question for the operators who would run them — not for this page. That
+         conversation happens on the Norwegian MeshCore Discord, and it is where a change to
+         the convention has to be agreed before it is worth building.</p>
+      <p class="help" lang="nb">Om disse regionnavnene er de riktige, eller bør finnes i det hele
+         tatt, er et spørsmål for operatørene som skal kjøre dem — ikke for denne siden. Den
+         samtalen foregår på den norske MeshCore-Discorden, og det er der en endring i
+         konvensjonen må avtales før det er verdt å bygge den.</p>
+      <p class="addr"><a href="https://discord.gg/2X4C9J4PR" target="_blank" rel="noopener">discord.gg/2X4C9J4PR</a></p>
+    </section>
+
+    <section>
+      
+      <h2 lang="en">Everything this page does not cover</h2>
+      <h2 lang="nb">Alt denne siden ikke dekker</h2>
+      <p class="help" lang="en">The Norwegian mesh wiki covers Meshtastic, MeshCore and Reticulum.
+         For MeshCore it has the frequency rules for the 869&nbsp;MHz band and what they mean for
+         antenna choice, the LoRa parameters used here, getting started from a kit or from parts,
+         suggested repeater placements, and a CLI cheat sheet. <b>It is written in Norwegian.</b></p>
+      <p class="help" lang="nb">Den norske mesh-wikien dekker Meshtastic, MeshCore og Reticulum. For
+         MeshCore har den frekvensreglene for 869&nbsp;MHz-båndet og hva de betyr for antennevalg,
+         LoRa-parameterne som brukes her, å komme i gang fra kit eller fra deler, forslag til
+         repeater-plasseringer, og en CLI-jukselapp.</p>
+      <p class="help" lang="en">It also has a page of recommended repeater settings, which is the
+         same ground this page covers. Where the two disagree, <b>the wiki is the one maintained by
+         more people than this page is</b>.</p>
+      <p class="help" lang="nb">Den har også en side med anbefalt oppsett og innstillinger på
+         repeater, som er den samme grunnen denne siden dekker. Der de to er uenige, <b>er wikien den
+         som vedlikeholdes av flere folk enn denne siden</b>.</p>
+      <p class="addr"><a href="https://meshwiki.no/" target="_blank" rel="noopener">meshwiki.no</a></p>
+    </section>
+
+    <section>
+      <h2 lang="en">Corrections to this page</h2>
+      <h2 lang="nb">Rettelser til denne siden</h2>
+      <p class="help" lang="en">A wrong kommune boundary, a tag that does not match what your node
+         reports, a command the firmware rejects, a broken postnummer — send it here. Include
+         the position or the postnummer you used; that is usually enough to reproduce it.</p>
+      <p class="help" lang="nb">En feil kommunegrense, en tag som ikke stemmer med det noden din
+         rapporterer, en kommando firmwaren avviser, et postnummer som ikke virker — send det hit.
+         Ta med posisjonen eller postnummeret du brukte; det er som regel nok til å gjenskape det.</p>
+      <p class="addr"><a href="mailto:meshno.cloning239@passmail.com">meshno.cloning239@passmail.com</a></p>
+    </section>
+  </article>
+
+  
   <dialog class="qrdlg" id="qrDlg" aria-labelledby="qrName">
     <div class="qrd-in">
       <span class="qr big" id="qrBig"></span>
       <h3 id="qrName"></h3>
-      <p class="qrd-kind" id="qrKind"></p>
+      <p class="qrd-kind" id="qrKind" lang="en"></p>
+      <p class="qrd-kind" id="qrKindNb" lang="nb"></p>
       
       <div class="qrd-scope">
         <span class="qrd-lab">region scope</span>
@@ -1903,9 +2443,12 @@ parseInt(getComputedStyle(document.documentElement)
   </dialog>
 
   <footer>
-    <span>Unofficial community tool · not affiliated with the MeshCore project</span>
-    <span>Map data <a href="https://kartkatalog.geonorge.no" target="_blank" rel="noopener">Kartverket</a>, postnummer Posten&nbsp;Norge / Kartverket, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC&nbsp;BY&nbsp;4.0</a></span>
-    <span>Verify against <a href="https://docs.meshcore.io/cli_commands/" target="_blank" rel="noopener">docs.meshcore.io</a> before deploying</span>
+    <span lang="en">Unofficial community tool · not affiliated with the MeshCore project</span>
+    <span lang="nb">Uoffisielt verktøy fra miljøet · ikke tilknyttet MeshCore-prosjektet</span>
+    <span lang="en">Map data <a href="https://kartkatalog.geonorge.no" target="_blank" rel="noopener">Kartverket</a>, postnummer Posten&nbsp;Norge / Kartverket, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC&nbsp;BY&nbsp;4.0</a></span>
+    <span lang="nb">Kartdata <a href="https://kartkatalog.geonorge.no" target="_blank" rel="noopener">Kartverket</a>, postnummer Posten&nbsp;Norge / Kartverket, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC&nbsp;BY&nbsp;4.0</a></span>
+    <span lang="en">Verify against <a href="https://docs.meshcore.io/cli_commands/" target="_blank" rel="noopener">docs.meshcore.io</a> before deploying</span>
+    <span lang="nb">Verifiser mot <a href="https://docs.meshcore.io/cli_commands/" target="_blank" rel="noopener">docs.meshcore.io</a> før du setter ut noden</span>
   </footer>
 </div>
 
@@ -2004,6 +2547,12 @@ const PROFILE_DEFAULT = "neighborhood";
 const $ = id => document.getElementById(id);
 const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 const byteLen = s => new TextEncoder().encode(s).length;
+function say(id, en, nb, cls) {
+const a = $(id), b = $(id + 'Nb');
+a.innerHTML = en;
+b.innerHTML = nb;
+if (cls !== undefined) { a.className = cls; b.className = cls; }
+}
 function seg(el, attr, cb) {
 el.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
 el.querySelectorAll('button').forEach(x => x.classList.remove('on'));
@@ -2605,25 +3154,30 @@ const SCOPE_RANK = { city: 0, kommune: 1, fylke: 2, landsdel: 3, country: 4, con
 function channels(d) {
 if (!d) return [];
 const out = [];
-const add = (name, scope, kind, an, nb) => out.push({ name, scope, kind, an, nb: !!nb });
-add('europe', 'eu', 'continent', 'Everyone, everywhere. Quiet by design.');
-add('norge', 'no', 'country', 'The whole country.');
+const add = (name, scope, kind, en, no, near) =>
+out.push({ name, scope, kind, an: { en, nb: no }, nb: !!near });
+add('europe', 'eu', 'continent', 'Everyone, everywhere. Quiet by design.',
+'Alle, overalt. Stille av design.');
+add('norge', 'no', 'country', 'The whole country.', 'Hele landet.');
 const ld = LANDSDEL[d.fylke];
-add(chanName(LANDSDEL_NAMES[ld]), 'no-' + ld, 'landsdel', LANDSDEL_NAMES[ld]);
+add(chanName(LANDSDEL_NAMES[ld]), 'no-' + ld, 'landsdel',
+LANDSDEL_NAMES[ld], LANDSDEL_NAMES[ld]);
 add(chanName(FYLKE_NAMES[d.fylke]), 'no-' + d.fylke, 'fylke',
-`Fylkesnummer ${d.fylke}.`);
+`Fylkesnummer ${d.fylke}.`, `Fylkesnummer ${d.fylke}.`);
 add(chanName(d.kommuneName), 'no-' + d.kommune, 'kommune',
-`Kommunenummer ${d.kommune}.`);
+`Kommunenummer ${d.kommune}.`, `Kommunenummer ${d.kommune}.`);
 for (const m of d.metro) {
-add(chanName(CITIES[m.key]), m.key, 'city', `Within ${Math.round(m.d)} km.`);
+add(chanName(CITIES[m.key]), m.key, 'city',
+`Within ${Math.round(m.d)} km.`, `Innenfor ${Math.round(m.d)} km.`);
 }
 const km = d => `Neighbour — ${Math.round(d)} km away.`;
+const kmNb = d => `Nabo — ${Math.round(d)} km unna.`;
 for (const x of d.border.landsdel)
-add(chanName(LANDSDEL_NAMES[x.nr]), 'no-' + x.nr, 'landsdel', km(x.d), 1);
+add(chanName(LANDSDEL_NAMES[x.nr]), 'no-' + x.nr, 'landsdel', km(x.d), kmNb(x.d), 1);
 for (const x of d.border.fylke)
-add(chanName(FYLKE_NAMES[x.nr]), 'no-' + x.nr, 'fylke', km(x.d), 1);
+add(chanName(FYLKE_NAMES[x.nr]), 'no-' + x.nr, 'fylke', km(x.d), kmNb(x.d), 1);
 for (const x of d.border.kommune)
-add(chanName(x.name), 'no-' + x.nr, 'kommune', km(x.d), 1);
+add(chanName(x.name), 'no-' + x.nr, 'kommune', km(x.d), kmNb(x.d), 1);
 const best = new Map();
 for (const c of out) {
 const p = best.get(c.name);
@@ -2954,6 +3508,8 @@ furniture, mapPoint, setPan, setGhost, init };
 const PaintMap = (() => {
 const REST_REP = $('devRep').textContent;
 const REST_COM = $('devCom').textContent;
+const REST_REP_NB = $('devRepNb').textContent;
+const REST_COM_NB = $('devComNb').textContent;
 const FILL_TIERS = ['t-own', 't-nbf', 't-ownl', 't-nbl'];
 const TIERS = [...FILL_TIERS, 't-nbk'];
 function renderMapKey(present) {
@@ -2967,11 +3523,12 @@ const LEVELS = [
 const cols = LEVELS.filter(([, own, nb]) => present.has(own) || present.has(nb));
 const near = cols.some(([, , nb]) => present.has(nb));
 const cell = t => present.has(t) ? `<i class="mk-sw mk-${t}"></i>` : '<i class="mk-no"></i>';
+const hd = (en, no) =>
+`<span class="mk-h" lang="en">${en}</span><span class="mk-h" lang="nb">${no}</span>`;
 let h = '<span></span>' + cols.map(([n]) => `<span class="mk-c">${n}</span>`).join('');
-h += '<span class="mk-h">own</span>' + cols.map(([, own]) => cell(own)).join('');
+h += hd('own', 'egen') + cols.map(([, own]) => cell(own)).join('');
 if (near) {
-h += '<span class="mk-h">neighbour</span>'
-+ cols.map(([, , nb]) => cell(nb)).join('');
+h += hd('neighbour', 'nabo') + cols.map(([, , nb]) => cell(nb)).join('');
 }
 key.style.setProperty('--mk-cols', cols.length);
 key.innerHTML = h;
@@ -2990,15 +3547,18 @@ note.toggleAttribute('hidden', !html);
 function header() {
 const isRep = ui.device === 'repeater';
 $('mapHead').textContent = isRep ? 'Region' : 'Home';
-$('mapSub').textContent = isRep
-? 'Where the node stands decides which regions it relays for.'
-: 'Your companion location dictates your channel setup.';
+say('mapSub',
+isRep ? 'Where the node stands decides which regions it relays for.'
+: 'Your companion location dictates your channel setup.',
+isRep ? 'Hvor noden står avgjør hvilke regioner den videresender for.'
+: 'Hvor companionen din står avgjør oppsettet av channels.');
 }
 function deviceSwitch(rd, cd) {
-$('devRep').textContent = !rd ? REST_REP
-: cfg.desc.trim() ? Cfg.nodeName(rd) : 'not named yet';
+say('devRep', !rd ? REST_REP : cfg.desc.trim() ? esc(Cfg.nodeName(rd)) : 'not named yet',
+!rd ? REST_REP_NB : cfg.desc.trim() ? esc(Cfg.nodeName(rd)) : 'ikke navngitt ennå');
 const nch = cd ? Regions.channels(cd).length : 0;
-$('devCom').textContent = nch ? `${nch} channels` : REST_COM;
+say('devCom', nch ? `${nch} channels` : REST_COM,
+nch ? `${nch} channels` : REST_COM_NB);
 }
 function tag(ctx) {
 if (!ctx) {
@@ -3075,8 +3635,11 @@ tag, position, pin, tints, TIERS, FILL_TIERS };
 const PaintCfg = (() => {
 const EMPTY_TREE = $('scope').innerHTML;
 const NAME_HINT = $('nameHint').innerHTML;
+const NAME_HINT_NB = $('nameHintNb').innerHTML;
 const REST_LOC = $('locNote').textContent;
+const REST_LOC_NB = $('locNoteNb').textContent;
 const REST_UNSC = $('unscHelp').innerHTML;
+const REST_UNSC_NB = $('unscHelpNb').innerHTML;
 function block() {
 const L = Cfg.buildLines();
 $('cmdOut').innerHTML = Cfg.renderLines(L);
@@ -3095,8 +3658,9 @@ $('nmKm').textContent = '';
 $('nodeDesc').placeholder = 'e.g. Årvollåsen';
 $('nameBytes').textContent = '';
 $('nameBytes').className = 'bytes';
+if ($('nameHint').innerHTML !== NAME_HINT) say('nameHint', NAME_HINT, NAME_HINT_NB);
 $('nameHint').className = 'nmwhy';
-if ($('nameHint').innerHTML !== NAME_HINT) $('nameHint').innerHTML = NAME_HINT;
+$('nameHintNb').className = 'nmwhy';
 return;
 }
 const named = !!cfg.desc.trim();
@@ -3119,9 +3683,8 @@ const bEl = $('nameBytes'), over = named && nb > cap;
 bEl.textContent = named ? `${nb} / ${cap}` : '';
 bEl.className = 'bytes' + (over ? ' over'
 : (futureRisk || (named && nb > cap - 4)) ? ' warn' : '');
-const hint = $('nameHint');
-hint.className = 'nmwhy' + (over ? ' bad' : '');
-hint.innerHTML = over
+say('nameHint',
+over
 ? `Too long — trim it to ${cap} bytes. Norwegian letters cost two each.`
 : !named
 ? 'Add a place — the number on its own identifies nothing, so no '
@@ -3132,7 +3695,20 @@ hint.innerHTML = over
 : (cfg.descAuto && stedVague(pn))
 ? `<b>${esc(sted)}</b> covers ${STED_N[sted]} postnummer — `
 + 'try a bydel, hill or street.'
-: 'The four digits are your <b class="a">postnummer</b>.';
+: 'The four digits are your <b class="a">postnummer</b>.',
+over
+? `For langt — kutt det til ${cap} bytes. Norske bokstaver koster to hver.`
+: !named
+? 'Legg til et sted — nummeret alene identifiserer ingenting, så ingen '
++ '<code>set name</code> sendes ut ennå.'
+: futureRisk
+? `Passer nå på ${nb} bytes, men å publisere posisjon setter taket på `
++ '24. Kutt det for sikkerhets skyld.'
+: (cfg.descAuto && stedVague(pn))
+? `<b>${esc(sted)}</b> dekker ${STED_N[sted]} postnummer — `
++ 'prøv en bydel, en ås eller en gate.'
+: 'De fire sifrene er <b class="a">postnummeret</b> ditt.',
+'nmwhy' + (over ? ' bad' : ''));
 }
 function location(ctx) {
 $('locSeg').querySelector('[data-loc="map"]').disabled = !ctx;
@@ -3141,14 +3717,21 @@ if (cfg.locMode === 'map') cfg.locMode = 'none';
 $('locSeg').querySelectorAll('button').forEach(x =>
 x.classList.toggle('on', x.dataset.loc === cfg.locMode));
 $('locNote').textContent = REST_LOC;
+$('locNoteNb').textContent = REST_LOC_NB;
 return;
 }
 const ll = Proj.unproject(ctx.x, ctx.y);
+const pos = `${ll[0].toFixed(5)}°N ${ll[1].toFixed(5)}°E`;
 $('locNote').textContent = cfg.locMode === 'map'
-? `Publishes ${ll[0].toFixed(5)}°N ${ll[1].toFixed(5)}°E. Name limit is 24 bytes.`
+? `Publishes ${pos}. Name limit is 24 bytes.`
 : cfg.locMode === 'gps'
 ? 'The node publishes its own GPS position. Name limit is 24 bytes.'
 : 'No location published. Name limit is 32 bytes.';
+$('locNoteNb').textContent = cfg.locMode === 'map'
+? `Publiserer ${pos}. Navnegrensa er 24 bytes.`
+: cfg.locMode === 'gps'
+? 'Noden publiserer sin egen GPS-posisjon. Navnegrensa er 24 bytes.'
+: 'Ingen posisjon publisert. Navnegrensa er 32 bytes.';
 }
 function tree(ctx) {
 if (!ctx) {
@@ -3157,41 +3740,56 @@ return;
 }
 const ann = {};
 const dist = d => `${Math.round(d)} km`;
-ann['no-' + LANDSDEL[ctx.fylke]] =
-`own landsdel — ${esc(LANDSDEL_NAMES[LANDSDEL[ctx.fylke]])}`;
+const nb = (nr, en, no) => { ann[nr] = { en, nb: no }; };
+nb('no-' + LANDSDEL[ctx.fylke],
+`own landsdel — ${esc(LANDSDEL_NAMES[LANDSDEL[ctx.fylke]])}`,
+`egen landsdel — ${esc(LANDSDEL_NAMES[LANDSDEL[ctx.fylke]])}`);
 for (const x of ctx.border.landsdel)
-ann['no-' + x.nr] = `neighbour — ${esc(LANDSDEL_NAMES[x.nr])} ${dist(x.d)}`;
+nb('no-' + x.nr, `neighbour — ${esc(LANDSDEL_NAMES[x.nr])} ${dist(x.d)}`,
+`nabo — ${esc(LANDSDEL_NAMES[x.nr])} ${dist(x.d)}`);
 for (const x of ctx.border.fylke)
-ann['no-' + x.nr] = `neighbour — ${esc(FYLKE_NAMES[x.nr])} ${dist(x.d)}`;
+nb('no-' + x.nr, `neighbour — ${esc(FYLKE_NAMES[x.nr])} ${dist(x.d)}`,
+`nabo — ${esc(FYLKE_NAMES[x.nr])} ${dist(x.d)}`);
 for (const x of ctx.border.kommune)
-ann['no-' + x.nr] = `neighbour — ${esc(x.name)} ${dist(x.d)}`;
-ann['no-' + ctx.fylke] =
-`own <b>fylkesnummer</b> — ${esc(FYLKE_NAMES[ctx.fylke])}`;
-ann['no-' + ctx.kommune] =
-`own <b>kommunenummer</b> — ${esc(ctx.kommuneName)}`;
+nb('no-' + x.nr, `neighbour — ${esc(x.name)} ${dist(x.d)}`,
+`nabo — ${esc(x.name)} ${dist(x.d)}`);
+nb('no-' + ctx.fylke,
+`own <b>fylkesnummer</b> — ${esc(FYLKE_NAMES[ctx.fylke])}`,
+`eget <b>fylkesnummer</b> — ${esc(FYLKE_NAMES[ctx.fylke])}`);
+nb('no-' + ctx.kommune,
+`own <b>kommunenummer</b> — ${esc(ctx.kommuneName)}`,
+`eget <b>kommunenummer</b> — ${esc(ctx.kommuneName)}`);
 for (const m of ctx.metro)
-ann[m.key] = `city — ${esc(CITIES[m.key])} ${dist(m.d)}`;
+nb(m.key, `city — ${esc(CITIES[m.key])} ${dist(m.d)}`,
+`by — ${esc(CITIES[m.key])} ${dist(m.d)}`);
 if (ctx.airport)
-ann[ctx.airport.tag] =
-`airport — ${esc(ctx.airport.name)} ${dist(ctx.airport.d)}`;
+nb(ctx.airport.tag, `airport — ${esc(ctx.airport.name)} ${dist(ctx.airport.d)}`,
+`flyplass — ${esc(ctx.airport.name)} ${dist(ctx.airport.d)}`);
 const t = Regions.tags(ctx);
 const rows = [['', 'eu', ''], ['└─ ', 'no', '']]
 .concat(t.map((x, i) => [i === t.length - 1 ? '   └─ ' : '   ├─ ', x, ann[x]]))
 .concat([['', 'europe', '']]);
 const wide = Math.max(...rows.map(([i, x]) => i.length + x.length)) + 2;
-$('scope').innerHTML = rows.map(([indent, tag, note]) =>
-`<span class="t"><span class="br">${indent}</span>`
+const draw = lang => rows.map(([indent, tag, note]) =>
+`<span class="t" lang="${lang}"><span class="br">${indent}</span>`
 + tag + ' '.repeat(Math.max(1, wide - indent.length - tag.length))
-+ (note ? `<span class="an">${note}</span>` : '') + '</span>').join('');
++ (note ? `<span class="an">${note[lang]}</span>` : '') + '</span>').join('');
+$('scope').innerHTML = draw('en') + draw('nb');
 }
 function unscoped() {
 $('unscHopsBox').hidden = cfg.unscoped !== 'cap';
-$('unscHelp').innerHTML =
+const hops = cfg.unscopedHops || '?';
+say('unscHelp',
 cfg.unscoped === 'cap'
-? `Local untagged traffic still spreads, but only ${cfg.unscopedHops || '?'} hops. The neighbourhood, not the country.`
+? `Local untagged traffic still spreads, but only ${hops} hops. The neighbourhood, not the country.`
 : cfg.unscoped === 'deny'
 ? '<b class="bad">Drops every untagged packet.</b> Use it only after the mesh around you carries regions, or it isolates nodes that have not set regions.'
-: REST_UNSC;
+: REST_UNSC,
+cfg.unscoped === 'cap'
+? `Lokal utagget trafikk sprer seg fortsatt, men bare ${hops} hops. Nabolaget, ikke landet.`
+: cfg.unscoped === 'deny'
+? '<b class="bad">Forkaster hver utagget pakke.</b> Bruk den først når meshet rundt deg bærer regioner, ellers isolerer den noder som ikke har satt regioner.'
+: REST_UNSC_NB);
 }
 const profiles = () =>
 document.querySelectorAll('#profiles .profile').forEach(el =>
@@ -3200,6 +3798,7 @@ return { block, name, location, tree, unscoped, profiles };
 })();
 const ChanUI = (() => {
 const REST_SCOPE = $('scopeNote').innerHTML;
+const REST_SCOPE_NB = $('scopeNoteNb').innerHTML;
 const REST_CHANS = $('chans').innerHTML;
 function qrSvg(text) {
 const m = QR.matrix(text), n = m.length;
@@ -3231,7 +3830,8 @@ const row = (c, i) => `<div class="chan">
         </button>
         <div class="cm">
           <span class="cn">#${esc(c.name)}</span>
-          <span class="ca"><b>${esc(c.kind)}</b> · ${esc(c.an)}</span>
+          <span class="ca" lang="en"><b>${esc(c.kind)}</b> · ${esc(c.an.en)}</span>
+          <span class="ca" lang="nb"><b>${esc(c.kind)}</b> · ${esc(c.an.nb)}</span>
         </div>
         <a class="cadd" href="${esc(Regions.channelUrl(c))}">Add &rarr;</a>
       </div>`;
@@ -3239,9 +3839,13 @@ const home = list.map((c, i) => [c, i]).filter(([c]) => !c.nb);
 const near = list.map((c, i) => [c, i]).filter(([c]) => c.nb);
 let html = home.map(([c, i]) => row(c, i)).join('');
 if (near.length) {
-html += '<div class="chgroup"><span>Neighbouring regions</span>'
-+ '<p>Close enough that your node relays for them. Worth joining if you want '
-+ 'their traffic too — skip them if you only care about where you are.</p></div>'
+html += '<div class="chgroup">'
++ '<span lang="en">Neighbouring regions</span><span lang="nb">Naboregioner</span>'
++ '<p lang="en">Close enough that your node relays for them. Worth joining if you want '
++ 'their traffic too — skip them if you only care about where you are.</p>'
++ '<p lang="nb">Nære nok til at noden din videresender for dem. Verdt å bli med i '
++ 'hvis du vil ha trafikken deres også — hopp over dem hvis du bare bryr deg om der '
++ 'du står.</p></div>'
 + near.map(([c, i]) => row(c, i)).join('');
 }
 box.innerHTML = html;
@@ -3252,9 +3856,9 @@ qrShown = c;
 const url = Regions.channelUrl(c);
 $('qrBig').innerHTML = qrSvg(url);
 $('qrName').textContent = '#' + c.name;
-$('qrKind').textContent = cfg.chanScope
-? `${c.kind} · scoped to ${c.scope}`
-: `${c.kind} · unscoped`;
+say('qrKind',
+cfg.chanScope ? `${c.kind} · scoped to ${esc(c.scope)}` : `${c.kind} · unscoped`,
+cfg.chanScope ? `${c.kind} · scopet til ${esc(c.scope)}` : `${c.kind} · unscoped`);
 $('qrSecret').textContent = Regions.channelSecret(c.name);
 $('qrGo').href = url;
 $('qrDlg').querySelectorAll('#qrScope button').forEach(x =>
@@ -3270,12 +3874,19 @@ function setScope(on) {
 cfg.chanScope = on;
 $('scopeSeg').querySelectorAll('button').forEach(x =>
 x.classList.toggle('on', (x.dataset.sc === 'on') === on));
-$('scopeNote').innerHTML = on
+say('scopeNote',
+on
 ? 'Each channel carries its region, so only repeaters that carry it pass those messages on. '
 + 'Local traffic stays local instead of spending everyone’s airtime. <b>Most repeaters don’t '
 + 'carry regions yet, so check what is around you.</b> Unset region scope in the app if '
 + 'messages stop getting through.'
-: REST_SCOPE;
+: REST_SCOPE,
+on
+? 'Hver channel bærer regionen sin, så bare repeatere som bærer den sender de meldingene '
++ 'videre. Lokal trafikk blir lokal i stedet for å bruke opp alles airtime. <b>De fleste '
++ 'repeatere bærer ikke regioner ennå, så sjekk hva som står rundt deg.</b> Fjern region '
++ 'scope i appen hvis meldinger slutter å komme fram.'
+: REST_SCOPE_NB);
 render();
 if (qrShown) showQr(qrShown);
 }
@@ -3680,17 +4291,22 @@ MapView.home();
 function adopt(first = false) {
 if (!first) {
 if (location.hash.replace(/^#/, '') === urlLast) return;
+if (document.getElementById(location.hash.slice(1))) return;
 toDefaults();
 }
 const shared = applyShare(location.hash);
 if (!first && shared !== true) { Controls.sync(); showPinFor(ui.device); }
 ChanUI.setScope(cfg.chanScope);
 const note = $('linkNote');
-note.hidden = shared !== 'newer';
+note.hidden = $('linkNoteNb').hidden = shared !== 'newer';
 if (shared === 'newer') {
-note.innerHTML = '<b class="bad">This link was made by a newer version '
+say('linkNote',
+'<b class="bad">This link was made by a newer version '
 + 'of this page.</b> Nothing has been applied. Reload to pick up the current '
-+ 'version, then open the link again.';
++ 'version, then open the link again.',
+'<b class="bad">Denne lenken ble laget av en nyere versjon '
++ 'av denne siden.</b> Ingenting er tatt i bruk. Last inn på nytt for å hente den '
++ 'gjeldende versjonen, og åpne lenken igjen.');
 freeze();
 } else {
 urlFrozen = false;
@@ -3699,6 +4315,125 @@ seed();
 }
 addEventListener('hashchange', () => adopt());
 return { hash: shareHash, adopt, schedule: syncUrl };
+})();
+const Router = (() => {
+const VIEW = { about: 'pgAbout', contact: 'pgContact' };
+const HOME = ['mast', 'main'];
+const HOME_TITLE = document.title;
+const canon = document.querySelector('link[rel="canonical"]');
+const desc = document.querySelector('meta[name="description"]');
+const SITE = canon.href;
+const HOME_DESC = desc.content;
+const LANGS = ['en', 'nb'];
+const langOf = u => LANGS.includes(u.searchParams.get('lang'))
+? u.searchParams.get('lang') : 'en';
+const curLang = () => document.documentElement.dataset.lang === 'nb' ? 'nb' : 'en';
+function routeOf(href) {
+if (href.startsWith('#')) return null;
+let u;
+try { u = new URL(href, location.href); } catch (e) { return null; }
+if (u.origin !== location.origin || !samePath(u.pathname)) return null;
+const p = u.searchParams.get('p');
+return p === null ? '' : (VIEW[p] ? p : null);
+}
+const samePath = p =>
+p.replace(/index\.html$/, '') === location.pathname.replace(/index\.html$/, '');
+const current = () => {
+const p = new URLSearchParams(location.search).get('p');
+return VIEW[p] ? p : '';
+};
+const txt = (el, lang) => {
+const inner = el.querySelector('[lang="' + lang + '"]');
+return (inner || el).textContent.replace(/\s+/g, ' ').trim();
+};
+function alternates(pairs) {
+for (const l of [...document.querySelectorAll('link[rel="alternate"]')]) l.remove();
+for (const [hl, href] of pairs) {
+const l = document.createElement('link');
+l.rel = 'alternate'; l.hreflang = hl; l.href = href;
+document.head.appendChild(l);
+}
+}
+function show(route, lang) {
+document.documentElement.dataset.lang = lang;
+document.documentElement.lang = route && lang === 'nb' ? 'nb' : 'en';
+for (const id of HOME) $(id).hidden = !!route;
+for (const k in VIEW) $(VIEW[k]).hidden = k !== route;
+delete document.documentElement.dataset.page;
+$('skipLink').hidden = !!route;
+const view = route ? $(VIEW[route]) : null;
+const lede = view && (view.querySelector('.lede[lang="' + lang + '"]')
+|| view.querySelector('.lede'));
+document.title = view ? txt(view.querySelector('h1'), lang) + ' — MeshNO' : HOME_TITLE;
+desc.content = view ? txt(lede, lang) : HOME_DESC;
+canon.href = route ? SITE + '?p=' + route + (lang === 'nb' ? '&lang=nb' : '') : SITE;
+alternates(route ? [['en', SITE + '?p=' + route],
+['nb', SITE + '?p=' + route + '&lang=nb'],
+['x-default', SITE + '?p=' + route]] : []);
+for (const a of $('langSw').querySelectorAll('a')) {
+const nb = a.hreflang === 'nb';
+a.setAttribute('href', route ? '?p=' + route + (nb ? '&lang=nb' : '')
+: nb ? '?lang=nb' : './');
+if (nb === (lang === 'nb')) a.setAttribute('aria-current', 'true');
+else a.removeAttribute('aria-current');
+}
+relabel();
+for (const a of $('navLinks').querySelectorAll('a')) {
+const to = routeOf(a.getAttribute('href'));
+a.setAttribute('href', to ? '?p=' + to + (lang === 'nb' ? '&lang=nb' : '')
+: lang === 'nb' ? '?lang=nb' : './');
+if (to === route) a.setAttribute('aria-current', 'page');
+else a.removeAttribute('aria-current');
+}
+}
+function land(route, lang) {
+show(route, lang);
+scrollTo(0, 0);
+(route ? $(VIEW[route]) : $('mast')).querySelector('h1').focus();
+if (!route && unframed) { unframed = false; reframe(); }
+}
+const target = (route, lang) => {
+const q = (route ? ['p=' + route] : []).concat(lang === 'nb' ? ['lang=nb'] : []);
+return location.pathname + (q.length ? '?' + q.join('&') : '') + location.hash;
+};
+function push(url) {
+try { history.pushState(null, '', url); } catch (e) {   }
+}
+let reframe = () => {}, relabel = () => {}, unframed = false;
+function wire(deps) {
+reframe = deps.reframe;
+relabel = deps.relabel;
+const route = current();
+unframed = !!route;
+show(route, curLang());
+document.addEventListener('click', e => {
+if (e.defaultPrevented || e.button !== 0) return;
+if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+const a = e.target.closest('a[href]');
+if (!a || a.target) return;
+if (a.classList.contains('home')) return;
+const href = a.getAttribute('href');
+const route = routeOf(href);
+if (route === null) return;
+e.preventDefault();
+let lang = curLang();
+if (a.hreflang === 'en' || a.hreflang === 'nb') lang = a.hreflang;
+else try {
+const u = new URL(href, location.href);
+if (u.searchParams.has('lang')) lang = langOf(u);
+} catch (err) {   }
+try { localStorage.setItem('meshno.lang', lang); } catch (err) {   }
+const moved = route !== current();
+const url = target(route, lang);
+if (url !== location.pathname + location.search + location.hash) push(url);
+if (moved) land(route, lang); else show(route, lang);
+});
+addEventListener('popstate', () => {
+const u = new URL(location.href);
+land(current(), langOf(u));
+});
+}
+return { wire, current };
 })();
 const Controls = (() => {
 let render = () => {}, place = () => false,
@@ -3768,14 +4503,20 @@ try { t = localStorage.getItem(THEME_KEY); } catch (e) {   }
 return t === 'light' || t === 'dark' ? t : 'auto';
 }
 const THEMES = ['auto', 'light', 'dark'];
-const THEME_TEXT = { auto: 'Auto', light: 'Light', dark: 'Dark' };
+const THEME_TEXT = {
+auto:  { en: 'Auto',  nb: 'Auto' },
+light: { en: 'Light', nb: 'Lys' },
+dark:  { en: 'Dark',  nb: 'Mørk' },
+};
 function applyTheme(pref) {
 document.documentElement.setAttribute('data-theme',
 pref === 'auto' ? (prefersDark.matches ? 'dark' : 'light') : pref);
 const next = THEMES[(THEMES.indexOf(pref) + 1) % THEMES.length];
-$('themeLabel').textContent = THEME_TEXT[pref];
-$('themeBtn').setAttribute('aria-label',
-`${THEME_TEXT[pref]} — appearance; press to switch to ${THEME_TEXT[next]}`);
+say('themeLabel', THEME_TEXT[pref].en, THEME_TEXT[pref].nb);
+const l = document.documentElement.dataset.lang === 'nb' ? 'nb' : 'en';
+$('themeBtn').setAttribute('aria-label', l === 'nb'
+? `${THEME_TEXT[pref].nb} — utseende; trykk for å bytte til ${THEME_TEXT[next].nb}`
+: `${THEME_TEXT[pref].en} — appearance; press to switch to ${THEME_TEXT[next].en}`);
 }
 $('themeBtn').addEventListener('click', () => {
 const v = THEMES[(THEMES.indexOf(storedTheme()) + 1) % THEMES.length];
@@ -3939,6 +4680,10 @@ MapView.init({ place });
 Controls.wire({ render, place, replace, showPinFor });
 render();
 Share.adopt(true);
+Router.wire({
+reframe: () => { ui.drilled = null; showPinFor(ui.device, true); },
+relabel: () => Controls.applyTheme(Controls.storedTheme()),
+});
 (window.requestIdleCallback || (fn => setTimeout(fn, 200)))(
 () => Geo.loadPostGeo(refreshPost));
 </script>

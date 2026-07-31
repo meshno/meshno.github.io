@@ -1,0 +1,12 @@
+# MeshNO — MeshCore node configurator for Norway
+# https://meshno.github.io/
+#
+# Nothing here is private and nothing costs a crawler anything to fetch: the
+# whole site is one HTML file and three assets. postnr-geo.bin is deliberately
+# NOT disallowed — the page fetches it at runtime, and a resource a renderer is
+# blocked from reading is a resource it reports as missing.
+
+User-agent: *
+Allow: /
+
+Sitemap: https://meshno.github.io/sitemap.xml

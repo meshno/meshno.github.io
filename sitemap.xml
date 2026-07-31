@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- One document, and every address it is worth indexing at. About and Contact
+     are views of index.html reached by ?p=, so these are query URLs rather than
+     paths; the page sets a matching rel=canonical per route, without which the
+     root's canonical would tell a crawler both of them are duplicates of it.
+
+     THE LANGUAGE IS PART OF THE ADDRESS, but only where the translation is real.
+     About in Norwegian is a Norwegian document and is listed; the page declares
+     rel=alternate hreflang between the pair. Home is NOT listed twice — it is an
+     English tool with Norwegian help text around English labels, a map and a CLI
+     block, so ?lang=nb there canonicals back to the root as the duplicate it is.
+
+     No <lastmod>: nothing here would keep it honest, and a stale date is worse
+     than none. The `seo` test group asserts this list against the links in the
+     bar and the languages the page offers, so neither a fourth page nor a third
+     language can be added without appearing here. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://meshno.github.io/</loc></url>
+  <url><loc>https://meshno.github.io/?p=contact</loc></url>
+  <url><loc>https://meshno.github.io/?p=about</loc></url>
+  <url><loc>https://meshno.github.io/?p=contact&amp;lang=nb</loc></url>
+  <url><loc>https://meshno.github.io/?p=about&amp;lang=nb</loc></url>
+</urlset>
