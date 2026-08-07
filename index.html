@@ -994,6 +994,10 @@
   .kmsbox {
     padding: 12px; border-bottom: 1px solid var(--rule-2);
   }
+  .kmshead {
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.04em;
+    color: var(--dim); margin: 0 0 8px;
+  }
   
 
   .kmslede {
@@ -1469,13 +1473,18 @@ document.documentElement.dataset.lang = L;
 
     
     
+    
     <nav class="nav-links" id="navLinks" aria-label="Pages">
       <a class="nl" href="./" aria-current="page"><span lang="en">Home</span><span lang="nb">Hjem</span></a>
       <a class="nl" href="?p=contact"><span lang="en">Contact</span><span lang="nb">Kontakt</span></a>
       <a class="nl" href="?p=about"><span lang="en">About</span><span lang="nb">Om</span></a>
+      <a class="nl" href="regions-guide.html"><span lang="en">Regions guide</span><span lang="nb">Regions guide</span></a>
     </nav>
-    
-    <script>(function () {
+  </div>
+</div>
+
+
+<script>(function () {
 var d = document.documentElement.dataset, p = d.page, i;
 if (p) {
 var a = document.getElementById('navLinks').children;
@@ -1494,8 +1503,6 @@ else l[i].removeAttribute('aria-current');
 }
 })();
 </script>
-  </div>
-</div>
 
 <div class="wrap">
   
@@ -1553,8 +1560,8 @@ else l[i].removeAttribute('aria-current');
           <div class="v">
             <div class="seg" id="locSeg">
               <button data-loc="none" class="on">none</button>
-              <button data-loc="map" disabled>map</button>
-              <button data-loc="gps">gps</button>
+              <button data-loc="map" disabled>position from map</button>
+              <button data-loc="gps">internal gps</button>
             </div>
           </div>
         </div>
@@ -1581,35 +1588,24 @@ else l[i].removeAttribute('aria-current');
           
           <p id="locNote" lang="en">Place the node on the map to publish a location.</p>
           <p id="locNoteNb" lang="nb">Sett noden på kartet for å publisere en posisjon.</p>
-          <p lang="en">Convention: <code>NO-&lt;postnummer&gt; &lt;place&gt;</code> — a node on Skuiåsen in
-             Bærums Verk is <code>NO-1354 Skuiåsen</code>. <b>32 bytes, or 24 if you publish a
-             location.</b> Norwegian letters cost two each. Takes effect after a reboot.</p>
-          <p lang="nb">Konvensjon: <code>NO-&lt;postnummer&gt; &lt;sted&gt;</code> — en node på Skuiåsen i
-             Bærums Verk blir <code>NO-1354 Skuiåsen</code>. <b>32 bytes, eller 24 hvis du publiserer
-             posisjon.</b> Norske bokstaver koster to hver. Trer i kraft etter en reboot.</p>
-          <p lang="en">A map click now finds your postnummer <b>exactly</b>, from the real area borders — the
-             bar under the map shows it. If you already know it, <b>type it into the position
-             field</b> and the node lands in the middle of that area. Either way is exact; typing is
-             just faster when you know the number.</p>
-          <p lang="nb">Et klikk på kartet finner postnummeret ditt <b>eksakt</b>, fra de virkelige
-             områdegrensene — baren under kartet viser det. Vet du det allerede, <b>skriv det inn i
-             posisjonsfeltet</b>, så havner noden midt i det området. Begge veier er eksakte; å
-             skrive er bare raskere når du kan nummeret.</p>
-          <p></p>
-          <p lang="en"><b>location</b> sets where the node says it is, three ways. <b>none</b> is the default
-             and publishes nothing. <b>map</b> uses the pin you placed, which is only accurate to
-             about a hundred metres, so treat it as rough. <b>gps</b> lets the node find its own
-             position, and set its clock from the satellites, on a build with GPS. Any published
-             location puts the node on mesh maps and <b>drops the name limit to 24 bytes</b>.</p>
-          <p lang="nb"><b>location</b> bestemmer hvor noden sier den står, på tre måter. <b>none</b> er
-             standard og publiserer ingenting. <b>map</b> bruker pinnen du satte, som bare er nøyaktig
-             på rundt hundre meter, så regn den som omtrentlig. <b>gps</b> lar noden finne sin egen
-             posisjon, og stille klokka fra satellittene, på en build med GPS. All publisert posisjon
-             setter noden på mesh-kart og <b>senker navnegrensa til 24 bytes</b>.</p>
-          <p lang="en"><b>owner.info</b> is contact, antenna, power, mount. Visible to anyone who queries the node, so no personal info.</p>
-          <p lang="nb"><b>owner.info</b> er kontakt, antenne, strøm, montering. Synlig for alle som spør noden, så ingen personopplysninger.</p>
-          <p lang="en"><b>Passwords.</b> Guest lets members query the node; admin lets them reconfigure it. The factory admin password is <code>password</code>, so set your own. Both appear in the config in the clear.</p>
-          <p lang="nb"><b>Passord.</b> Guest lar medlemmer spørre noden; admin lar dem konfigurere den om. Fabrikkpassordet for admin er <code>password</code>, så sett ditt eget. Begge står i klartekst i configen.</p>
+          <p lang="en"><b>name</b> — <code>NO-&lt;postnummer&gt; &lt;place&gt;</code>, so a node on Skuiåsen in
+             Bærums Verk is <code>NO-1354 Skuiåsen</code>. 32 bytes, or 24 with a location published;
+             Norwegian letters cost two each. Takes effect after a reboot.</p>
+          <p lang="nb"><b>name</b> — <code>NO-&lt;postnummer&gt; &lt;sted&gt;</code>, så en node på Skuiåsen i
+             Bærums Verk blir <code>NO-1354 Skuiåsen</code>. 32 bytes, eller 24 med posisjon publisert;
+             norske bokstaver koster to hver. Trer i kraft etter en reboot.</p>
+          <p lang="en"><b>location</b> — <b>none</b> publishes nothing. <b>position from map</b> publishes
+             the pin you placed, accurate to about a hundred metres. <b>internal gps</b> lets the node
+             find its own position and set its clock, on a build with GPS. Either published mode puts
+             the node on mesh maps and drops the name limit to 24 bytes.</p>
+          <p lang="nb"><b>location</b> — <b>none</b> publiserer ingenting. <b>position from map</b>
+             publiserer pinnen du satte, nøyaktig på rundt hundre meter. <b>internal gps</b> lar noden
+             finne sin egen posisjon og stille klokka, på en build med GPS. Begge publiserte modusene
+             setter noden på mesh-kart og senker navnegrensa til 24 bytes.</p>
+          <p lang="en"><b>owner.info</b> — contact, antenna, power, mount. Anyone can query it, so no personal info.</p>
+          <p lang="nb"><b>owner.info</b> — kontakt, antenne, strøm, montering. Hvem som helst kan spørre om den, så ingen personopplysninger.</p>
+          <p lang="en"><b>Passwords</b> — guest queries the node, admin reconfigures it. The factory admin password is <code>password</code>. Both stand in the config in the clear.</p>
+          <p lang="nb"><b>Passord</b> — guest spør noden, admin konfigurerer den om. Fabrikkpassordet for admin er <code>password</code>. Begge står i klartekst i configen.</p>
         </details>
       </section>
 
@@ -1629,10 +1625,10 @@ else l[i].removeAttribute('aria-current');
           <div class="k">coding rate</div>
           <div class="v">
             <div class="seg" id="crSeg">
-              <button data-cr="5">5 · +25%</button>
+              <button data-cr="5" class="on">5 · +25%</button>
               <button data-cr="6">6 · +50%</button>
               <button data-cr="7">7 · +75%</button>
-              <button data-cr="8" class="on">8 · +100%</button>
+              <button data-cr="8">8 · +100%</button>
             </div>
           </div>
         </div>
@@ -1667,14 +1663,14 @@ else l[i].removeAttribute('aria-current');
         </div>
         <details class="explain">
           <summary><span lang="en">What these radio settings do</span><span lang="nb">Hva disse radioinnstillingene gjør</span></summary>
-          <p lang="en">Tx power is the LoRa chip's output, defaulted to <b>20 dBm</b>. Boards with an amplifier put out more, so check the manual, and blank the field to keep the board's own default. <b>Staying inside your local legal limit is on you.</b></p>
-          <p lang="nb">Tx power er utgangseffekten fra LoRa-brikka, satt til <b>20 dBm</b> som standard. Kort med forsterker gir mer, så sjekk manualen, og blank feltet for å beholde kortets egen standard. <b>Å holde deg innenfor lokal lovlig grense er ditt ansvar.</b></p>
-          <p lang="en">CR is the one radio parameter that may differ between nodes — receivers decode any CR. Higher = more redundancy, better survival through noise, but slower and more channel load. <b>Well-connected repeater: consider 5.</b> Frequency, bandwidth, and SF must match the mesh and are fixed here.</p>
-          <p lang="nb">CR er den ene radioparameteren som kan avvike mellom noder — mottakere dekoder hvilken som helst CR. Høyere = mer redundans, bedre overlevelse gjennom støy, men tregere og mer last på kanalen. <b>Godt tilkoblet repeater: vurder 5.</b> Frekvens, bandwidth og SF må stemme med meshet og er låst her.</p>
-          <p lang="en">1-byte hashes collide quickly as repeater count grows; 2-byte (65 536 values) makes collisions practically impossible at this mesh's scale and makes network debugging far easier. 3-byte only matters at millions of nodes.</p>
-          <p lang="nb">1-byte hasher kolliderer raskt etter hvert som antallet repeatere vokser; 2-byte (65 536 verdier) gjør kollisjoner praktisk talt umulige i dette meshets skala og gjør nettverksdebugging mye enklere. 3-byte betyr først noe ved millioner av noder.</p>
-          <p lang="en">multi.acks sends a spare copy of each acknowledgement so it survives a collision. Steadier on a weak link, at the cost of a little more airtime. Off unless a link needs it.</p>
-          <p lang="nb">multi.acks sender en ekstra kopi av hver acknowledgement så den overlever en kollisjon. Stødigere på en svak link, mot litt mer airtime. Av med mindre en link trenger det.</p>
+          <p lang="en"><b>tx power</b> — <code>set tx</code>, the LoRa chip's output in dBm. Range 1–22, default <b>22</b>, which is also the firmware's cap. Boards with an amplifier radiate more than this figure. A blank field emits no <code>set tx</code>, leaving the board default.</p>
+          <p lang="nb"><b>tx power</b> — <code>set tx</code>, utgangseffekten fra LoRa-brikka i dBm. Område 1–22, standard <b>22</b>, som også er firmwarens tak. Kort med forsterker stråler mer enn dette tallet. Et blankt felt sender ingen <code>set tx</code>, så kortets standard blir stående.</p>
+          <p lang="en"><b>coding rate</b> — the LoRa error-correction ratio 4/CR, the fourth field of <code>set radio</code>. Default <b>5</b>: 25% redundancy and the shortest airtime. Each step up adds redundancy and lengthens the transmission by the same amount, so <b>raise it if this node's transmissions are not getting through</b> — 8 doubles both. CR is per node: a receiver reads it from the packet header and decodes any of them. Frequency 869.618 MHz, bandwidth 62.5 kHz and SF 8 are fixed by the mesh.</p>
+          <p lang="nb"><b>coding rate</b> — LoRa-forholdet 4/CR for feilkorreksjon, fjerde felt i <code>set radio</code>. Standard <b>5</b>: 25% redundans og kortest airtime. Hvert steg opp gir mer redundans og forlenger sendingen like mye, så <b>skru den opp hvis sendingene fra denne noden ikke kommer fram</b> — 8 dobler begge deler. CR er per node: en mottaker leser den fra pakkehodet og dekoder hvilken som helst. Frekvens 869,618 MHz, bandwidth 62,5 kHz og SF 8 er låst av meshet.</p>
+          <p lang="en"><b>path.hash.mode</b> — bytes per repeater in a packet's recorded path. 1 byte gives 256 distinct repeater ids and room for 64 hops, 2 bytes 65 536 and 32 hops, 3 bytes 16.7 million and 21 hops. The trade is collision probability against path length.</p>
+          <p lang="nb"><b>path.hash.mode</b> — bytes per repeater i pakkas registrerte path. 1 byte gir 256 ulike repeater-id-er og plass til 64 hopp, 2 bytes 65 536 og 32 hopp, 3 bytes 16,7 millioner og 21 hopp. Avveiingen er kollisjonssannsynlighet mot path-lengde.</p>
+          <p lang="en"><b>multi.acks</b> — <code>set multi.acks 1</code> adds one extra retransmit of every acknowledgement, at that much more airtime. Off in the firmware, and emitted only when on.</p>
+          <p lang="nb"><b>multi.acks</b> — <code>set multi.acks 1</code> legger på én ekstra retransmisjon av hver acknowledgement, mot tilsvarende mer airtime. Av i firmwaren, og sendes bare ut når den er på.</p>
         </details>
       </section>
 
@@ -1715,36 +1711,28 @@ else l[i].removeAttribute('aria-current');
         </div>
         <details class="explain">
           <summary><span lang="en">How the back-off works, and how to choose</span><span lang="nb">Hvordan back-off virker, og hvordan du velger</span></summary>
-          <p lang="en"><b>Several repeaters hear the same flood.</b> Each waits a random moment before
-             repeating it so they do not transmit over each other. The profile scales that window:
-             the more repeaters around you, the wider it needs to be. It costs a little latency and
-             nothing else — it does not change what your node repeats, or who can reach it.</p>
-          <p lang="nb"><b>Flere repeatere hører den samme flooden.</b> Hver venter et tilfeldig
-             øyeblikk før den sender den videre, så de ikke sender oppå hverandre. Profilen skalerer
-             det vinduet: jo flere repeatere rundt deg, jo bredere må det være. Det koster litt
-             latency og ingenting annet — det endrer ikke hva noden din videresender, eller hvem som
-             når den.</p>
-          <p lang="en"><code>rxdelay 3</code> is on every profile. It works from the receiving side: a packet
-             that arrived weakly is held back briefly so a repeater that heard it clearly gets there
-             first, and the weak copy is dropped as a duplicate.</p>
-          <p lang="nb"><code>rxdelay 3</code> ligger på alle profilene. Den virker fra mottakersiden: en
-             pakke som kom inn svakt holdes kort tilbake så en repeater som hørte den tydelig kommer
-             fram først, og den svake kopien forkastes som duplikat.</p>
-          <p lang="en"><b>A repeater should not move.</b> One that travels keeps changing which nodes it can
-             hear, so routes through it break as fast as they form. Set one up on the <b>Companion</b> tab instead — you
-             still get the mesh, without adding an unstable relay to it.</p>
-          <p lang="nb"><b>En repeater bør ikke flytte på seg.</b> En som er i bevegelse endrer hele
-             tiden hvilke noder den hører, så ruter gjennom den brekker like fort som de dannes. Sett
-             opp en på <b>Companion</b>-fanen i stedet — du får fortsatt meshet, uten å legge et
-             ustabilt ledd inn i det.</p>
-          <p lang="en">Run <code>neighbors</code> on the node and count how many have SNR above 0. Reported:
-             16 neighbours with 4 above 0 is sparse; 50 with 19 above 0 is dense.</p>
-          <p lang="nb">Kjør <code>neighbors</code> på noden og tell hvor mange som har SNR over 0.
-             Rapportert: 16 naboer med 4 over 0 er tynt; 50 med 19 over 0 er tett.</p>
-          <p lang="en"><code>txdelay</code> moves in steps of <b>0.2</b> and both delays cap at <b>2</b> —
-             that is firmware behaviour, not opinion. Everything else here is local convention.</p>
-          <p lang="nb"><code>txdelay</code> går i steg på <b>0,2</b> og begge delays stopper på <b>2</b>
-             — det er firmware-oppførsel, ikke en mening. Alt annet her er lokal konvensjon.</p>
+          <p lang="en">Every repeater that hears the same flood waits a random moment before repeating it,
+             so they do not transmit on top of each other. <code>txdelay</code> scales that window for
+             floods, <code>direct.txdelay</code> for direct packets. It buys latency and nothing
+             else — it does not change what the node repeats.</p>
+          <p lang="nb">Hver repeater som hører den samme flooden venter et tilfeldig øyeblikk før den
+             sender den videre, så de ikke sender oppå hverandre. <code>txdelay</code> skalerer det
+             vinduet for floods, <code>direct.txdelay</code> for direkte pakker. Det koster latency og
+             ingenting annet — det endrer ikke hva noden videresender.</p>
+          <p lang="en"><code>rxdelay 3</code> is on every profile, and works from the receiving side: a
+             packet that arrived weakly is held back so a repeater that heard it clearly transmits
+             first, and the weak copy is then dropped as a duplicate.</p>
+          <p lang="nb"><code>rxdelay 3</code> ligger på alle profilene og virker fra mottakersiden: en
+             pakke som kom inn svakt holdes tilbake så en repeater som hørte den tydelig sender først,
+             og den svake kopien forkastes som duplikat.</p>
+          <p lang="en">The profiles are indexed by neighbour density. Run <code>neighbors</code> on the node
+             and count the entries with SNR above 0: 4 of 16 is sparse, 19 of 50 is dense.</p>
+          <p lang="nb">Profilene er indeksert på nabotetthet. Kjør <code>neighbors</code> på noden og tell
+             oppføringene med SNR over 0: 4 av 16 er tynt, 19 av 50 er tett.</p>
+          <p lang="en"><code>txdelay</code> moves in steps of <b>0.2</b> and both delays cap at <b>2</b> in
+             the firmware. The values on each profile are local convention.</p>
+          <p lang="nb"><code>txdelay</code> går i steg på <b>0,2</b> og begge delays stopper på <b>2</b> i
+             firmwaren. Verdiene på hver profil er lokal konvensjon.</p>
         </details>
       </section>
 
@@ -1784,35 +1772,32 @@ else l[i].removeAttribute('aria-current');
         </div>
         <details class="explain">
           <summary><span lang="en">What default scope changes</span><span lang="nb">Hva default scope endrer</span></summary>
-          <p lang="en"><b>Tags what this node sends on its own</b> — for a repeater, mostly its adverts. It
-             does not change which regions the node <em>relays</em> for; that is the tree on the
-             left.</p>
-          <p lang="nb"><b>Tagger det denne noden sender selv</b> — for en repeater stort sett
-             advertene dens. Det endrer ikke hvilke regioner noden <em>videresender</em> for; det er
-             treet til venstre.</p>
-          <p lang="en"><b>off</b> for now. The mesh is still getting repeaters onto a base set of regions, and
-             until enough of them carry it, scoping a node's own traffic risks it being dropped. So
-             adverts go out unscoped, which every repeater passes. Once the repeaters around you carry
-             regions, set <b>country</b> (<code>no</code>) or narrower to scope what this node sends.
-             Kommune and city are for special-purpose nodes and channels.</p>
-          <p lang="nb"><b>off</b> foreløpig. Meshet holder fortsatt på å få repeaterne over på et
-             grunnsett av regioner, og før nok av dem bærer det, risikerer du at nodens egen trafikk
-             blir forkastet hvis den scopes. Så adverts går ut unscoped, som hver repeater slipper
-             gjennom. Når repeaterne rundt deg bærer regioner, sett <b>country</b> (<code>no</code>)
-             eller smalere for å scope det denne noden sender. Kommune og city er for noder og
-             channels med et spesielt formål.</p>
-          <p lang="en"><b>Unscoped floods</b> sets how much untagged traffic this repeater carries: messages
-             from nodes with no region set. <b>allow</b> is today's mesh, where everything floods and
-             nobody is cut off. <b>cap</b> keeps local untagged traffic but stops it crossing the
-             country. <b>deny</b> drops it outright. Leave it on <b>allow</b> until the nodes around
-             you carry regions; turning <code>deny</code> on early isolates any node that has not set
-             regions yet.</p>
-          <p lang="nb"><b>Unscoped floods</b> bestemmer hvor mye utagget trafikk denne repeateren
-             bærer: meldinger fra noder uten region satt. <b>allow</b> er meshet slik det er i dag,
-             der alt flooder og ingen blir avskåret. <b>cap</b> beholder lokal utagget trafikk, men
-             stopper den fra å krysse landet. <b>deny</b> forkaster den rett ut. La den stå på
-             <b>allow</b> til nodene rundt deg bærer regioner; å slå på <code>deny</code> for tidlig
-             isolerer enhver node som ikke har satt regioner ennå.</p>
+          <p lang="en"><b>region default</b> — <code>region default &lt;tag&gt;</code> tags what this node
+             sends on its own, which for a repeater is mostly its adverts. It does not change which
+             regions the node <em>relays</em> for; that is the tree on the left. Each button picks the
+             tag at that level for where the node stands — country is <code>no</code>, city is the
+             nearest one. <b>off</b> emits no line at all, so this node's own traffic goes out
+             unscoped and every repeater floods it. That is the setting to use until the repeaters
+             around you carry regions.</p>
+          <p lang="nb"><b>region default</b> — <code>region default &lt;tag&gt;</code> tagger det denne
+             noden sender selv, som for en repeater stort sett er advertene dens. Det endrer ikke
+             hvilke regioner noden <em>videresender</em> for; det er treet til venstre. Hver knapp
+             velger taggen på det nivået for der noden står — country er <code>no</code>, city er den
+             nærmeste. <b>off</b> sender ingen linje i det hele tatt, så nodens egen trafikk går ut
+             unscoped og hver repeater flooder den. Det er innstillingen å bruke til repeaterne rundt
+             deg bærer regioner.</p>
+          <p lang="en"><b>unscoped floods</b> — what this repeater does with floods carrying no region tag.
+             <b>allow</b> emits <code>region allowf *</code>, the firmware default, restated in case
+             the node had it denied. <b>cap</b> keeps that line and adds
+             <code>set flood.max.unscoped</code>, limiting untagged floods to that many hops.
+             <b>deny</b> emits <code>region denyf *</code> instead, dropping them — which cuts off
+             every node that has not set regions yet.</p>
+          <p lang="nb"><b>unscoped floods</b> — hva denne repeateren gjør med floods uten region-tagg.
+             <b>allow</b> sender <code>region allowf *</code>, firmwarens standard, gjentatt i tilfelle
+             noden hadde den denied. <b>cap</b> beholder den linja og legger til
+             <code>set flood.max.unscoped</code>, som begrenser utaggede floods til så mange hopp.
+             <b>deny</b> sender <code>region denyf *</code> i stedet og forkaster dem — noe som skjærer
+             av enhver node som ikke har satt regioner ennå.</p>
         </details>
       </section>
 
@@ -1879,58 +1864,38 @@ else l[i].removeAttribute('aria-current');
         
         <details class="explain">
           <summary><span lang="en">Sending this to a node</span><span lang="nb">Å sende dette til en node</span></summary>
-          <p lang="en"><b>Over USB.</b> On Chrome, Edge or Opera, <b>Send over USB</b> writes the whole block
-             for you — it reads the firmware version off the node, picks the matching form, sends
-             each line and reboots when every one is accepted. <b>Console</b> opens the same
-             connection without sending anything, so you can type commands yourself.</p>
-          <p lang="nb"><b>Over USB.</b> I Chrome, Edge eller Opera skriver <b>Send over USB</b> hele
-             blokka for deg — den leser firmware-versjonen av noden, velger riktig form, sender hver
-             linje og rebooter når alle er godtatt. <b>Console</b> åpner den samme forbindelsen uten
-             å sende noe, så du kan skrive kommandoer selv.</p>
-          <p lang="en"><b>Line by line, over the air.</b> In the MeshCore app, open the repeater under
-             <i>Contacts</i> and use its remote admin CLI. There is no paste — send one command per
-             message, in the order they appear above, and check each reply before the next.
-             Remote admin caps a command at <b>160 characters</b>, the same limit the block is
-             built to; a longer line is silently truncated and comes back as a
-             <code>put failed</code> or <code>unknown jump</code> error rather than a complaint
-             about length. Finish with <code>region save</code>, then <code>reboot</code>.</p>
-          <p lang="nb"><b>Linje for linje, over lufta.</b> I MeshCore-appen, åpne repeateren under
-             <i>Contacts</i> og bruk remote admin-CLI-en dens. Det finnes ingen lim inn — send én
-             kommando per melding, i rekkefølgen de står over, og sjekk hvert svar før neste. Remote
-             admin har en grense på <b>160 tegn</b> per kommando, den samme grensa blokka er bygget
-             til; en lengre linje kuttes stille og kommer tilbake som en <code>put failed</code>
-             eller <code>unknown jump</code> framfor en klage på lengden. Avslutt med
-             <code>region save</code>, så <code>reboot</code>.</p>
-          <p lang="en"><b>To another person.</b> This page's address carries the whole setup — both pins,
-             every setting you have changed and both devices — and updates as you work. Copy it
-             from the address bar and send it; opening it sets their page up the same way. It is
-             short enough to fit in a mesh message. <b>It also carries any passwords you have
-             set</b>, so treat it as you would those.</p>
-          <p lang="nb"><b>Til et annet menneske.</b> Adressen til denne siden bærer hele oppsettet —
-             begge pinnene, hver innstilling du har endret og begge enhetene — og oppdaterer seg mens
-             du jobber. Kopier den fra adressefeltet og send den; åpner de den, settes siden deres
-             opp likt. Den er kort nok til å få plass i en mesh-melding. <b>Den bærer også passordene
-             du har satt</b>, så behandle den som dem.</p>
-          <p lang="en"><b>Which firmware.</b> 1.16.0 added the one-line <code>region def</code> syntax;
-             1.15.x builds the same tree one <code>region put</code> at a time. Both forms create
-             each region flood-allowed, so no per-region <code>allowf</code> is needed.
-             <b>Region commands only exist from 1.15</b> — on older firmware the radio and timing
-             settings still apply, but the region block does not. Sending over USB picks the form
-             for you; setting it by hand, run <code>ver</code> if you are not sure.</p>
-          <p lang="nb"><b>Hvilken firmware.</b> 1.16.0 la til ett-linjes <code>region def</code>-syntaks;
-             1.15.x bygger det samme treet én <code>region put</code> om gangen. Begge formene lager
-             hver region flood-allowed, så ingen <code>allowf</code> per region trengs.
-             <b>Region-kommandoene finnes først fra 1.15</b> — på eldre firmware gjelder radio- og
-             timing-innstillingene fortsatt, men ikke region-blokka. Sending over USB velger formen
-             for deg; setter du det for hånd, kjør <code>ver</code> hvis du er usikker.</p>
-          <p lang="en"><code>set dutycycle 10</code> is the legal maximum on this sub-band and the preset
-             ships with 50, so it has to be set explicitly. <b>Norway is EEA/EFTA, not EU</b> —
-             nesting <code>no</code> under <code>eu</code> follows the existing convention, not
-             geopolitics. Reboot after radio changes.</p>
-          <p lang="nb"><code>set dutycycle 10</code> er det lovlige maksimum på dette underbåndet, og
-             preseten leveres med 50, så den må settes eksplisitt. <b>Norge er EØS/EFTA, ikke EU</b> —
-             å nøste <code>no</code> under <code>eu</code> følger den etablerte konvensjonen, ikke
-             geopolitikken. Reboot etter radioendringer.</p>
+          <p lang="en"><b>Over USB</b> — on Chrome, Edge or Opera, <b>Send over USB</b> reads the firmware
+             version off the node, picks the matching form, sends every line and reboots.
+             <b>Console</b> opens the same connection without sending anything.</p>
+          <p lang="nb"><b>Over USB</b> — i Chrome, Edge eller Opera leser <b>Send over USB</b>
+             firmware-versjonen av noden, velger riktig form, sender hver linje og rebooter.
+             <b>Console</b> åpner den samme forbindelsen uten å sende noe.</p>
+          <p lang="en"><b>Line by line</b> — in the MeshCore app, open the repeater under <i>Contacts</i> and
+             use its remote admin CLI. One command per message, in the order above, checking each
+             reply. Commands cap at <b>160 characters</b>, the limit this block is built to; a longer
+             line is truncated silently and returns <code>put failed</code> or
+             <code>unknown jump</code>. Finish with <code>region save</code>, then
+             <code>reboot</code>.</p>
+          <p lang="nb"><b>Linje for linje</b> — i MeshCore-appen, åpne repeateren under <i>Contacts</i> og
+             bruk remote admin-CLI-en dens. Én kommando per melding, i rekkefølgen over, og sjekk
+             hvert svar. Kommandoer har en grense på <b>160 tegn</b>, den samme grensa denne blokka er
+             bygget til; en lengre linje kuttes stille og svarer <code>put failed</code> eller
+             <code>unknown jump</code>. Avslutt med <code>region save</code>, så
+             <code>reboot</code>.</p>
+          <p lang="en"><b>To another person</b> — this page's address carries the whole setup: both pins,
+             both devices, every setting you have changed and <b>any passwords you have set</b>. Copy
+             it from the address bar; it fits in a mesh message.</p>
+          <p lang="nb"><b>Til et annet menneske</b> — adressen til denne siden bærer hele oppsettet: begge
+             pinnene, begge enhetene, hver innstilling du har endret og <b>passordene du har satt</b>.
+             Kopier den fra adressefeltet; den får plass i en mesh-melding.</p>
+          <p lang="en"><b>firmware</b> — 1.16.0+ emits the one-line <code>region def</code>; 1.15.x builds
+             the same tree with one <code>region put</code> per region. Region commands do not exist
+             before 1.15, where the radio and timing lines still apply but the region block does not.
+             Send over USB sets this control itself; by hand, run <code>ver</code>.</p>
+          <p lang="nb"><b>firmware</b> — 1.16.0+ sender ett-linjes <code>region def</code>; 1.15.x bygger
+             det samme treet med én <code>region put</code> per region. Region-kommandoene finnes ikke
+             før 1.15, der radio- og timing-linjene fortsatt gjelder, men ikke region-blokka. Send
+             over USB setter denne kontrollen selv; for hånd, kjør <code>ver</code>.</p>
         </details>
       </section>
 
@@ -1960,46 +1925,45 @@ else l[i].removeAttribute('aria-current');
             <div class="k">region scope</div>
             <div class="v">
               <div class="seg" id="scopeSeg">
-                <button data-sc="off" class="on">skip</button>
-                <button data-sc="on">include</button>
+                <button data-sc="off">skip</button>
+                <button data-sc="on" class="on">include</button>
               </div>
-              <p class="help" id="scopeNote" lang="en">No region tag, so a message travels as far as the mesh carries it. <b>Skipped by default while most repeaters don’t carry regions</b> — turn it on once the ones around you do.</p>
-              <p class="help" id="scopeNoteNb" lang="nb">Ingen region-tagg, så en melding går så langt meshet bærer den. <b>Skippes som standard mens de fleste repeatere ikke bærer regioner</b> — slå den på når de rundt deg gjør det.</p>
+              
+              <p class="help" id="scopeNote" lang="en">Each channel carries its own region tag, so only repeaters that carry that region pass its messages on. <b>Skip if messages stop getting through.</b></p>
+              <p class="help" id="scopeNoteNb" lang="nb">Hver channel bærer sin egen region-tagg, så bare repeatere som bærer den regionen sender meldingene videre. <b>Bruk skip hvis meldinger slutter å komme fram.</b></p>
             </div>
           </div>
           
           <div class="row plain">
             <div class="k">default region</div>
             <div class="v">
-              <p class="help" lang="en">In the app: <b>Experimental Settings → Default Region → <code>no</code></b>.
-                 Direct messages and
-                 unscoped channels go out carrying this tag. Only repeaters that carry
-                 <code>no</code> will repeat them — ask your local operators to add it.</p>
+              <p class="help" lang="en">Set in the app, not here: <b>Experimental Settings → Default Region →
+                 <code>no</code></b>. It tags direct messages and unscoped channels, and only
+                 repeaters carrying <code>no</code> pass those on.</p>
               
-              <p class="help" lang="nb">I appen: <b>Experimental Settings → Default Region → <code>no</code></b>.
-                 Direkte meldinger og unscopede channels går ut med denne taggen. Bare repeatere som
-                 bærer <code>no</code> vil sende dem videre — be de lokale operatørene legge den
-                 inn.</p>
+              <p class="help" lang="nb">Settes i appen, ikke her: <b>Experimental Settings → Default Region →
+                 <code>no</code></b>. Den tagger direkte meldinger og unscopede channels, og bare
+                 repeatere som bærer <code>no</code> sender dem videre.</p>
             </div>
           </div>
           <details class="explain">
             <summary><span lang="en">How these channels work, and who else is on them</span><span lang="nb">Hvordan disse channels virker, og hvem andre som er på dem</span></summary>
             <p lang="en"><b>The name is the channel.</b> A channel starting with <code>#</code> derives its
-               own key from its name, so everyone who types <code>#baerum</code> lands on the same
-               one. There is no key to send anybody. The app accepts only <code>a-z</code>,
-               <code>0-9</code> and <code>-</code>, which is why these are written
-               <code>ostlandet</code> and <code>baerum</code>.</p>
-            <p lang="nb"><b>Navnet er kanalen.</b> En channel som starter med <code>#</code> utleder
-               sin egen nøkkel fra navnet, så alle som skriver <code>#baerum</code> havner på den
-               samme. Det finnes ingen nøkkel å sende noen. Appen godtar bare <code>a-z</code>,
-               <code>0-9</code> og <code>-</code>, og det er derfor disse skrives
-               <code>ostlandet</code> og <code>baerum</code>.</p>
-            <p lang="en"><b>Which is why they are not private.</b> Anyone who knows the name can work out the
-               key. Treat them as an open calling frequency; for something private, make a channel
-               with a random secret and hand it out yourself.</p>
-            <p lang="nb"><b>Og det er derfor de ikke er private.</b> Alle som kjenner navnet kan regne
-               ut nøkkelen. Behandle dem som en åpen kallefrekvens; skal noe være privat, lag en
-               channel med en tilfeldig secret og del den ut selv.</p>
+               key from its own name, so everyone who types <code>#baerum</code> lands on the same
+               one and there is no key to hand out. The app accepts <code>a-z</code>,
+               <code>0-9</code> and <code>-</code> only, hence <code>ostlandet</code> and
+               <code>baerum</code>.</p>
+            <p lang="nb"><b>Navnet er channelen.</b> En channel som starter med <code>#</code> utleder
+               nøkkelen fra sitt eget navn, så alle som skriver <code>#baerum</code> havner på den
+               samme, og det finnes ingen nøkkel å dele ut. Appen godtar bare <code>a-z</code>,
+               <code>0-9</code> og <code>-</code>, derav <code>ostlandet</code> og
+               <code>baerum</code>.</p>
+            <p lang="en"><b>So they are not private.</b> Anyone who knows the name can derive the key. Treat
+               them as an open calling frequency; for something private, make a channel with a random
+               secret and hand that out yourself.</p>
+            <p lang="nb"><b>Så de er ikke private.</b> Alle som kjenner navnet kan utlede nøkkelen.
+               Behandle dem som en åpen kallefrekvens; skal noe være privat, lag en channel med en
+               tilfeldig secret og del den ut selv.</p>
           </details>
         </section>
 
@@ -2103,57 +2067,47 @@ else l[i].removeAttribute('aria-current');
           <summary><span lang="en">Region settings, and what the numbers mean</span><span lang="nb">Region-innstillinger, og hva tallene betyr</span></summary>
           <div class="kmsbox">
             
-            <p class="kmslede" lang="en"><b>Neighbour reach.</b> A node near a border serves both sides of
-               it. These say how near counts: a repeater 5&nbsp;km from the next fylke relays for
-               that fylke too, and a companion that close is offered its channels. Your node always
-               keeps the regions it actually stands in — this only ever adds.</p>
-            <p class="kmslede" lang="nb"><b>Nabo-rekkevidde.</b> En node nær en grense betjener begge
-               sider av den. Disse sier hvor nær som teller: en repeater 5&nbsp;km fra neste fylke
-               videresender for det fylket også, og en companion så nær får tilbud om channels
-               derfra. Noden din beholder alltid regionene den faktisk står i — dette legger bare
-               til.</p>
+            <div class="kmshead"><span lang="en">Neighbour reach</span><span lang="nb">Nabo-rekkevidde</span></div>
+            <p class="kmslede" lang="en">A node near a border also relays for the other side, and these say
+               how near counts: 5&nbsp;km from the next fylke and the node carries that fylke too — a
+               repeater relays for it, a companion is offered its channels. It only ever adds; the
+               regions the node stands in are always kept.</p>
+            <p class="kmslede" lang="nb">En node nær en grense videresender også for den andre siden, og
+               disse sier hvor nær som teller: 5&nbsp;km fra neste fylke og noden bærer det fylket
+               også — en repeater videresender for det, en companion får tilbud om channels derfra.
+               Det legger bare til; regionene noden står i beholdes alltid.</p>
             <div class="kms">
               <label for="kmLd">landsdel</label><input type="number" id="kmLd" inputmode="numeric" min="0" max="300" step="5" value="50"><i>km</i><button type="button" data-lvl="landsdel">disable</button>
               <label for="kmFy">fylke</label><input type="number" id="kmFy" inputmode="numeric" min="0" max="300" step="5" value="25"><i>km</i><button type="button" data-lvl="fylke">disable</button>
               <label for="kmKo">kommune</label><input type="number" id="kmKo" inputmode="numeric" min="0" max="300" step="5" value="0"><i>km</i><button type="button" data-lvl="kommune">enable</button>
               <label for="kmCi">city</label><input type="number" id="kmCi" inputmode="numeric" min="0" max="300" step="5" value="25"><i>km</i><button type="button" data-lvl="city">disable</button>
             </div>
-            <p class="help" lang="en"><b>0 turns a level off.</b> Kommune starts there: at this mesh size a
-               kommune region has almost no members to filter, and its tags are the longest.</p>
+            <p class="help" lang="en"><b>0 turns a level off.</b> Kommune starts there: at this mesh size its
+               regions have almost no members to filter, and its tags are the longest.</p>
             <p class="help" lang="nb"><b>0 slår av et nivå.</b> Kommune starter der: i denne
-               meshstørrelsen har en kommuneregion nesten ingen medlemmer å filtrere, og taggene
-               dens er de lengste.</p>
+               meshstørrelsen har regionene dens nesten ingen medlemmer å filtrere, og taggene er de
+               lengste.</p>
           </div>
-          <p lang="en">A region tells repeaters which floods to pass on. <b>It does not limit who you can
-             reach</b> — every node carries <code>eu</code> and <code>no</code>, so wide traffic
-             still crosses the whole mesh. Narrow tags stop a local channel flooding the country.</p>
-          <p lang="nb">En region forteller repeatere hvilke floods de skal sende videre. <b>Den
-             begrenser ikke hvem du kan nå</b> — hver node bærer <code>eu</code> og <code>no</code>,
-             så bred trafikk krysser fortsatt hele meshet. Smale tagger hindrer en lokal channel i å
-             floode hele landet.</p>
-          <p lang="en"><b>By default, nothing here cuts anyone off.</b> Tags only add, and this node keeps
-             passing untagged traffic. The one command that stops that, <code>region denyf *</code>,
-             stays off unless you pick it under <b>unscoped floods</b>. Save it for once the mesh
-             around you carries regions.</p>
-          <p lang="nb"><b>Som standard skjærer ingenting her noen av.</b> Tagger legger bare til, og
-             denne noden fortsetter å slippe gjennom utagget trafikk. Den ene kommandoen som stopper
-             det, <code>region denyf *</code>, står av med mindre du velger den under <b>unscoped
-             floods</b>. Spar den til meshet rundt deg bærer regioner.</p>
-          <p lang="en"><b>A kommunenummer is not a postnummer.</b> Both are four digits and they are unrelated.
-             Your node <b>name</b> uses the postnummer, because that is the number you know. Your
-             region <b>tags</b> use the kommunenummer, because that is the one with real borders
-             behind it. <code>NO-1354 Skuiåsen</code> tagged <code>no-3201</code> is correct.</p>
-          <p lang="nb"><b>Et kommunenummer er ikke et postnummer.</b> Begge har fire siffer og de har
-             ingenting med hverandre å gjøre. Node<b>navnet</b> ditt bruker postnummeret, fordi det er
-             nummeret du kan. Region<b>taggene</b> dine bruker kommunenummeret, fordi det er det med
-             virkelige grenser bak seg. <code>NO-1354 Skuiåsen</code> tagget <code>no-3201</code> er
-             riktig.</p>
-          <p lang="en"><b>The first two digits are the fylke.</b> So a node tagged <code>no-3201</code> is
-             inside <code>no-32</code> by construction, and you can widen a flood from kommune to
-             fylke without a lookup table.</p>
-          <p lang="nb"><b>De to første sifrene er fylket.</b> Så en node tagget <code>no-3201</code>
-             ligger inni <code>no-32</code> av konstruksjon, og du kan utvide en flood fra kommune til
-             fylke uten en oppslagstabell.</p>
+          <p lang="en">A region tells repeaters which floods to pass on. It does not limit who you can
+             reach — every node carries <code>eu</code> and <code>no</code> — and it cuts nobody off:
+             tags only add, and untagged traffic keeps flowing unless you pick
+             <code>region denyf *</code> under <b>unscoped floods</b>. What narrow tags do is keep a
+             local channel from flooding the country.</p>
+          <p lang="nb">En region forteller repeatere hvilke floods de skal sende videre. Den begrenser
+             ikke hvem du kan nå — hver node bærer <code>eu</code> og <code>no</code> — og den skjærer
+             ingen av: tagger legger bare til, og utagget trafikk går som før med mindre du velger
+             <code>region denyf *</code> under <b>unscoped floods</b>. Det smale tagger gjør, er å
+             hindre en lokal channel i å floode hele landet.</p>
+          <p lang="en"><b>A kommunenummer is not a postnummer.</b> Both are four digits and unrelated: the
+             node <b>name</b> uses the postnummer, the region <b>tags</b> use the kommunenummer, so
+             <code>NO-1354 Skuiåsen</code> tagged <code>no-3201</code> is correct. The first two
+             digits of a kommunenummer are its fylke, so <code>no-3201</code> is inside
+             <code>no-32</code> by construction.</p>
+          <p lang="nb"><b>Et kommunenummer er ikke et postnummer.</b> Begge har fire siffer og har
+             ingenting med hverandre å gjøre: node<b>navnet</b> bruker postnummeret, region<b>taggene</b>
+             bruker kommunenummeret, så <code>NO-1354 Skuiåsen</code> tagget <code>no-3201</code> er
+             riktig. De to første sifrene i et kommunenummer er fylket, så <code>no-3201</code> ligger
+             inni <code>no-32</code> av konstruksjon.</p>
           
           
           <div class="nmbars" id="nmBars" hidden>
@@ -2163,34 +2117,24 @@ else l[i].removeAttribute('aria-current');
             <i class="br k" aria-hidden="true"></i>
             <span class="tm k">kommunenummer</span><span class="vl" id="nmKm"></span>
           </div>
-          <p lang="en"><b>A tag means "relays for", not "is in".</b> A node inside the city radius of Oslo
-             carries <code>no-oslo</code> even if it sits well outside the city — a repeater on a
-             ridge is often exactly what makes routing <em>inside</em> town work. Sit between two
-             cities and it carries both.</p>
+          <p lang="en"><b>A tag means "relays for", not "is in".</b> A node inside Oslo's city radius carries
+             <code>no-oslo</code> from a ridge well outside town, one between two cities carries both,
+             and one 5&nbsp;km from Buskerud carries <code>no-33</code> too. Expect neighbours across
+             water — over water is the best path a radio gets.</p>
           <p lang="nb"><b>En tagg betyr "videresender for", ikke "ligger i".</b> En node innenfor
-             byradiusen til Oslo bærer <code>no-oslo</code> selv om den står godt utenfor byen — en
-             repeater på en ås er ofte nettopp det som får ruting <em>inne</em> i byen til å virke.
-             Står du mellom to byer, bærer den begge.</p>
-          <p lang="en">A border works the same way: 5&nbsp;km from Buskerud and the node carries
-             <code>no-33</code> too. The numbers above set how close counts. Expect neighbours
-             across water — over water is the best path a radio gets.</p>
-          <p lang="nb">En grense virker likedan: 5&nbsp;km fra Buskerud og noden bærer
-             <code>no-33</code> også. Tallene over setter hvor nært som teller. Regn med naboer over
-             vann — over vann er den beste veien en radio får.</p>
-          <p lang="en"><b>The bare three-letter tag is your nearest airport</b> — <code>osl</code>,
-             <code>bgo</code>, <code>trd</code>. A short, well-known handle, always the single
-             closest one. It has no <code>no-</code> prefix on purpose: an airport code is unique
-             worldwide, so it needs no country in front of it.</p>
-          <p lang="nb"><b>Den bare tre-bokstavstaggen er nærmeste flyplass</b> — <code>osl</code>,
-             <code>bgo</code>, <code>trd</code>. Et kort, velkjent håndtak, alltid den ene nærmeste.
-             Den har ingen <code>no-</code> foran med vilje: en flyplasskode er unik verden over, så
-             den trenger ikke et land foran seg.</p>
-          <p lang="en">Landsdel, fylke, kommune, city and airport are independent overlays under
-             <code>no</code>, not a nesting, so every tag is listed in full. The codes come from the
-             map and are current since the county reform of January 2024.</p>
-          <p lang="nb">Landsdel, fylke, kommune, city og flyplass er uavhengige lag under
-             <code>no</code>, ikke en nøsting, så hver tagg listes i sin helhet. Kodene kommer fra
-             kartet og er gjeldende siden fylkesreformen i januar 2024.</p>
+             byradiusen til Oslo bærer <code>no-oslo</code> fra en ås godt utenfor byen, en mellom to
+             byer bærer begge, og en 5&nbsp;km fra Buskerud bærer <code>no-33</code> også. Regn med
+             naboer over vann — over vann er den beste veien en radio får.</p>
+          <p lang="en">The bare three-letter tag is the single nearest airport — <code>osl</code>,
+             <code>bgo</code>, <code>trd</code> — with no <code>no-</code> in front, because an
+             airport code is already unique worldwide. Landsdel, fylke, kommune, city and airport are
+             independent overlays under <code>no</code>, not a nesting, so every tag is listed in
+             full; the codes are current since the county reform of January 2024.</p>
+          <p lang="nb">Den bare tre-bokstavstaggen er den ene nærmeste flyplassen — <code>osl</code>,
+             <code>bgo</code>, <code>trd</code> — uten <code>no-</code> foran, fordi en flyplasskode
+             allerede er unik verden over. Landsdel, fylke, kommune, city og flyplass er uavhengige
+             lag under <code>no</code>, ikke en nøsting, så hver tagg listes i sin helhet; kodene er
+             gjeldende siden fylkesreformen i januar 2024.</p>
           </details>
         </div>
       </section>
@@ -2431,8 +2375,8 @@ else l[i].removeAttribute('aria-current');
       <div class="qrd-scope">
         <span class="qrd-lab">region scope</span>
         <div class="seg" id="qrScope">
-          <button data-sc="off" class="on">skip</button>
-          <button data-sc="on">include</button>
+          <button data-sc="off">skip</button>
+          <button data-sc="on" class="on">include</button>
         </div>
       </div>
       <p class="qrd-lab">secret</p>
@@ -2570,7 +2514,7 @@ const FIELDS = [
 { f: 'profile', kind: 'cards', el: 'profiles', attr: 'p',
 def: PROFILE_DEFAULT, w: 'p',
 vals: ['local', 'neighborhood', 'hilltop', 'mountaintop'] },
-{ f: 'cr', kind: 'seg', el: 'crSeg', attr: 'cr', def: '8', w: 'c',
+{ f: 'cr', kind: 'seg', el: 'crSeg', attr: 'cr', def: '5', w: 'c',
 vals: ['5', '6', '7', '8'] },
 { f: 'hash', kind: 'seg', el: 'hashSeg', attr: 'h', def: '1', w: 'h',
 vals: ['0', '1', '2'] },
@@ -2594,7 +2538,7 @@ w: 'm' },
 { f: 'desc', kind: 'own', el: 'nodeDesc', def: '', w: 'n', delta: true },
 { f: 'device', kind: 'own', el: 'devSw', attr: 'dev', def: 'repeater',
 w: 'v', vals: ['repeater', 'companion'], in: 'ui' },
-{ f: 'chanScope', kind: 'own', el: 'scopeSeg', attr: 'sc', def: false,
+{ f: 'chanScope', kind: 'own', el: 'scopeSeg', attr: 'sc', def: true,
 w: 's' },
 { f: 'descAuto', kind: 'none', def: true },
 ];
@@ -3314,6 +3258,67 @@ const plainText = () => buildLines().filter(([t]) => t === 'k')
 .map(([, cmd, arg]) => arg ? `${cmd} ${arg}` : cmd).join('\n');
 return { buildLines, plainText, renderLines, nodeName, LIMITS };
 })();
+const Chrome = (() => {
+const THEME_KEY = 'meshno.theme';
+const prefersDark = matchMedia('(prefers-color-scheme: dark)');
+function storedTheme() {
+let t = null;
+try { t = localStorage.getItem(THEME_KEY); } catch (e) {   }
+return t === 'light' || t === 'dark' ? t : 'auto';
+}
+const THEMES = ['auto', 'light', 'dark'];
+const THEME_TEXT = {
+auto:  { en: 'Auto',  nb: 'Auto' },
+light: { en: 'Light', nb: 'Lys' },
+dark:  { en: 'Dark',  nb: 'Mørk' },
+};
+function applyTheme(pref) {
+document.documentElement.setAttribute('data-theme',
+pref === 'auto' ? (prefersDark.matches ? 'dark' : 'light') : pref);
+const next = THEMES[(THEMES.indexOf(pref) + 1) % THEMES.length];
+say('themeLabel', THEME_TEXT[pref].en, THEME_TEXT[pref].nb);
+const l = document.documentElement.dataset.lang === 'nb' ? 'nb' : 'en';
+$('themeBtn').setAttribute('aria-label', l === 'nb'
+? `${THEME_TEXT[pref].nb} — utseende; trykk for å bytte til ${THEME_TEXT[next].nb}`
+: `${THEME_TEXT[pref].en} — appearance; press to switch to ${THEME_TEXT[next].en}`);
+}
+$('themeBtn').addEventListener('click', () => {
+const v = THEMES[(THEMES.indexOf(storedTheme()) + 1) % THEMES.length];
+try {
+if (v === 'auto') localStorage.removeItem(THEME_KEY);
+else localStorage.setItem(THEME_KEY, v);
+} catch (e) {   }
+applyTheme(v);
+});
+prefersDark.addEventListener('change', () => {
+if (storedTheme() === 'auto') applyTheme('auto');
+});
+applyTheme(storedTheme());
+const burger = $('burger'), navbar = $('navbar');
+function setMenu(open) {
+burger.setAttribute('aria-expanded', String(open));
+navbar.classList.toggle('open', open);
+}
+burger.addEventListener('click', () => {
+setMenu(burger.getAttribute('aria-expanded') !== 'true');
+});
+$('navLinks').addEventListener('click', e => {
+if (e.target.closest('a')) setMenu(false);
+});
+addEventListener('keydown', e => {
+if (e.key === 'Escape' && burger.getAttribute('aria-expanded') === 'true') {
+setMenu(false);
+burger.focus();
+}
+});
+addEventListener('resize', () => {
+if (!burger.offsetParent) setMenu(false);
+});
+const onScroll = () => navbar.classList.toggle('stuck', scrollY > 4);
+addEventListener('scroll', onScroll, { passive: true });
+onScroll();
+return { setMenu, relabel: () => applyTheme(storedTheme()) };
+})();
 const MapView = (() => {
 const map = $('map');
 const VBX = 4.0, VBY = 4.0;
@@ -3878,17 +3883,11 @@ $('scopeSeg').querySelectorAll('button').forEach(x =>
 x.classList.toggle('on', (x.dataset.sc === 'on') === on));
 say('scopeNote',
 on
-? 'Each channel carries its region, so only repeaters that carry it pass those messages on. '
-+ 'Local traffic stays local instead of spending everyone’s airtime. <b>Most repeaters don’t '
-+ 'carry regions yet, so check what is around you.</b> Unset region scope in the app if '
-+ 'messages stop getting through.'
-: REST_SCOPE,
+? REST_SCOPE
+: 'No region tag on the channel, so a message travels as far as the mesh carries it.',
 on
-? 'Hver channel bærer regionen sin, så bare repeatere som bærer den sender de meldingene '
-+ 'videre. Lokal trafikk blir lokal i stedet for å bruke opp alles airtime. <b>De fleste '
-+ 'repeatere bærer ikke regioner ennå, så sjekk hva som står rundt deg.</b> Fjern region '
-+ 'scope i appen hvis meldinger slutter å komme fram.'
-: REST_SCOPE_NB);
+? REST_SCOPE_NB
+: 'Ingen region-tagg på channelen, så en melding går så langt meshet bærer den.');
 render();
 if (qrShown) showQr(qrShown);
 }
@@ -4181,7 +4180,7 @@ const SH_VER = '1';
 const byKey = pred => Object.fromEntries(
 FIELDS.filter(r => r.w && pred(r)).map(r => [r.w, r]));
 const SH_ENUM = byKey(r => r.vals);
-const SH_BOOL = byKey(r => r.def === false && !r.vals);
+const SH_BOOL = byKey(r => typeof r.def === 'boolean' && !r.vals);
 const SH_NUM = byKey(r => r.kind === 'num');
 const SH_TEXT = byKey(r => r.kind === 'text' && !r.delta);
 const SH_DESC = FIELDS.find(r => r.delta);
@@ -4382,6 +4381,7 @@ else a.removeAttribute('aria-current');
 relabel();
 for (const a of $('navLinks').querySelectorAll('a')) {
 const to = routeOf(a.getAttribute('href'));
+if (to === null) continue;
 a.setAttribute('href', to ? '?p=' + to + (lang === 'nb' ? '&lang=nb' : '')
 : lang === 'nb' ? '?lang=nb' : './');
 if (to === route) a.setAttribute('aria-current', 'page');
@@ -4497,64 +4497,6 @@ replace();
 });
 }
 syncBorderBtns();
-const THEME_KEY = 'meshno.theme';
-const prefersDark = matchMedia('(prefers-color-scheme: dark)');
-function storedTheme() {
-let t = null;
-try { t = localStorage.getItem(THEME_KEY); } catch (e) {   }
-return t === 'light' || t === 'dark' ? t : 'auto';
-}
-const THEMES = ['auto', 'light', 'dark'];
-const THEME_TEXT = {
-auto:  { en: 'Auto',  nb: 'Auto' },
-light: { en: 'Light', nb: 'Lys' },
-dark:  { en: 'Dark',  nb: 'Mørk' },
-};
-function applyTheme(pref) {
-document.documentElement.setAttribute('data-theme',
-pref === 'auto' ? (prefersDark.matches ? 'dark' : 'light') : pref);
-const next = THEMES[(THEMES.indexOf(pref) + 1) % THEMES.length];
-say('themeLabel', THEME_TEXT[pref].en, THEME_TEXT[pref].nb);
-const l = document.documentElement.dataset.lang === 'nb' ? 'nb' : 'en';
-$('themeBtn').setAttribute('aria-label', l === 'nb'
-? `${THEME_TEXT[pref].nb} — utseende; trykk for å bytte til ${THEME_TEXT[next].nb}`
-: `${THEME_TEXT[pref].en} — appearance; press to switch to ${THEME_TEXT[next].en}`);
-}
-$('themeBtn').addEventListener('click', () => {
-const v = THEMES[(THEMES.indexOf(storedTheme()) + 1) % THEMES.length];
-try {
-if (v === 'auto') localStorage.removeItem(THEME_KEY);
-else localStorage.setItem(THEME_KEY, v);
-} catch (e) {   }
-applyTheme(v);
-});
-prefersDark.addEventListener('change', () => {
-if (storedTheme() === 'auto') applyTheme('auto');
-});
-applyTheme(storedTheme());
-const burger = $('burger'), navbar = $('navbar');
-function setMenu(open) {
-burger.setAttribute('aria-expanded', String(open));
-navbar.classList.toggle('open', open);
-}
-burger.addEventListener('click', () => {
-setMenu(burger.getAttribute('aria-expanded') !== 'true');
-});
-$('navLinks').addEventListener('click', e => {
-if (e.target.closest('a')) setMenu(false);
-});
-addEventListener('keydown', e => {
-if (e.key === 'Escape' && burger.getAttribute('aria-expanded') === 'true') {
-setMenu(false);
-burger.focus();
-}
-});
-addEventListener('resize', () => {
-if (!burger.offsetParent) setMenu(false);
-});
-const onScroll = () => navbar.classList.toggle('stuck', scrollY > 4);
-addEventListener('scroll', onScroll, { passive: true });
-onScroll();
 function positionEdited() {
 const box = $('posRead'), note = $('coordNote');
 const raw = box.value.trim();
@@ -4612,7 +4554,7 @@ box.focus({ preventScroll: true });
 box.value = e.key;
 box.dispatchEvent(new Event('input', { bubbles: true }));
 });
-return { wire, sync, syncBorderBtns, applyTheme, storedTheme };
+return { wire, sync, syncBorderBtns };
 })();
 function applyPin(d, drill, reframe = true) {
 cur = d;
@@ -4684,7 +4626,7 @@ render();
 Share.adopt(true);
 Router.wire({
 reframe: () => { ui.drilled = null; showPinFor(ui.device, true); },
-relabel: () => Controls.applyTheme(Controls.storedTheme()),
+relabel: Chrome.relabel,
 });
 (window.requestIdleCallback || (fn => setTimeout(fn, 200)))(
 () => Geo.loadPostGeo(refreshPost));
