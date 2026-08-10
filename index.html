@@ -1061,20 +1061,26 @@
   .profile.on .p-n span { color: var(--accent); }
   .p-d { font-size: 14px; color: var(--muted); margin-top: 4px; line-height: 1.45; flex: 1; }
 
-  
-
   .p-nb {
     font-family: var(--mono); font-size: 12px; font-weight: 400;
     color: var(--dim); white-space: nowrap;
   }
   .profile.on .p-nb { color: var(--accent); }
-  .p-slots { display: flex; gap: 2px; margin-top: 12px; }
-  .p-slots i {
-    flex: 1; height: 5px; border-radius: 1px;
+
+  
+
+  .p-meter {
+    position: relative; height: 8px; margin-top: 12px; border-radius: 1px;
     background: var(--rule-2); border: 1px solid var(--rule-2);
   }
-  .p-slots i.f { background: var(--slot); border-color: var(--slot-b); }
-  .profile.on .p-slots i.f { background: var(--accent); border-color: var(--accent); }
+  .p-meter::before {
+    content: ''; position: absolute; top: 0; bottom: 0; left: 0;
+    width: var(--f);
+    background: linear-gradient(90deg, var(--slot), var(--slot-b));
+  }
+  .profile.on .p-meter::before {
+    background: linear-gradient(90deg, var(--slot), var(--accent));
+  }
   .p-v {
     display: block; font-family: var(--mono); font-size: 12px;
     color: var(--dim); margin-top: 7px; letter-spacing: 0.02em;
@@ -1684,29 +1690,29 @@ else l[i].removeAttribute('aria-current');
                 <span class="p-n">Hilltop <span class="p-nb" lang="en">20+ neighbours</span><span class="p-nb" lang="nb">20+ naboer</span></span>
                 <span class="p-d" lang="en">Clear view over a larger area. Backbone infrastructure — transmitter mast, ridge, the roof of a high-rise.</span>
                 <span class="p-d" lang="nb">Fri utsikt over et større område. Ryggstrukturinfrastruktur — sendertårn, møne, taktopp på en høyblokk.</span>
-                <span class="p-slots" aria-hidden="true"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></span>
-                <span class="p-v">back-off 10/10 slots · <b>txdelay 2.0</b> · direct 2.0 · rx 3</span>
+                <span class="p-meter" aria-hidden="true" style="--f:100%"></span>
+                <span class="p-v">back-off 0–10× airtime · <b>txdelay 2.0</b> · direct 2.0 · rx 3</span>
               </button>
               <button class="profile" data-p="foothills">
                 <span class="p-n">Foothills <span class="p-nb" lang="en">10–20 neighbours</span><span class="p-nb" lang="nb">10–20 naboer</span></span>
                 <span class="p-d" lang="en">Bridge between hilltop nodes and suburban coverage — a hilltop, or a high roof mount outside town.</span>
                 <span class="p-d" lang="nb">Bro mellom noder på åstopper og forstadsdekning — åstopp, montering på høyt tak utenfor byen.</span>
-                <span class="p-slots" aria-hidden="true"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i><i></i></span>
-                <span class="p-v">back-off 7/10 slots · <b>txdelay 1.5</b> · direct 1.0 · rx 3</span>
+                <span class="p-meter" aria-hidden="true" style="--f:75%"></span>
+                <span class="p-v">back-off 0–7.5× airtime · <b>txdelay 1.5</b> · direct 1.0 · rx 3</span>
               </button>
               <button class="profile on" data-p="suburban">
                 <span class="p-n">Suburban <span class="p-nb" lang="en">5–10 neighbours</span><span class="p-nb" lang="nb">5–10 naboer</span></span>
                 <span class="p-d" lang="en">Typical installation covering your own neighbourhood — an ordinary rooftop install in a city or suburb.</span>
                 <span class="p-d" lang="nb">Typisk installasjon som dekker ditt eget nabolag — vanlig takinstallasjon i by/forstad.</span>
-                <span class="p-slots" aria-hidden="true"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-                <span class="p-v">back-off 4/10 slots · <b>txdelay 0.8</b> · direct 0.4 · rx 3</span>
+                <span class="p-meter" aria-hidden="true" style="--f:40%"></span>
+                <span class="p-v">back-off 0–4× airtime · <b>txdelay 0.8</b> · direct 0.4 · rx 3</span>
               </button>
               <button class="profile" data-p="local">
                 <span class="p-n">Local <span class="p-nb" lang="en">1–3 neighbours</span><span class="p-nb" lang="nb">1–3 naboer</span></span>
                 <span class="p-d" lang="en">Sees only a few neighbours. Covers the immediate area — indoors, ground level, a low roof.</span>
                 <span class="p-d" lang="nb">Ser bare noen få naboer. Dekker nærområdet — innendørs, bakkenivå, lavt tak.</span>
-                <span class="p-slots" aria-hidden="true"><i class="f"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-                <span class="p-v">back-off 1/10 slots · <b>txdelay 0.3</b> · direct 0.1 · rx 3</span>
+                <span class="p-meter" aria-hidden="true" style="--f:15%"></span>
+                <span class="p-v">back-off 0–1.5× airtime · <b>txdelay 0.3</b> · direct 0.1 · rx 3</span>
               </button>
             </div>
           </div>
