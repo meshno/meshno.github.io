@@ -4,17 +4,9 @@
      paths; the page sets a matching rel=canonical per route, without which the
      root's canonical would tell a crawler both of them are duplicates of it.
 
-     THE GUIDE PAGES ARE FILES, not views, so they are listed by path — and
-     listed ONCE. They are English-only copies of two MeshCore documents, so
-     they make no hreflang claim and have no ?lang=nb address, the same way Home
-     does not for the opposite reason.
-
-     BOTH ARE HERE, THOUGH ONLY ONE IS IN THE BAR. The bar carries a single
-     "Regions guide" item and the rail on those pages links the pair, so the
-     technical reference is one click further in but is a full page with its own
-     address and its own canonical. The `seo` group knows this: it builds the
-     expected list from the bar's links AND the rail's, which is why adding a
-     third document to build.py's DOCS fails here until it is listed.
+     THERE ARE NO PATHS HERE, ONLY QUERIES, and that is the shape of the site:
+     one served HTML file. Two guide pages were listed by path for three days
+     (2026-08-07 to -08-10) and removed with the documents themselves.
 
      THE LANGUAGE IS PART OF THE ADDRESS, but only where the translation is real.
      About in Norwegian is a Norwegian document and is listed; the page declares
@@ -30,8 +22,6 @@
   <url><loc>https://meshno.github.io/</loc></url>
   <url><loc>https://meshno.github.io/?p=contact</loc></url>
   <url><loc>https://meshno.github.io/?p=about</loc></url>
-  <url><loc>https://meshno.github.io/regions-guide.html</loc></url>
-  <url><loc>https://meshno.github.io/regions-reference.html</loc></url>
   <url><loc>https://meshno.github.io/?p=contact&amp;lang=nb</loc></url>
   <url><loc>https://meshno.github.io/?p=about&amp;lang=nb</loc></url>
 </urlset>
