@@ -1721,24 +1721,24 @@ else l[i].removeAttribute('aria-current');
              sender den videre, så de ikke sender oppå hverandre. <code>txdelay</code> skalerer det
              vinduet for floods, <code>direct.txdelay</code> for direkte pakker. Det koster latency og
              ingenting annet — det endrer ikke hva noden videresender.</p>
-          <p lang="en"><code>rxdelay 3</code> is on every profile, and works from the receiving side: a
-             packet that arrived weakly is held back so a repeater that heard it clearly transmits
-             first, and the weak copy is then dropped as a duplicate.</p>
-          <p lang="nb"><code>rxdelay 3</code> ligger på alle profilene og virker fra mottakersiden: en
-             pakke som kom inn svakt holdes tilbake så en repeater som hørte den tydelig sender først,
-             og den svake kopien forkastes som duplikat.</p>
+          <p lang="en"><code>rxdelay 3</code> is on every profile, works from the receiving side, and
+             touches <b>floods only</b> — a direct packet is never held. A flood that arrived weakly is
+             held back so a repeater that heard it clearly transmits first, and the weak copy is then
+             dropped as a duplicate.</p>
+          <p lang="nb"><code>rxdelay 3</code> ligger på alle profilene, virker fra mottakersiden og
+             gjelder <b>bare floods</b> — en direkte pakke holdes aldri tilbake. En flood som kom inn
+             svakt holdes tilbake så en repeater som hørte den tydelig sender først, og den svake kopien
+             forkastes som duplikat.</p>
           <p lang="en">The profiles are indexed by neighbour density. Run <code>neighbors</code> on the node
              and count the entries with SNR above 0: 4 of 16 is sparse, 19 of 50 is dense.</p>
           <p lang="nb">Profilene er indeksert på nabotetthet. Kjør <code>neighbors</code> på noden og tell
              oppføringene med SNR over 0: 4 av 16 er tynt, 19 av 50 er tett.</p>
-          <p lang="en">The four profiles are the ones on the wiki (linked from Contact),
-             values and all. Note that the firmware moves <code>txdelay</code> in steps of <b>0.2</b>,
-             rounding down — <code>1.5</code> is the same as <code>1.4</code>, and <code>0.3</code> the
-             same as <code>0.2</code> — and that both delays cap at <b>2</b>.</p>
-          <p lang="nb">De fire profilene er de som står på wikien (lenke under Contact),
-             med verdier og alt. Merk at firmwaren tar <code>txdelay</code> i steg på <b>0,2</b> og runder
-             ned — <code>1.5</code> er det samme som <code>1.4</code>, og <code>0.3</code> det samme som
-             <code>0.2</code> — og at begge delays stopper på <b>2</b>.</p>
+          <p lang="en">The four profiles are the ones on the wiki (linked from Contact), values and
+             all. The window itself runs from zero to five times <code>txdelay</code> × the packet's own
+             airtime, so a slower packet is given a wider spread. Both delays cap at <b>2</b>.</p>
+          <p lang="nb">De fire profilene er de som står på wikien (lenke under Contact), med verdier og
+             alt. Selve vinduet går fra null til fem ganger <code>txdelay</code> × pakkas egen airtime, så
+             en treg pakke får bredere spredning. Begge delays stopper på <b>2</b>.</p>
         </details>
       </section>
 
