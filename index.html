@@ -1069,80 +1069,123 @@
 
   
 
-  .p-meter {
-    position: relative; height: 8px; margin-top: 12px; border-radius: 1px;
-    background: var(--rule-2); border: 1px solid var(--rule-2);
+  
+
+  .pdia {
+    container-type: inline-size;
+    border-bottom: 1px solid var(--rule-2);
+    padding: 2px 0 14px; margin-bottom: 16px;
   }
-  .p-meter::before {
-    content: ''; position: absolute; top: 0; bottom: 0; left: 0;
-    width: var(--f);
+  .pddefs { position: absolute; width: 0; height: 0; }
+  
+
+  .pdlbl { position: absolute; width: 1px; height: 1px; overflow: hidden;
+           clip-path: inset(50%); white-space: nowrap; }
+
+  .pdrow {
+    
+
+    --strip: 214px; --strip-h: 70px; --channel: 30px;
+    --mcu-r: 168px; --mcu-y: 56px; --mcu-b: 67px;
+    --row: 14px; --gap: 6px; --pitch: calc(var(--row) + var(--gap));
+    --name-w: 60px; --name-gap: 8px;
+    --box-inset: 11px; --box-top: 16px;
+    --wire: 1.3px; --head-w: 6.5px; --head-h: 3.25px; --dim-w: 0.35;
+    --rows: 4; --sel: 0;
+    --bar-x: var(--box-inset);
+    --bus-x: calc(var(--strip) + 15px);
+    --head-x: calc(var(--strip) + var(--channel) + var(--bar-x) - var(--head-w));
+     
+    --lad-h: calc(var(--box-top) + var(--rows) * var(--pitch) + 10px);
+    --strip-top: max(0px, calc(var(--lad-h) - var(--mcu-b)));
+    --lad-top: max(0px, calc(var(--mcu-b) - var(--lad-h)));
+    --src-y: calc(var(--strip-top) + var(--mcu-y));
+    --row-y: calc(var(--lad-top) + var(--box-top) + var(--row) / 2
+                + var(--sel) * var(--pitch));
+    position: relative; display: flex; align-items: flex-start;
+  }
+  .hw { flex: none; width: var(--strip); height: var(--strip-h);
+        display: block; margin-top: var(--strip-top); }
+  .hw-v { display: none; }
+
+  
+
+  .w   { fill: none; stroke: var(--accent); stroke-width: var(--wire);
+         stroke-linecap: round; opacity: var(--dim-w); }
+  .arc { fill: none; stroke: var(--accent); stroke-width: var(--wire);
+         opacity: var(--dim-w); }
+  .pdia .box { fill: none; stroke: currentColor; stroke-width: 1.2; opacity: 0.42; }
+  .pdia .t { font-family: var(--mono); font-size: 10px; fill: currentColor;
+             opacity: 0.62; }
+  
+
+  .glow { fill: var(--accent); opacity: 0; }
+
+  
+
+  .pdconn { position: absolute; inset: 0; pointer-events: none; }
+  .pdconn span { position: absolute; background: var(--accent);
+                 opacity: var(--dim-w); }
+  .pdconn .a { left: var(--mcu-r); top: var(--src-y); height: var(--wire);
+               width: calc(var(--bus-x) - var(--mcu-r)); }
+  .pdconn .v { left: var(--bus-x); width: var(--wire);
+               top: min(var(--src-y), var(--row-y));
+               height: calc(max(var(--src-y), var(--row-y))
+                          - min(var(--src-y), var(--row-y))); }
+  .pdconn .h { left: var(--bus-x); top: var(--row-y); height: var(--wire);
+               width: calc(var(--head-x) - var(--bus-x)); }
+  .pdconn .head { background: none; left: var(--head-x);
+                  border: var(--head-h) solid transparent;
+                  border-left: var(--head-w) solid var(--accent);
+                  top: calc(var(--row-y) - var(--head-h)); }
+  
+
+  .pdconn .cur { z-index: 5; width: 2px; height: 14px;
+                 margin: -7px 0 0 -1px; border-radius: 1px; opacity: 0; }
+
+  
+
+  .ladder {
+    flex: 1; min-width: 0; position: relative;
+    margin-top: var(--lad-top); margin-left: var(--channel);
+    border: 1px dashed var(--rule); border-radius: 3px;
+    padding: 15px 10px 9px;
+  }
+  .ladder::before {
+    content: 'txdelay'; position: absolute; left: 9px; top: 2px;
+    font-family: var(--mono); font-size: 9.5px; color: var(--dim);
+    letter-spacing: 0.04em;
+  }
+  .lrow {
+    display: grid; grid-template-columns: minmax(0, 1fr) var(--name-w);
+    gap: var(--name-gap); align-items: center;
+    height: var(--row); margin-bottom: var(--gap);
+  }
+  .ln { order: 2; font-family: var(--mono); font-size: 10.5px; line-height: 14px;
+        color: var(--dim); white-space: nowrap; }
+  .lrow.on .ln { color: var(--accent); }
+  .ltrack { position: relative; display: block; height: 10px; border-radius: 1px;
+            background: color-mix(in srgb, currentColor 8%, transparent); }
+  .ltrack i { position: absolute; inset: 0 auto 0 0; width: var(--f);
+              border-radius: 1px;
+              background: color-mix(in srgb, currentColor 16%, transparent); }
+  .lrow.on .ltrack i {
     background: linear-gradient(90deg, var(--slot), var(--slot-b));
   }
-  .profile.on .p-meter::before {
-    background: linear-gradient(90deg, var(--slot), var(--accent));
-  }
 
   
 
-  
-
-  .p-run { position: absolute; inset: 0; }
-  
-
-  .p-cur {
-    display: none; position: absolute; top: 50%; left: 0;
-    width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px;
-    background: var(--accent); border-radius: 50%;
-  }
-  .profile.on .p-cur { display: block; }
-  
-
-  .p-cur.boom { animation: p-boom 380ms ease-out forwards; }
-  @keyframes p-boom {
-    0%   { transform: scale(1);   opacity: 1; }
-    100% { transform: scale(2.8); opacity: 0; }
-  }
+  @media (prefers-reduced-motion: reduce) { .pdconn .cur { display: none; } }
 
   
 
-  .p-rx {
-    position: absolute; top: 50%; left: var(--x);
-    width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px;
-    background: var(--accent); border-radius: 50%;
-    opacity: 0; pointer-events: none;
-    animation: p-rx 340ms ease-out forwards;
+  @container (max-width: 539.98px) {
+    .pdrow { --strip: 62px; --strip-h: 124px; --channel: 24px;
+             --mcu-r: 50px; --mcu-y: 109px; --mcu-b: 120px;
+             --bus-x: calc(var(--strip) + 12px); }
+    .hw-h { display: none; }
+    .hw-v { display: block; }
   }
-  @keyframes p-rx {
-    0%   { transform: scale(0.5); opacity: 0.9; }
-    100% { transform: scale(2.4); opacity: 0; }
-  }
-
-  
-
-  .p-ring {
-    position: absolute; top: 50%; left: var(--x);
-    width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px;
-    border: 1px solid var(--accent); border-radius: 50%;
-    opacity: 0; pointer-events: none;
-    animation: p-ring 500ms cubic-bezier(0.2, 0.7, 0.35, 1) forwards;
-  }
-  @keyframes p-ring {
-    0%   { transform: scale(0.4); opacity: 0.85; }
-    60%  { opacity: 0.35; }
-    100% { transform: scale(4);   opacity: 0; }
-  }
-  
-
-  @media (prefers-reduced-motion: reduce) {
-    .profile.on .p-cur { display: none; }
-  }
-  .p-v {
-    display: block; font-family: var(--mono); font-size: 12px;
-    color: var(--dim); margin-top: 7px; letter-spacing: 0.02em;
-  }
-  .p-v b { color: var(--muted); font-weight: 400; }
-  .profile.on .p-v { color: var(--muted); }
-  .profile.on .p-v b { color: var(--accent); }
 
   
 
@@ -1737,6 +1780,63 @@ else l[i].removeAttribute('aria-current');
         <h2>Node profile</h2>
         <p class="sub" lang="en">Sizes the random back-off before repeating a flood. Based on neighbour count with SNR above 0.</p>
         <p class="sub" lang="nb">Setter størrelsen på den tilfeldige back-offen før en flood sendes videre. Basert på antall naboer med SNR over 0.</p>
+        
+        <div class="pdia" id="pdia" role="img"
+             aria-labelledby="pdiaLbl pdiaLblNb">
+          <span class="pdlbl" id="pdiaLbl" lang="en"></span>
+          <span class="pdlbl" id="pdiaLblNb" lang="nb"></span>
+          <svg class="pddefs" aria-hidden="true"><defs>
+            <marker id="pdar" viewBox="0 0 10 10" refX="9" refY="5"
+                    markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/>
+            </marker>
+          </defs></svg>
+          <div class="pdrow" style="--sel:2">
+            <svg class="hw hw-h" viewBox="0 0 214 70" aria-hidden="true">
+              <rect class="glow gx" x="59" y="44" width="58" height="24" rx="3"/>
+        <rect class="glow gm" x="129" y="44" width="40" height="24" rx="3"/>
+        <path class="w l-mast" d="M26 24 V44"/>
+        <path class="w l-mast" d="M22.5 44 H29.5"/>
+        <path d="M19.42 21.61 A 7 7 0 0 1 24.78 17.11" class="arc rx" data-i="0"/>
+        <path d="M14.72 19.90 A 12 12 0 0 1 23.92 12.18" class="arc rx" data-i="1"/>
+        <path d="M10.03 18.19 A 17 17 0 0 1 23.05 7.26" class="arc rx" data-i="2"/>
+        <path d="M32.58 21.61 A 7 7 0 0 0 27.22 17.11" class="arc tx" data-i="0"/>
+        <path d="M37.28 19.90 A 12 12 0 0 0 28.08 12.18" class="arc tx" data-i="1"/>
+        <path d="M41.97 18.19 A 17 17 0 0 0 28.95 7.26" class="arc tx" data-i="2"/>
+        <path class="w l-w1" d="M26 44 V56 H56" marker-end="url(#pdar)"/>
+        <rect class="box" x="60" y="45" width="56" height="22" rx="2"/>
+        <text class="t" x="66" y="59">SX1262</text>
+        <path class="w l-w2" d="M116 56 H128" marker-end="url(#pdar)"/>
+        <rect class="box" x="130" y="45" width="38" height="22" rx="2"/>
+        <text class="t" x="136" y="59">MCU</text>
+            </svg>
+            <svg class="hw hw-v" viewBox="0 0 62 124" aria-hidden="true">
+              <rect class="glow gx" x="2" y="61" width="58" height="24" rx="3"/>
+        <rect class="glow gm" x="11" y="97" width="40" height="24" rx="3"/>
+        <path class="w l-mast" d="M31 22 V44"/>
+        <path class="w l-mast" d="M27.5 44 H34.5"/>
+        <path d="M24.42 19.61 A 7 7 0 0 1 29.78 15.11" class="arc rx" data-i="0"/>
+        <path d="M19.72 17.90 A 12 12 0 0 1 28.92 10.18" class="arc rx" data-i="1"/>
+        <path d="M15.03 16.19 A 17 17 0 0 1 28.05 5.26" class="arc rx" data-i="2"/>
+        <path d="M37.58 19.61 A 7 7 0 0 0 32.22 15.11" class="arc tx" data-i="0"/>
+        <path d="M42.28 17.90 A 12 12 0 0 0 33.08 10.18" class="arc tx" data-i="1"/>
+        <path d="M46.97 16.19 A 17 17 0 0 0 33.95 5.26" class="arc tx" data-i="2"/>
+        <path class="w l-w1" d="M31 44 V60" marker-end="url(#pdar)"/>
+        <rect class="box" x="3" y="62" width="56" height="22" rx="2"/>
+        <text class="t" x="9" y="76">SX1262</text>
+        <path class="w l-w2" d="M31 84 V96" marker-end="url(#pdar)"/>
+        <rect class="box" x="12" y="98" width="38" height="22" rx="2"/>
+        <text class="t" x="18" y="112">MCU</text>
+            </svg>
+            <span class="pdconn" aria-hidden="true"><span class="a"></span><span class="v"></span><span class="h"></span><span class="head"></span><span class="cur"></span></span>
+            <div class="ladder">
+              <div class="lrow" data-p="hilltop"><span class="ltrack"><i style="--f:100%"></i></span><span class="ln">Hilltop</span></div>
+              <div class="lrow" data-p="foothills"><span class="ltrack"><i style="--f:75%"></i></span><span class="ln">Foothills</span></div>
+              <div class="lrow on" data-p="suburban"><span class="ltrack"><i style="--f:40%"></i></span><span class="ln">Suburban</span></div>
+              <div class="lrow" data-p="local"><span class="ltrack"><i style="--f:15%"></i></span><span class="ln">Local</span></div>
+            </div>
+          </div>
+        </div>
         <div class="row">
           <div class="k">txdelay<br>rxdelay</div>
           <div class="v">
@@ -1745,29 +1845,25 @@ else l[i].removeAttribute('aria-current');
                 <span class="p-n">Hilltop <span class="p-nb" lang="en">20+ neighbours</span><span class="p-nb" lang="nb">20+ naboer</span></span>
                 <span class="p-d" lang="en">Clear view over a larger area. Backbone infrastructure — transmitter mast, ridge, the roof of a high-rise.</span>
                 <span class="p-d" lang="nb">Fri utsikt over et større område. Ryggstrukturinfrastruktur — sendertårn, møne, taktopp på en høyblokk.</span>
-                <span class="p-meter" aria-hidden="true" style="--f:100%"><i class="p-run"><b class="p-cur"></b></i></span>
-                <span class="p-v">back-off 0–10× airtime · <b>txdelay 2.0</b> · direct 2.0 · rx 3</span>
+                <span class="p-v">txdelay 2.0 · direct 2.0 · rx 3</span>
               </button>
               <button class="profile" data-p="foothills">
                 <span class="p-n">Foothills <span class="p-nb" lang="en">10–20 neighbours</span><span class="p-nb" lang="nb">10–20 naboer</span></span>
                 <span class="p-d" lang="en">Bridge between hilltop nodes and suburban coverage — a hilltop, or a high roof mount outside town.</span>
                 <span class="p-d" lang="nb">Bro mellom noder på åstopper og forstadsdekning — åstopp, montering på høyt tak utenfor byen.</span>
-                <span class="p-meter" aria-hidden="true" style="--f:75%"><i class="p-run"><b class="p-cur"></b></i></span>
-                <span class="p-v">back-off 0–7.5× airtime · <b>txdelay 1.5</b> · direct 1.0 · rx 3</span>
+                <span class="p-v">txdelay 1.5 · direct 1.0 · rx 3</span>
               </button>
               <button class="profile on" data-p="suburban">
                 <span class="p-n">Suburban <span class="p-nb" lang="en">5–10 neighbours</span><span class="p-nb" lang="nb">5–10 naboer</span></span>
                 <span class="p-d" lang="en">Typical installation covering your own neighbourhood — an ordinary rooftop install in a city or suburb.</span>
                 <span class="p-d" lang="nb">Typisk installasjon som dekker ditt eget nabolag — vanlig takinstallasjon i by/forstad.</span>
-                <span class="p-meter" aria-hidden="true" style="--f:40%"><i class="p-run"><b class="p-cur"></b></i></span>
-                <span class="p-v">back-off 0–4× airtime · <b>txdelay 0.8</b> · direct 0.4 · rx 3</span>
+                <span class="p-v">txdelay 0.8 · direct 0.4 · rx 3</span>
               </button>
               <button class="profile" data-p="local">
                 <span class="p-n">Local <span class="p-nb" lang="en">1–3 neighbours</span><span class="p-nb" lang="nb">1–3 naboer</span></span>
                 <span class="p-d" lang="en">Sees only a few neighbours. Covers the immediate area — indoors, ground level, a low roof.</span>
                 <span class="p-d" lang="nb">Ser bare noen få naboer. Dekker nærområdet — innendørs, bakkenivå, lavt tak.</span>
-                <span class="p-meter" aria-hidden="true" style="--f:15%"><i class="p-run"><b class="p-cur"></b></i></span>
-                <span class="p-v">back-off 0–1.5× airtime · <b>txdelay 0.3</b> · direct 0.1 · rx 3</span>
+                <span class="p-v">txdelay 0.3 · direct 0.1 · rx 3</span>
               </button>
             </div>
           </div>
@@ -3707,7 +3803,6 @@ return { key: renderMapKey, pinNote: renderPinNote, header, deviceSwitch,
 tag, position, pin, tints, TIERS, FILL_TIERS };
 })();
 const Meter = (() => {
-const GAP_MS = 500;
 const SF = 8, BW = 62500, PL = 64, PREAMBLE = 8;
 function airtimeMs() {
 const cr = Math.min(4, Math.max(1, (parseInt(cfg.cr, 10) || 5) - 4));
@@ -3716,75 +3811,154 @@ const sym = 8 + Math.max(
 Math.ceil((8 * PL - 4 * SF + 28 + 16) / (4 * SF)) * (cr + 4), 0);
 return (PREAMBLE + 4.25) * ts + sym * ts;
 }
-let cycle = 0;
-let card = null, cur = null, run = null, raf = 0;
-let phase = 'idle', t0 = 0, target = 0, win = 0;
+const LEG = 220, GAP = 1000, DIM = 0.35;
+const SPEED = 2;
+let dia = null, row = null, cur = null, timer = 0;
 const still = matchMedia('(prefers-reduced-motion: reduce)');
+const strip = () =>
+[...row.querySelectorAll('.hw')].find(e => e.getClientRects().length);
 function stop() {
-if (raf) cancelAnimationFrame(raf);
-raf = 0;
-if (cur) { cur.style.left = ''; cur.classList.remove('boom'); }
-if (run) run.querySelectorAll('.p-ring, .p-rx').forEach(r => r.remove());
-cur = null; run = null;
-card = null;
+clearTimeout(timer);
+timer = 0;
+if (dia) dia.getAnimations({ subtree: true }).forEach(a => a.cancel());
 }
-function spark(cls, at) {
-if (!run) return;
-const r = document.createElement('b');
-r.className = cls;
-r.style.setProperty('--x', at + '%');
-r.addEventListener('animationend', () => r.remove(), { once: true });
-run.appendChild(r);
-const all = run.querySelectorAll('.p-ring, .p-rx');
-if (all.length > 6) all[0].remove();
+function cycle() {
+if (!dia || still.matches) return;
+const hw = strip();
+if (!hw || !row.getClientRects().length) { timer = setTimeout(cycle, 400); return; }
+const box = row.getBoundingClientRect();
+const rel = el => { const r = el.getBoundingClientRect();
+return { x: r.left - box.left, y: r.top - box.top, w: r.width, h: r.height }; };
+const on = row.querySelector('.lrow.on') || row.querySelector('.lrow');
+const tr = rel(on.querySelector('.ltrack'));
+const hwr = rel(hw), S = hwr.x, Y = hwr.y;
+const wide = hw.classList.contains('hw-h');
+const v = rel(row.querySelector('.v')), h = rel(row.querySelector('.h'));
+const rowY = h.y, busX = v.x, tipX = h.x + h.w + 6.5;
+const fill = on.querySelector('.ltrack i');
+const win = fill.getBoundingClientRect().width / (tr.w || 1);
+const IN = wide
+? [[S + 26, Y + 20], [S + 26, Y + 44], [S + 26, Y + 56],
+[S + 60, Y + 56], [S + 116, Y + 56], [S + 130, Y + 56], [S + 149, Y + 56]]
+: [[S + 31, Y + 16], [S + 31, Y + 44], [S + 31, Y + 62],
+[S + 31, Y + 84], [S + 31, Y + 98], [S + 31, Y + 109]];
+const mcuY = wide ? Y + 56 : Y + 109, mcuR = wide ? S + 168 : S + 50;
+const MID = [[mcuR, mcuY], [busX, mcuY], [busX, rowY], [tipX, rowY], [tr.x, rowY]];
+const AIR = airtimeMs(), BAR = AIR * 10;
+const p = Math.random() * win;
+const legs = [];
+const spread = (pts, ms) => {
+const d = [];
+let tot = 0;
+for (let i = 1; i < pts.length; i++) {
+const l = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+d.push(l); tot += l;
 }
-const windowOf = el =>
-parseFloat(getComputedStyle(el).getPropertyValue('--f')) || 0;
-function arrive(ts) {
-target = Math.random() * win;
-spark('p-rx', 0);
-cur.style.left = '0%';
-cur.classList.remove('boom');
-phase = 'seek'; t0 = ts;
+pts.slice(1).forEach((pt, i) => legs.push([pt, ms * (d[i] / (tot || 1))]));
+};
+legs.push([IN[0], 0]);
+spread(IN, AIR);
+spread([IN[IN.length - 1], ...MID], LEG);
+legs.push([[tr.x + p * tr.w, rowY], p * BAR / SPEED]);
+legs.push([[tr.x, rowY], p * BAR / SPEED]);
+spread([[tr.x, rowY], ...MID.slice().reverse(), IN[IN.length - 1]], LEG);
+spread([IN[IN.length - 1], ...IN.slice(0, -1).reverse()], AIR);
+const total = legs.reduce((s, l) => s + l[1], 0) + GAP;
+let t = 0;
+const frames = legs.map(([pt, ms]) => {
+t += ms;
+const onBar = Math.abs(pt[1] - rowY) < 0.5
+&& pt[0] >= tr.x - 1 && pt[0] <= tr.x + tr.w + 1;
+return { offset: Math.min(t / total, 1),
+transform: `translate(${pt[0]}px, ${pt[1]}px)`,
+opacity: onBar ? 1 : 0 };
+});
+for (let i = frames.length - 1; i > 0; i--) {
+const lo = frames[i - 1].opacity, hi = frames[i].opacity;
+if (lo === hi) continue;
+frames.splice(i, 0, hi > lo
+? { offset: Math.max(0, frames[i].offset - 0.0015),
+transform: frames[i].transform, opacity: lo }
+: { offset: Math.min(1, frames[i - 1].offset + 0.0015),
+transform: frames[i - 1].transform, opacity: hi });
 }
-function follow(el) {
-cycle = airtimeMs() * 10;
-if (el === card) return;
+frames.unshift({ offset: 0, transform: frames[0].transform, opacity: 0 });
+frames.push({ offset: 1, transform: frames[frames.length - 1].transform, opacity: 0 });
+const anim = cur.animate(frames, { duration: total, easing: 'linear' });
+const xy = f => f.transform.match(/-?[\d.]+/g).map(Number);
+const seg = sel => { const e = row.querySelector(sel); if (!e) return null;
+const r = rel(e); return [sel, r.x - 4, r.x + r.w + 4, r.y - 4, r.y + r.h + 4]; };
+const parts = (wide
+? [['.l-mast', S + 22, S + 30, Y + 19, Y + 46],
+['.l-w1', S + 22, S + 62, Y + 42, Y + 60],
+['.gx', S + 59, S + 117, Y + 44, Y + 68],
+['.l-w2', S + 113, S + 132, Y + 50, Y + 62],
+['.gm', S + 129, S + 169, Y + 44, Y + 68]]
+: [['.l-mast', S + 26, S + 36, Y + 15, Y + 46],
+['.l-w1', S + 26, S + 36, Y + 43, Y + 63],
+['.gx', S + 1, S + 61, Y + 60, Y + 86],
+['.l-w2', S + 26, S + 36, Y + 83, Y + 99],
+['.gm', S + 10, S + 52, Y + 96, Y + 122]]
+).concat([seg('.a'), seg('.v'), seg('.h'), seg('.head')]).filter(Boolean);
+const eps = Math.min(0.02, 90 / total);
+parts.forEach(([sel, xa, xb, ya, yb]) => {
+const inBox = frames.map((f, i) => {
+if (i === 0 || i === frames.length - 1) return false;
+const [x, y] = xy(f);
+return x >= xa - 1 && x <= xb + 1 && y >= ya - 1 && y <= yb + 1;
+});
+const glow = sel === '.gx' || sel === '.gm';
+const lo = glow ? 0 : DIM, hi = glow ? 0.22 : 1;
+const kf = [{ offset: 0, opacity: lo }];
+frames.forEach((f, i) => {
+if (!inBox[i]) return;
+if (!inBox[i - 1])
+kf.push({ offset: Math.max(0, f.offset - eps), opacity: lo },
+{ offset: f.offset, opacity: hi });
+if (!inBox[i + 1])
+kf.push({ offset: f.offset, opacity: hi },
+{ offset: Math.min(1, f.offset + eps), opacity: lo });
+});
+kf.push({ offset: 1, opacity: lo });
+kf.sort((m, n) => m.offset - n.offset);
+row.querySelectorAll(sel).forEach(el =>
+el.animate(kf, { duration: total, easing: 'linear' }));
+});
+const out = total - GAP;
+const inWin = [0, AIR / total];
+const outWin = [out / total, Math.min(1, (out + AIR) / total)];
+row.querySelectorAll('.arc').forEach(arc => {
+const i = +arc.dataset.i, tx = arc.classList.contains('tx');
+const w0 = tx ? outWin[0] : inWin[0], w1 = tx ? outWin[1] : inWin[1];
+const step = (w1 - w0) / 4, at = w0 + step * (tx ? i : 2 - i);
+arc.animate([{ offset: 0, opacity: DIM },
+{ offset: Math.max(0.0001, at - step * 0.6), opacity: DIM },
+{ offset: Math.min(0.9998, at), opacity: 1 },
+{ offset: Math.min(0.9999, at + step), opacity: DIM },
+{ offset: 1, opacity: DIM }].sort((m, n) => m.offset - n.offset),
+{ duration: total, easing: 'linear' });
+});
+anim.onfinish = cycle;
+}
+function refresh() {
+if (!dia) return;
 stop();
-if (!el || still.matches) return;
-const bar = el.querySelector('.p-meter');
-if (!bar) return;
-win = windowOf(bar);
-if (!(win > 0)) return;
-run = bar.querySelector('.p-run');
-cur = bar.querySelector('.p-cur');
-if (!run || !cur) return;
-card = el;
-phase = 'idle'; t0 = 0;
-raf = requestAnimationFrame(step);
+if (still.matches || document.hidden) return;
+timer = setTimeout(cycle, 0);
 }
-function step(ts) {
-raf = requestAnimationFrame(step);
-if (!cur) return;
-if (still.matches) { stop(); return; }
-if (document.hidden || !card.offsetParent) { t0 = ts; return; }
-if (!t0) { arrive(ts); return; }
-const dt = ts - t0;
-if (phase === 'seek') {
-const pos = dt / cycle * 100;
-if (pos >= target) {
-cur.style.left = target + '%';
-cur.classList.add('boom');
-spark('p-ring', target);
-phase = 'gap'; t0 = ts;
-} else {
-cur.style.left = pos + '%';
+function wire() {
+dia = $('pdia');
+if (!dia) return;
+row = dia.querySelector('.pdrow');
+cur = dia.querySelector('.cur');
+if (!row || !cur) { dia = null; return; }
+document.addEventListener('visibilitychange', () =>
+document.hidden ? stop() : refresh());
+if (window.ResizeObserver) new ResizeObserver(refresh).observe(dia);
+still.addEventListener('change', refresh);
+refresh();
 }
-} else if (dt >= GAP_MS) {
-arrive(ts);
-}
-}
-return { follow };
+return { wire, refresh };
 })();
 const PaintCfg = (() => {
 const EMPTY_TREE = $('scope').innerHTML;
@@ -3946,13 +4120,28 @@ cfg.unscoped === 'cap'
 : REST_UNSC_NB);
 }
 const profiles = () => {
-let sel = null;
-document.querySelectorAll('#profiles .profile').forEach(el => {
+document.querySelectorAll('#profiles .profile').forEach(el =>
+el.classList.toggle('on', el.dataset.p === cfg.profile));
+const dia = $('pdia');
+if (!dia) return;
+const rows = [...dia.querySelectorAll('.lrow')];
+let sel = 0;
+rows.forEach((el, i) => {
 const on = el.dataset.p === cfg.profile;
 el.classList.toggle('on', on);
-if (on) sel = el;
+if (on) sel = i;
 });
-Meter.follow(sel);
+dia.querySelector('.pdrow').style.setProperty('--sel', sel);
+const p = PROFILES[cfg.profile];
+const cap = +(p.tx * 5).toFixed(2);
+say('pdiaLbl',
+`Signal path: the antenna hears a flood, the SX1262 radio hands it to the `
++ `MCU, and the MCU waits before repeating it. ${p.label} repeats within `
++ `${cap} times the packet's own airtime.`,
+`Signalvei: antenna hører en flood, SX1262-radioen gir den til MCU-en, og `
++ `MCU-en venter før den sender den videre. ${p.label} sender videre `
++ `innen ${cap} ganger pakkas egen airtime.`);
+Meter.refresh();
 };
 return { block, name, location, tree, unscoped, profiles };
 })();
@@ -4775,6 +4964,7 @@ render();
 }
 MapView.init({ place });
 Controls.wire({ render, place, replace, showPinFor });
+Meter.wire();
 render();
 Share.adopt(true);
 Router.wire({
