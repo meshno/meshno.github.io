@@ -1081,6 +1081,20 @@
   .profile.on .p-meter::before {
     background: linear-gradient(90deg, var(--slot), var(--accent));
   }
+
+  
+
+  .p-cur {
+    display: none; position: absolute; top: -2px; bottom: -2px; left: 0;
+    width: 2px; background: var(--accent); opacity: 0.5;
+  }
+  .profile.on .p-cur { display: block; }
+  .p-cur.fire { opacity: 1; box-shadow: 0 0 5px 1px var(--accent); }
+  
+
+  @media (prefers-reduced-motion: reduce) {
+    .profile.on .p-cur { display: none; }
+  }
   .p-v {
     display: block; font-family: var(--mono); font-size: 12px;
     color: var(--dim); margin-top: 7px; letter-spacing: 0.02em;
@@ -1690,28 +1704,28 @@ else l[i].removeAttribute('aria-current');
                 <span class="p-n">Hilltop <span class="p-nb" lang="en">20+ neighbours</span><span class="p-nb" lang="nb">20+ naboer</span></span>
                 <span class="p-d" lang="en">Clear view over a larger area. Backbone infrastructure — transmitter mast, ridge, the roof of a high-rise.</span>
                 <span class="p-d" lang="nb">Fri utsikt over et større område. Ryggstrukturinfrastruktur — sendertårn, møne, taktopp på en høyblokk.</span>
-                <span class="p-meter" aria-hidden="true" style="--f:100%"></span>
+                <span class="p-meter" aria-hidden="true" style="--f:100%"><b class="p-cur"></b></span>
                 <span class="p-v">back-off 0–10× airtime · <b>txdelay 2.0</b> · direct 2.0 · rx 3</span>
               </button>
               <button class="profile" data-p="foothills">
                 <span class="p-n">Foothills <span class="p-nb" lang="en">10–20 neighbours</span><span class="p-nb" lang="nb">10–20 naboer</span></span>
                 <span class="p-d" lang="en">Bridge between hilltop nodes and suburban coverage — a hilltop, or a high roof mount outside town.</span>
                 <span class="p-d" lang="nb">Bro mellom noder på åstopper og forstadsdekning — åstopp, montering på høyt tak utenfor byen.</span>
-                <span class="p-meter" aria-hidden="true" style="--f:75%"></span>
+                <span class="p-meter" aria-hidden="true" style="--f:75%"><b class="p-cur"></b></span>
                 <span class="p-v">back-off 0–7.5× airtime · <b>txdelay 1.5</b> · direct 1.0 · rx 3</span>
               </button>
               <button class="profile on" data-p="suburban">
                 <span class="p-n">Suburban <span class="p-nb" lang="en">5–10 neighbours</span><span class="p-nb" lang="nb">5–10 naboer</span></span>
                 <span class="p-d" lang="en">Typical installation covering your own neighbourhood — an ordinary rooftop install in a city or suburb.</span>
                 <span class="p-d" lang="nb">Typisk installasjon som dekker ditt eget nabolag — vanlig takinstallasjon i by/forstad.</span>
-                <span class="p-meter" aria-hidden="true" style="--f:40%"></span>
+                <span class="p-meter" aria-hidden="true" style="--f:40%"><b class="p-cur"></b></span>
                 <span class="p-v">back-off 0–4× airtime · <b>txdelay 0.8</b> · direct 0.4 · rx 3</span>
               </button>
               <button class="profile" data-p="local">
                 <span class="p-n">Local <span class="p-nb" lang="en">1–3 neighbours</span><span class="p-nb" lang="nb">1–3 naboer</span></span>
                 <span class="p-d" lang="en">Sees only a few neighbours. Covers the immediate area — indoors, ground level, a low roof.</span>
                 <span class="p-d" lang="nb">Ser bare noen få naboer. Dekker nærområdet — innendørs, bakkenivå, lavt tak.</span>
-                <span class="p-meter" aria-hidden="true" style="--f:15%"></span>
+                <span class="p-meter" aria-hidden="true" style="--f:15%"><b class="p-cur"></b></span>
                 <span class="p-v">back-off 0–1.5× airtime · <b>txdelay 0.3</b> · direct 0.1 · rx 3</span>
               </button>
             </div>
@@ -3651,6 +3665,68 @@ Geo.CITY_PTS.forEach(c => c.el.classList.toggle('on', metroKeys.includes(c.key))
 return { key: renderMapKey, pinNote: renderPinNote, header, deviceSwitch,
 tag, position, pin, tints, TIERS, FILL_TIERS };
 })();
+const Meter = (() => {
+const SWEEP_MS = 2000;
+const FLASH_MS = 120, REST_MS = 150;
+let card = null, cur = null, raf = 0;
+let phase = 'seek', t0 = 0, target = 0, win = 0;
+const still = matchMedia('(prefers-reduced-motion: reduce)');
+function stop() {
+if (raf) cancelAnimationFrame(raf);
+raf = 0;
+if (cur) { cur.style.left = ''; cur.classList.remove('fire'); }
+cur = null;
+card = null;
+}
+const windowOf = el =>
+parseFloat(getComputedStyle(el).getPropertyValue('--f')) || 0;
+function redraw() {
+target = Math.random() * win;
+}
+function follow(el) {
+if (el === card) return;
+stop();
+if (!el || still.matches) return;
+const bar = el.querySelector('.p-meter');
+if (!bar) return;
+win = windowOf(bar);
+if (!(win > 0)) return;
+cur = bar.querySelector('.p-cur');
+if (!cur) return;
+card = el;
+phase = 'seek'; t0 = 0;
+redraw();
+raf = requestAnimationFrame(step);
+}
+function step(ts) {
+raf = requestAnimationFrame(step);
+if (!cur) return;
+if (still.matches) { stop(); return; }
+if (document.hidden || !card.offsetParent) { t0 = ts; return; }
+if (!t0) t0 = ts;
+const dt = ts - t0;
+if (phase === 'seek') {
+const pos = dt / SWEEP_MS * 100;
+if (pos >= target) {
+cur.style.left = target + '%';
+cur.classList.add('fire');
+phase = 'fire'; t0 = ts;
+} else {
+cur.style.left = pos + '%';
+}
+} else if (phase === 'fire') {
+if (dt >= FLASH_MS) {
+cur.classList.remove('fire');
+cur.style.left = '0%';
+phase = 'rest'; t0 = ts;
+}
+} else if (dt >= REST_MS) {
+redraw();
+phase = 'seek'; t0 = ts;
+}
+}
+return { follow };
+})();
 const PaintCfg = (() => {
 const EMPTY_TREE = $('scope').innerHTML;
 const NAME_HINT = $('nameHint').innerHTML;
@@ -3810,9 +3886,15 @@ cfg.unscoped === 'cap'
 ? '<b class="bad">Forkaster hver utagget pakke.</b> Bruk den først når meshet rundt deg bærer regioner, ellers isolerer den noder som ikke har satt regioner.'
 : REST_UNSC_NB);
 }
-const profiles = () =>
-document.querySelectorAll('#profiles .profile').forEach(el =>
-el.classList.toggle('on', el.dataset.p === cfg.profile));
+const profiles = () => {
+let sel = null;
+document.querySelectorAll('#profiles .profile').forEach(el => {
+const on = el.dataset.p === cfg.profile;
+el.classList.toggle('on', on);
+if (on) sel = el;
+});
+Meter.follow(sel);
+};
 return { block, name, location, tree, unscoped, profiles };
 })();
 const ChanUI = (() => {
