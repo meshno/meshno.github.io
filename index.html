@@ -3857,6 +3857,7 @@ d.push(l); tot += l;
 pts.slice(1).forEach((pt, i) => legs.push([pt, ms * (d[i] / (tot || 1))]));
 };
 legs.push([IN[0], 0]);
+legs.push([IN[0], AIR]);
 spread(IN, AIR);
 spread([IN[IN.length - 1], ...MID], LEG);
 legs.push([[tr.x + p * tr.w, rowY], p * BAR / SPEED]);
@@ -3889,12 +3890,12 @@ const xy = f => f.transform.match(/-?[\d.]+/g).map(Number);
 const seg = sel => { const e = row.querySelector(sel); if (!e) return null;
 const r = rel(e); return [sel, r.x - 4, r.x + r.w + 4, r.y - 4, r.y + r.h + 4]; };
 const parts = (wide
-? [['.l-mast', S + 22, S + 30, Y + 19, Y + 46],
+? [['.l-mast', S + 22, S + 30, Y + 24, Y + 46],
 ['.l-w1', S + 22, S + 62, Y + 42, Y + 60],
 ['.gx', S + 59, S + 117, Y + 44, Y + 68],
 ['.l-w2', S + 113, S + 132, Y + 50, Y + 62],
 ['.gm', S + 129, S + 169, Y + 44, Y + 68]]
-: [['.l-mast', S + 26, S + 36, Y + 15, Y + 46],
+: [['.l-mast', S + 26, S + 36, Y + 22, Y + 46],
 ['.l-w1', S + 26, S + 36, Y + 43, Y + 63],
 ['.gx', S + 1, S + 61, Y + 60, Y + 86],
 ['.l-w2', S + 26, S + 36, Y + 83, Y + 99],
@@ -3930,7 +3931,7 @@ const outWin = [out / total, Math.min(1, (out + AIR) / total)];
 row.querySelectorAll('.arc').forEach(arc => {
 const i = +arc.dataset.i, tx = arc.classList.contains('tx');
 const w0 = tx ? outWin[0] : inWin[0], w1 = tx ? outWin[1] : inWin[1];
-const step = (w1 - w0) / 4, at = w0 + step * (tx ? i : 2 - i);
+const step = (w1 - w0) / 4, at = w0 + step * ((tx ? i : 2 - i) + 1) * 0.75;
 arc.animate([{ offset: 0, opacity: DIM },
 { offset: Math.max(0.0001, at - step * 0.6), opacity: DIM },
 { offset: Math.min(0.9998, at), opacity: 1 },
