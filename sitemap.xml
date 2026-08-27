@@ -20,8 +20,10 @@
      language can be added without appearing here. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://meshno.github.io/</loc></url>
+  <url><loc>https://meshno.github.io/?p=why</loc></url>
   <url><loc>https://meshno.github.io/?p=contact</loc></url>
   <url><loc>https://meshno.github.io/?p=about</loc></url>
+  <url><loc>https://meshno.github.io/?p=why&amp;lang=nb</loc></url>
   <url><loc>https://meshno.github.io/?p=contact&amp;lang=nb</loc></url>
   <url><loc>https://meshno.github.io/?p=about&amp;lang=nb</loc></url>
 </urlset>

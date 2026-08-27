@@ -370,6 +370,7 @@
   :root[data-page] #mast,
   :root[data-page] #main,
   :root[data-page] .skip-link { display: none; }
+  :root[data-page="why"] #pgWhy,
   :root[data-page="about"] #pgAbout,
   :root[data-page="contact"] #pgContact { display: block; }
 
@@ -409,6 +410,69 @@
     font-family: var(--mono); font-size: 12.5px; line-height: 1.7; color: var(--ink);
     background: var(--inset); border: 1px solid var(--rule);
     padding: 14px 16px; margin: 14px 0 0; overflow-x: auto;
+  }
+
+  
+
+  
+
+  .reach { margin: 26px 0 6px; padding: 18px 18px 16px;
+           background: var(--inset); border: 1px solid var(--rule); }
+  .rr { display: flex; align-items: center; gap: 12px; height: 26px; }
+  .rt { font-family: var(--mono); font-size: 12.5px; color: var(--accent);
+        width: 88px; flex: none; }
+  
+
+  .rk { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 10px;
+        position: relative; }
+  .rb { height: 9px; background: var(--accent); flex: none; }
+  .rl { font-size: 12.5px; color: var(--dim); white-space: nowrap; }
+
+  
+
+  .rr.esc { margin-top: 4px; padding-top: 12px; border-top: 1px solid var(--rule-2); }
+  .esc .rt { color: var(--dim); }
+  .esc .rb { width: 100%; background:
+      linear-gradient(var(--accent), var(--accent)) left / 62% 100% no-repeat,
+      repeating-linear-gradient(135deg, var(--dim) 0 1.5px, transparent 1.5px 6px); }
+  
+
+  .esc .rk::after { content: ''; position: absolute; right: -9px; top: 50%;
+      margin-top: -8px;
+      border: 8px solid transparent; border-left-color: var(--dim); border-right: 0; }
+  
+
+  .rcap { font-size: 12.5px; color: var(--dim); margin: 16px 0 0; padding-left: 100px;
+          line-height: 1.5; }
+  .rcap b { color: var(--ink); font-weight: 500; }
+
+  
+
+  @keyframes rreveal { from { clip-path: inset(0 100% 0 0); }
+                       to   { clip-path: inset(0 0 0 0); } }
+  @keyframes rfade   { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes rdrift  { from { background-position: left 0 top 0, 0 0; }
+                       to   { background-position: left 0 top 0, 8.49px 0; } }
+
+  .rb { animation: rreveal 560ms cubic-bezier(.22,.7,.3,1) both; }
+  .rl { animation: rfade 320ms ease-out both; }
+  .rr:nth-of-type(1) .rb { animation-delay: 80ms; }
+  .rr:nth-of-type(2) .rb { animation-delay: 200ms; }
+  .rr:nth-of-type(3) .rb { animation-delay: 320ms; }
+  .rr:nth-of-type(4) .rb { animation-delay: 440ms; }
+  .rr:nth-of-type(1) .rl { animation-delay: 500ms; }
+  .rr:nth-of-type(2) .rl { animation-delay: 620ms; }
+  .rr:nth-of-type(3) .rl { animation-delay: 740ms; }
+  .rr:nth-of-type(4) .rl { animation-delay: 860ms; }
+   
+  .esc .rb { animation: rreveal 1150ms cubic-bezier(.3,.55,.35,1) 720ms both,
+                        rdrift 2600ms linear 1870ms infinite; }
+  .esc .rk::after { animation: rfade 420ms ease-out 1750ms both; }
+  .rcap { animation: rfade 520ms ease-out 1900ms both; }
+
+   
+  @media (prefers-reduced-motion: reduce) {
+    .reach *, .reach *::after { animation: none !important; }
   }
 
   
@@ -1493,6 +1557,11 @@
 
     .map-head { align-items: center; }
     .zoomctl button { min-width: 40px; min-height: 40px; }
+    
+
+    .rt { width: 70px; font-size: 11.5px; }
+    .rl { font-size: 11.5px; }
+    .rcap { padding-left: 0; }
      
     .explain > summary { min-height: 44px; display: flex; align-items: center; }
     .zoomctl button { min-height: 44px; min-width: 44px; }
@@ -1511,7 +1580,7 @@ parseInt(getComputedStyle(document.documentElement)
 .getPropertyValue('--cols'), 10);
 var q = new URLSearchParams(location.search);
 var p = q.get('p');
-if (p === 'about' || p === 'contact') document.documentElement.dataset.page = p;
+if (p === 'why' || p === 'about' || p === 'contact') document.documentElement.dataset.page = p;
 var L = q.get('lang');
 if (L !== 'nb' && L !== 'en') {
 try { L = localStorage.getItem('meshno.lang'); } catch (e) {   }
@@ -1579,6 +1648,7 @@ document.documentElement.dataset.lang = L;
     
     <nav class="nav-links" id="navLinks" aria-label="Pages">
       <a class="nl" href="./" aria-current="page"><span lang="en">Home</span><span lang="nb">Hjem</span></a>
+      <a class="nl" href="?p=why"><span lang="en">Why regions</span><span lang="nb">Hvorfor regioner</span></a>
       <a class="nl" href="?p=contact"><span lang="en">Contact</span><span lang="nb">Kontakt</span></a>
       <a class="nl" href="?p=about"><span lang="en">About</span><span lang="nb">Om</span></a>
     </nav>
@@ -2306,6 +2376,148 @@ else l[i].removeAttribute('aria-current');
   </main>
 
   
+  
+  <article class="page" id="pgWhy" hidden aria-labelledby="hWhy">
+    <header>
+      <h1 id="hWhy" tabindex="-1"><span lang="en">Why regions</span><span lang="nb">Hvorfor regioner</span></h1>
+      <p class="lede" lang="en">Regions do not stop your messages. They let you decide how far
+         they travel — your kommune, your fylke, or the whole country. A message sent with no
+         region goes everywhere there is a repeater to forward it.</p>
+      <p class="lede" lang="nb">Regioner stopper ikke meldingene dine. De lar deg bestemme hvor
+         langt de går — kommunen, fylket, eller hele landet. En melding sendt uten region går
+         overalt der det står en repeater som kan videresende den.</p>
+
+      
+      <div class="reach" role="img" aria-labelledby="rLbl rLblNb">
+        <div class="rr">
+          <span class="rt">no-1804</span>
+          <span class="rk"><span class="rb" style="width:10%"></span><span class="rl" lang="en">your kommune</span><span class="rl" lang="nb">kommunen din</span></span>
+        </div>
+        <div class="rr">
+          <span class="rt">no-18</span>
+          <span class="rk"><span class="rb" style="width:26%"></span><span class="rl" lang="en">your fylke</span><span class="rl" lang="nb">fylket ditt</span></span>
+        </div>
+        <div class="rr">
+          <span class="rt">no-nord</span>
+          <span class="rk"><span class="rb" style="width:44%"></span><span class="rl" lang="en">your landsdel</span><span class="rl" lang="nb">landsdelen din</span></span>
+        </div>
+        <div class="rr">
+          <span class="rt">no</span>
+          <span class="rk"><span class="rb" style="width:62%"></span><span class="rl" lang="en">the whole country</span><span class="rl" lang="nb">hele landet</span></span>
+        </div>
+        
+        <div class="rr esc">
+          <span class="rt" lang="en">(none)</span><span class="rt" lang="nb">(ingen)</span>
+          <span class="rk"><span class="rb"></span></span>
+        </div>
+        <p class="rcap" id="rLbl" lang="en">The last one is a message sent with
+           <b>no region at all</b>: nothing tells it where to stop, so it keeps going — past the
+           fylke, past the country, out to the Netherlands.</p>
+        <p class="rcap" id="rLblNb" lang="nb">Den siste er en melding sendt <b>uten region i det
+           hele tatt</b>: ingenting sier hvor den skal stoppe, så den bare fortsetter — forbi
+           fylket, forbi landet, ut til Nederland.</p>
+      </div>
+    </header>
+
+    <section>
+      <h2 lang="en">The problem</h2>
+      <h2 lang="nb">Problemet</h2>
+      <p class="help" lang="en">Airtime is the one thing every node on the mesh shares, and there
+         is very little of it. Two nodes transmitting at the same moment <b>collide, and both
+         messages are lost</b> — neither sender ever finds out. A repeater that is transmitting
+         is also not listening: every second it spends forwarding your message is a second it
+         cannot hear anyone else's.</p>
+      <p class="help" lang="nb">Sendetid er det eneste hver node på meshet deler, og det er svært
+         lite av den. To noder som sender i samme øyeblikk <b>kolliderer, og begge meldingene går
+         tapt</b> — uten at noen av avsenderne får vite det. En repeater som sender, lytter
+         heller ikke: hvert sekund den bruker på å videresende meldingen din, er et sekund den
+         ikke hører noen andres.</p>
+      <p class="help" lang="en">A great many messages on the MeshCore network are sent far
+         beyond the area where they have any <b>value</b>. Those forwarded packets create
+         unnecessary collisions further out on the network, in areas where they have no real
+         value. This is part of the reason so many people experience an unstable network where
+         messages often do not get through, even when they are well covered by repeaters.</p>
+      <p class="help" lang="nb">Det er mange meldinger på MeshCore-nettverket som sendes langt
+         ut over området der de har <b>verdi</b>. Disse videresendte pakkene skaper unødvendige
+         kollisjoner videre på nettverket, på områder der de egentlig ikke har noen verdi. Dette
+         er en del av grunnen til at mange opplever et ustabilt nett der meldinger ofte ikke
+         kommer fram, selv om man er godt dekket med repeatere.</p>
+    </section>
+
+    <section>
+      <h2 lang="en">The fish in the river</h2>
+      <h2 lang="nb">Fisken i elva</h2>
+      
+      <p class="help" lang="en">A neighbourhood chat about the fish stock in a local river in
+         Norway is worth something to the people who live by it. It is worth nothing in the
+         Netherlands. Sent without a region it goes there anyway, spending unnecessary airtime
+         on every repeater it passes.</p>
+      <p class="help" lang="nb">En nabolagschat om fiskebestanden i en lokal elv i Norge har
+         verdi for de som bor der. Den har ingen verdi i Nederland. Sendt uten region går den
+         dit likevel, og bruker unødvendig sendetid på hver eneste repeater den passerer.</p>
+    </section>
+
+    <section>
+      <h2 lang="en">Regions and scopes are the answer</h2>
+      <h2 lang="nb">Regioner og scopes er løsningen</h2>
+      <p class="help" lang="en">Scoping messages to specific regions is the mechanism the
+         MeshCore developers implemented to bring the problems above under control. When the
+         repeaters in your area are set up with regions as shown on this page, it becomes
+         possible to decide for yourself how far the messages in your group chats and channels
+         are forwarded. You can have a local neighbourhood chat that stays inside the kommune,
+         perhaps a chat for the whole fylke, and so on. You do every other user of the network a
+         favour by being selective about how far you want your messages forwarded.</p>
+      <p class="help" lang="nb">Scoping av meldinger til spesifikke regioner er mekanismen
+         MeshCore-utviklerne har implementert for å få kontroll på problemene vist over. Når
+         repeatere i ditt område er satt opp med regioner som vist på denne siden, så vil det
+         være mulig å selv bestemme hvor langt meldinger i dine gruppesamtaler og kanaler skal
+         videresendes. Du kan ha en lokal nabolags-chat som holder seg i kommunen, kanskje en
+         chat for hele fylket osv. Du gjør alle andre brukere av nettverket en tjeneste ved å
+         være selektiv med hvor langt du ønsker å videresende meldingene dine.</p>
+    </section>
+
+    <section>
+      <h2 lang="en">Regions require cooperation</h2>
+      <h2 lang="nb">Regioner krever samarbeid</h2>
+      <p class="help" lang="en">Scoping a message only works if the repeaters around you have
+         the region loaded. A message tagged with a name a repeater does not know is
+         <b>dropped, not forwarded</b> — so your ability to decide where your own message goes
+         depends on what your neighbours carry. That is why the naming convention for regions
+         should be aligned, at least to some degree, and why there is one list rather than a
+         hundred improvised ones.</p>
+      <p class="help" lang="nb">Å scope en melding virker bare hvis repeaterne rundt deg har
+         regionen inne. En melding tagget med et navn en repeater ikke kjenner blir
+         <b>droppet, ikke videresendt</b> — så din mulighet til å bestemme hvor meldingen din
+         sendes avhenger av hva naboene dine har inne. Derfor bør navnekonvensjonen på regioner
+         være til en viss grad samkjørt, og derfor finnes det én liste framfor hundre
+         improviserte.</p>
+      <p class="help" lang="en">Nederland, Denmark and Sweden already run one. Matching a
+         neighbour is worth more than being right alone.</p>
+      <p class="help" lang="nb">Nederland, Danmark og Sverige kjører allerede en. Å være lik
+         naboen er mer verdt enn å ha rett alene.</p>
+    </section>
+
+    <section>
+      <h2 lang="en">The least you can do</h2>
+      <h2 lang="nb">Det minste du kan gjøre</h2>
+      
+      <p class="help" lang="en">If a full set of regions is more than you want, one region
+         helps: <code>no</code>. A repeater that knows <code>no</code> forwards everything
+         scoped to Norway instead of dropping it, and that alone is what makes scoping usable
+         for everyone around you.</p>
+      <p class="help" lang="nb">Vil du ikke ha så mange regioner, hjelper det med én:
+         <code>no</code>. En repeater som kjenner <code>no</code> videresender alt som er scopet
+         til Norge framfor å droppe det, og det alene er det som gjør scoping brukbart for alle
+         rundt deg.</p>
+      <p class="help" lang="en">The configurator writes the rest. Put in your postnummer and
+         paste what it gives you.</p>
+      <p class="help" lang="nb">Konfiguratoren skriver resten. Skriv inn postnummeret ditt og
+         lim inn det du får.</p>
+      <p class="addr" lang="en"><a href="./">Open the configurator →</a></p>
+      <p class="addr" lang="nb"><a href="./">Åpne konfiguratoren →</a></p>
+    </section>
+  </article>
+
   <article class="page" id="pgAbout" hidden aria-labelledby="hAbout">
     <header>
       
@@ -2321,24 +2533,18 @@ else l[i].removeAttribute('aria-current');
     </header>
 
     
+    
     <section>
       <h2 lang="en">Why it exists</h2>
       <h2 lang="nb">Hvorfor den finnes</h2>
-      <p class="help" lang="en">Around a hundred MeshCore nodes already relay in Norway. Almost none of
-         them set a region, and there has been no agreed list of names to set — so every
-         repeater carries every flood, and a message meant for one fylke crosses the country.
-         MeshCore has had the mechanism since firmware 1.15. What was missing was a convention.</p>
-      <p class="help" lang="nb">Rundt hundre MeshCore-noder videresender allerede i Norge. Nesten
-         ingen av dem har satt en region, og det har ikke vært noen omforent liste med navn å
-         sette — så hver repeater bærer hver eneste flood, og en melding ment for ett fylke
-         krysser hele landet. MeshCore har hatt mekanismen siden firmware 1.15. Det som manglet,
-         var en konvensjon.</p>
-      <p class="help" lang="en">This page is one. It exists to make a single set of region names the
-         easiest thing to copy correctly, rather than a hundred operators each improvising
-         their own — which is the outcome that cannot be undone later.</p>
-      <p class="help" lang="nb">Denne siden er et forslag til én. Den finnes for å gjøre ett sett
-         regionnavn til det enkleste å kopiere riktig, framfor at hundre operatører finner opp
-         sitt eget — utfallet som ikke lar seg rette opp i etterkant.</p>
+      <p class="help" lang="en">MeshCore has had region scoping since firmware 1.15. What was
+         missing was an agreed list of names to set, so this page proposes one — and exists to
+         make it the easiest thing to copy correctly, rather than a hundred operators each
+         improvising their own. <a href="?p=why">Why regions →</a></p>
+      <p class="help" lang="nb">MeshCore har hatt region-scoping siden firmware 1.15. Det som
+         manglet, var en omforent liste med navn å sette, så denne siden foreslår én — og finnes
+         for å gjøre den til det enkleste å kopiere riktig, framfor at hundre operatører finner
+         opp sitt eget. <a href="?p=why">Hvorfor regioner →</a></p>
     </section>
 
     <section>
@@ -4661,7 +4867,7 @@ addEventListener('hashchange', () => adopt());
 return { hash: shareHash, adopt, schedule: syncUrl };
 })();
 const Router = (() => {
-const VIEW = { about: 'pgAbout', contact: 'pgContact' };
+const VIEW = { why: 'pgWhy', about: 'pgAbout', contact: 'pgContact' };
 const HOME = ['mast', 'main'];
 const HOME_TITLE = document.title;
 const canon = document.querySelector('link[rel="canonical"]');
