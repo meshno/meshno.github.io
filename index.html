@@ -2125,14 +2125,19 @@ else l[i].removeAttribute('aria-current');
           <p lang="nb"><b>Til et annet menneske</b> — adressen til denne siden bærer hele oppsettet: begge
              pinnene, begge enhetene, hver innstilling du har endret og <b>passordene du har satt</b>.
              Kopier den fra adressefeltet; den får plass i en mesh-melding.</p>
+          
           <p lang="en"><b>firmware</b> — 1.16.0+ emits the one-line <code>region def</code>; 1.15.x builds
-             the same tree with one <code>region put</code> per region. Region commands do not exist
-             before 1.15, where the radio and timing lines still apply but the region block does not.
+             the same tree with one <code>region put</code> per region. There is nothing below 1.15:
+             the commands go back to 1.10, but there <code>region put</code> leaves each region
+             flood-<i>denied</i>, so this block would answer <code>OK</code> to every line and stop the
+             repeater relaying what it was meant to carry.
              Send over USB sets this control itself; by hand, run <code>ver</code>.</p>
           <p lang="nb"><b>firmware</b> — 1.16.0+ sender ett-linjes <code>region def</code>; 1.15.x bygger
-             det samme treet med én <code>region put</code> per region. Region-kommandoene finnes ikke
-             før 1.15, der radio- og timing-linjene fortsatt gjelder, men ikke region-blokka. Send
-             over USB setter denne kontrollen selv; for hånd, kjør <code>ver</code>.</p>
+             det samme treet med én <code>region put</code> per region. Det finnes ingenting under 1.15:
+             kommandoene går tilbake til 1.10, men der lar <code>region put</code> hver region stå
+             flood-<i>nektet</i>, så blokka ville svart <code>OK</code> på hver linje og fått repeateren
+             til å slutte å videresende det den skulle bære.
+             Send over USB setter denne kontrollen selv; for hånd, kjør <code>ver</code>.</p>
         </details>
       </section>
 
@@ -2548,13 +2553,11 @@ else l[i].removeAttribute('aria-current');
       <h2 lang="en">Why it exists</h2>
       <h2 lang="nb">Hvorfor den finnes</h2>
       
-      <p class="help" lang="en">MeshCore has been building region scoping since firmware 1.10, and
-         a repeater has been able to take the names since 1.15. What was
+      <p class="help" lang="en">MeshCore has had region scoping since firmware 1.10. What was
          missing was an agreed list of names to set, so this page proposes one — and exists to
          make it the easiest thing to copy correctly, rather than a hundred operators each
          improvising their own. <a href="?p=why">Why regions →</a></p>
-      <p class="help" lang="nb">MeshCore har bygget ut region-scoping siden firmware 1.10, og en
-         repeater har kunnet ta imot navnene siden 1.15. Det som
+      <p class="help" lang="nb">MeshCore har hatt region-scoping siden firmware 1.10. Det som
          manglet, var en omforent liste med navn å sette, så denne siden foreslår én — og finnes
          for å gjøre den til det enkleste å kopiere riktig, framfor at hundre operatører finner
          opp sitt eget. <a href="?p=why">Hvorfor regioner →</a></p>
