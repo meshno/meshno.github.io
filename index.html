@@ -390,7 +390,7 @@
   .page .help + .help { margin-top: 12px; }
   
 
-  .page .lede + .lede { margin-top: 12px; }
+  .page .lede + .lede + .lede { margin-top: 12px; }
   
 
   .page h1:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
@@ -444,6 +444,7 @@
 
   .rcap { font-size: 12.5px; color: var(--dim); margin: 16px 0 0; padding-left: 100px;
           line-height: 1.5; }
+  .rcap p { margin: 0; }
   .rcap b { color: var(--ink); font-weight: 500; }
 
   
@@ -469,6 +470,9 @@
                         rdrift 2600ms linear 1870ms infinite; }
   .esc .rk::after { animation: rfade 420ms ease-out 1750ms both; }
   .rcap { animation: rfade 520ms ease-out 1900ms both; }
+
+  
+
 
    
   @media (prefers-reduced-motion: reduce) {
@@ -2380,42 +2384,56 @@ else l[i].removeAttribute('aria-current');
   <article class="page" id="pgWhy" hidden aria-labelledby="hWhy">
     <header>
       <h1 id="hWhy" tabindex="-1"><span lang="en">Why regions</span><span lang="nb">Hvorfor regioner</span></h1>
-      <p class="lede" lang="en">Regions do not stop your messages. They let you decide how far
-         they travel — your kommune, your fylke, or the whole country. A message sent with no
-         region goes everywhere there is a repeater to forward it.</p>
-      <p class="lede" lang="nb">Regioner stopper ikke meldingene dine. De lar deg bestemme hvor
-         langt de går — kommunen, fylket, eller hele landet. En melding sendt uten region går
-         overalt der det står en repeater som kan videresende den.</p>
+      
+      <p class="lede" lang="en">MeshCore has been developing a way to control how flood packets
+         spread across the network — known as scoping — step by step since v1.10.0. The point of
+         it is to cut unnecessary bandwidth use, and to leave a network that is more stable and
+         more predictable.</p>
+      <p class="lede" lang="nb">MeshCore har siden v1.10.0 gradvis videreutviklet et konsept for
+         å kunne styre hvordan flood-pakker sprer seg på nettverket (kjent som scoping). Dette
+         for å redusere unødvendig bruk av båndbredde og skape et mer stabilt og forutsigbart
+         nettverk.</p>
+      <p class="lede" lang="en">How best to divide a geographic area into regions is decided by
+         local conditions. In Norway we use cities, kommuner, fylker and landsdeler. With those
+         in place, users can limit how far their own packets spread, in terms of regions we
+         Norwegians already know well.</p>
+      <p class="lede" lang="nb">Det er de lokale forholdene som styrer hvordan best fordele et
+         geografisk område inn i regioner. I Norge benytter vi oss av byer, kommuner, fylker og
+         landsdeler. Med dette kan brukere selv begrense spredningen av pakker basert på regioner
+         vi nordmenn kjenner godt til.</p>
 
       
       <div class="reach" role="img" aria-labelledby="rLbl rLblNb">
         <div class="rr">
           <span class="rt">no-1804</span>
-          <span class="rk"><span class="rb" style="width:10%"></span><span class="rl" lang="en">your kommune</span><span class="rl" lang="nb">kommunen din</span></span>
+          <span class="rk"><span class="rb" style="width:10%"></span><span class="rl"><span lang="en">your kommune</span><span lang="nb">kommunen din</span></span></span>
         </div>
         <div class="rr">
           <span class="rt">no-18</span>
-          <span class="rk"><span class="rb" style="width:26%"></span><span class="rl" lang="en">your fylke</span><span class="rl" lang="nb">fylket ditt</span></span>
+          <span class="rk"><span class="rb" style="width:26%"></span><span class="rl"><span lang="en">your fylke</span><span lang="nb">fylket ditt</span></span></span>
         </div>
         <div class="rr">
           <span class="rt">no-nord</span>
-          <span class="rk"><span class="rb" style="width:44%"></span><span class="rl" lang="en">your landsdel</span><span class="rl" lang="nb">landsdelen din</span></span>
+          <span class="rk"><span class="rb" style="width:44%"></span><span class="rl"><span lang="en">your landsdel</span><span lang="nb">landsdelen din</span></span></span>
         </div>
         <div class="rr">
           <span class="rt">no</span>
-          <span class="rk"><span class="rb" style="width:62%"></span><span class="rl" lang="en">the whole country</span><span class="rl" lang="nb">hele landet</span></span>
+          <span class="rk"><span class="rb" style="width:62%"></span><span class="rl"><span lang="en">the whole country</span><span lang="nb">hele landet</span></span></span>
         </div>
         
         <div class="rr esc">
           <span class="rt" lang="en">(none)</span><span class="rt" lang="nb">(ingen)</span>
           <span class="rk"><span class="rb"></span></span>
         </div>
-        <p class="rcap" id="rLbl" lang="en">The last one is a message sent with
-           <b>no region at all</b>: nothing tells it where to stop, so it keeps going — past the
-           fylke, past the country, out to the Netherlands.</p>
-        <p class="rcap" id="rLblNb" lang="nb">Den siste er en melding sendt <b>uten region i det
-           hele tatt</b>: ingenting sier hvor den skal stoppe, så den bare fortsetter — forbi
-           fylket, forbi landet, ut til Nederland.</p>
+        
+        <div class="rcap">
+          <p id="rLbl" lang="en">The last one is a message sent with
+             <b>no region at all</b>: nothing tells it where to stop, so it keeps going — past the
+             fylke, past the country, out to the Netherlands.</p>
+          <p id="rLblNb" lang="nb">Den siste er en melding sendt <b>uten region i det
+             hele tatt</b>: ingenting sier hvor den skal stoppe, så den bare fortsetter — forbi
+             fylket, forbi landet, ut til Nederland.</p>
+        </div>
       </div>
     </header>
 
