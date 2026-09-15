@@ -1996,15 +1996,15 @@ else l[i].removeAttribute('aria-current');
           <div class="k">unscoped floods</div>
           <div class="v">
             <div class="seg" id="unscSeg">
-              <button data-u="allow" class="on">allow</button>
-              <button data-u="cap">cap</button>
+              <button data-u="allow">allow</button>
+              <button data-u="cap" class="on">cap</button>
               <button data-u="deny">deny</button>
             </div>
-            <div class="numf" id="unscHopsBox" hidden>
-              <input type="number" id="unscHops" inputmode="numeric" min="0" max="64" step="1" value="3" aria-label="unscoped flood hop limit"><i>hops</i>
+            <div class="numf" id="unscHopsBox">
+              <input type="number" id="unscHops" inputmode="numeric" min="0" max="64" step="1" value="4" aria-label="unscoped flood hop limit"><i>hops</i>
             </div>
-            <p class="help" id="unscHelp" lang="en">Untagged traffic floods normally. Nothing is cut off.</p>
-            <p class="help" id="unscHelpNb" lang="nb">Utagget trafikk flooder som normalt. Ingenting skjæres av.</p>
+            <p class="help" id="unscHelp" lang="en">Local untagged traffic still spreads, but only 4 hops. The neighbourhood, not the country.</p>
+            <p class="help" id="unscHelpNb" lang="nb">Lokal utagget trafikk sprer seg fortsatt, men bare 4 hops. Nabolaget, ikke landet.</p>
           </div>
         </div>
         <details class="explain">
@@ -2026,13 +2026,15 @@ else l[i].removeAttribute('aria-current');
           <p lang="en"><b>unscoped floods</b> — what this repeater does with floods carrying no region tag.
              <b>allow</b> emits <code>region allowf *</code>, the firmware default, restated in case
              the node had it denied. <b>cap</b> keeps that line and adds
-             <code>set flood.max.unscoped</code>, limiting untagged floods to that many hops.
+             <code>set flood.max.unscoped</code>, limiting untagged floods to that many hops —
+             the default here, at 4.
              <b>deny</b> emits <code>region denyf *</code> instead, dropping them — which cuts off
              every node that has not set regions yet.</p>
           <p lang="nb"><b>unscoped floods</b> — hva denne repeateren gjør med floods uten region-tagg.
              <b>allow</b> sender <code>region allowf *</code>, firmwarens standard, gjentatt i tilfelle
              noden hadde den denied. <b>cap</b> beholder den linja og legger til
-             <code>set flood.max.unscoped</code>, som begrenser utaggede floods til så mange hopp.
+             <code>set flood.max.unscoped</code>, som begrenser utaggede floods til så mange hopp —
+             standarden her, med 4.
              <b>deny</b> sender <code>region denyf *</code> i stedet og forkaster dem — noe som skjærer
              av enhver node som ikke har satt regioner ennå.</p>
         </details>
@@ -2319,13 +2321,13 @@ else l[i].removeAttribute('aria-current');
           </div>
           <p lang="en">A region tells repeaters which floods to pass on. It does not limit who you can
              reach — every node carries <code>eu</code> and <code>no</code> — and it cuts nobody off:
-             tags only add, and untagged traffic keeps flowing unless you pick
-             <code>region denyf *</code> under <b>unscoped floods</b>. What narrow tags do is keep a
+             tags only add, and untagged traffic keeps flowing — a few hops, by default — unless you
+             pick <code>region denyf *</code> under <b>unscoped floods</b>. What narrow tags do is keep a
              local channel from flooding the country. <a href="?p=why">Why regions →</a></p>
           <p lang="nb">En region forteller repeatere hvilke floods de skal sende videre. Den begrenser
              ikke hvem du kan nå — hver node bærer <code>eu</code> og <code>no</code> — og den skjærer
-             ingen av: tagger legger bare til, og utagget trafikk går som før med mindre du velger
-             <code>region denyf *</code> under <b>unscoped floods</b>. Det smale tagger gjør, er å
+             ingen av: tagger legger bare til, og utagget trafikk går videre — noen få hopp, som standard — med
+             mindre du velger <code>region denyf *</code> under <b>unscoped floods</b>. Det smale tagger gjør, er å
              hindre en lokal channel i å floode hele landet. <a href="?p=why">Hvorfor regioner →</a></p>
           <p lang="en"><b>A kommunenummer is not a postnummer.</b> Both are four digits and unrelated: the
              node <b>name</b> uses the postnummer, the region <b>tags</b> use the kommunenummer, so
@@ -2898,12 +2900,12 @@ w: 'd', vals: ['no', 'landsdel', 'fylke', 'kommune', 'city', 'none'] },
 vals: ['new', 'old'] },
 { f: 'locMode', kind: 'seg', el: 'locSeg', attr: 'loc', def: 'none', w: 'L',
 vals: ['none', 'map', 'gps'] },
-{ f: 'unscoped', kind: 'seg', el: 'unscSeg', attr: 'u', def: 'allow', w: 'u',
+{ f: 'unscoped', kind: 'seg', el: 'unscSeg', attr: 'u', def: 'cap', w: 'u',
 vals: ['allow', 'cap', 'deny'] },
 { f: 'multiAcks', kind: 'segbool', el: 'ackSeg', attr: 'ma', def: false,
 w: 'm' },
 { f: 'tx', kind: 'num', el: 'txPow', def: '22', w: 't' },
-{ f: 'unscopedHops', kind: 'num', el: 'unscHops', def: '3', w: 'U' },
+{ f: 'unscopedHops', kind: 'num', el: 'unscHops', def: '4', w: 'U' },
 { f: 'owner', kind: 'text', el: 'ownerInfo', def: '', w: 'o' },
 { f: 'guest', kind: 'text', el: 'guestPw', def: '', w: 'g' },
 { f: 'admin', kind: 'text', el: 'adminPw', def: '', w: 'a' },
@@ -4176,8 +4178,6 @@ const NAME_HINT = $('nameHint').innerHTML;
 const NAME_HINT_NB = $('nameHintNb').innerHTML;
 const REST_LOC = $('locNote').textContent;
 const REST_LOC_NB = $('locNoteNb').textContent;
-const REST_UNSC = $('unscHelp').innerHTML;
-const REST_UNSC_NB = $('unscHelpNb').innerHTML;
 function block() {
 const L = Cfg.buildLines();
 $('cmdOut').innerHTML = Cfg.renderLines(L);
@@ -4322,12 +4322,12 @@ cfg.unscoped === 'cap'
 ? `Local untagged traffic still spreads, but only ${hops} hops. The neighbourhood, not the country.`
 : cfg.unscoped === 'deny'
 ? '<b class="bad">Drops every untagged packet.</b> Use it only after the mesh around you carries regions, or it isolates nodes that have not set regions.'
-: REST_UNSC,
+: 'Untagged traffic floods normally. Nothing is cut off.',
 cfg.unscoped === 'cap'
 ? `Lokal utagget trafikk sprer seg fortsatt, men bare ${hops} hops. Nabolaget, ikke landet.`
 : cfg.unscoped === 'deny'
 ? '<b class="bad">Forkaster hver utagget pakke.</b> Bruk den først når meshet rundt deg bærer regioner, ellers isolerer den noder som ikke har satt regioner.'
-: REST_UNSC_NB);
+: 'Utagget trafikk flooder som normalt. Ingenting skjæres av.');
 }
 const profiles = () => {
 document.querySelectorAll('#profiles .profile').forEach(el =>
