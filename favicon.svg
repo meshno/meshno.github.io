@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+  <!-- Raster SOURCE for favicon.ico. The tab/inline favicon is a theme-aware
+       data: URI in page.html; a raster .ico cannot switch on the OS theme, so
+       this fixes the LIGHT palette (dark ink #0d1b26, teal accent #0a6c62) —
+       which is what Google's white search-result chip and light tabs want.
+       Same monogram+network mark as the inline logo. Regenerate the .ico with:
+         magick -background none -density 900 src/favicon.svg \
+           -resize 192x192 -define icon:auto-resize=48,32,16 favicon.ico -->
+  <path fill="none" stroke="#0d1b26" stroke-width="3" stroke-linecap="round"
+        stroke-linejoin="round" d="M10 10V30M10 10L30 30M30 30V10"/>
+  <circle fill="#0d1b26" cx="10" cy="10" r="4"/>
+  <circle fill="#0d1b26" cx="10" cy="30" r="4"/>
+  <circle fill="#0d1b26" cx="30" cy="30" r="4"/>
+  <circle fill="#0a6c62" cx="30" cy="10" r="4"/>
+</svg>
