@@ -5,16 +5,15 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <!-- the terrain tiles (src/lib/map/style.ts) are fetched as soon as the map starts -->
+    <link rel="preconnect" href="https://tiles.mapterhorn.com" crossorigin />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MeshNO · MeshCore repeater setup for Norway</title>
     <meta name="description" content="Set up a MeshCore repeater in Norway: place it on the map, and send its name, regions and radio settings over USB, or update it over the mesh." />
-    <!-- index,follow for the real site; the /v2/ preview builds with VITE_ROBOTS=noindex -->
+    <!-- tools/publish.sh builds with VITE_ROBOTS=index,follow; v1 at /v1/ is noindex -->
     <meta name="robots" content="index,follow" />
-    <script type="module" crossorigin src="/assets/index-BtqjYUOg.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/rolldown-runtime-WkwZ5CU-.js">
-    <link rel="modulepreload" crossorigin href="/assets/map-D7bSX3-F.js">
-    <link rel="stylesheet" crossorigin href="/assets/map-B2k4QVOw.css">
-    <link rel="stylesheet" crossorigin href="/assets/index-KOW5iRBb.css">
+    <script type="module" crossorigin src="/assets/index-D1IaxxMk.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-BZLcw_3K.css">
   </head>
   <body>
     <div id="app"></div>
