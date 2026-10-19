@@ -5,15 +5,22 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- the terrain tiles (src/lib/map/style.ts) are fetched as soon as the map starts -->
     <link rel="preconnect" href="https://tiles.mapterhorn.com" crossorigin />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- the landing's picture of the map (src/lib/map/Poster.svelte), fetched
+         alongside the script; the theme starts from the system's. After the
+         viewport tag: before it a phone reads these media at 980 px wide -->
+    <link rel="preload" as="image" href="/landing/poster-phone-light@2x.webp" media="(max-width: 720px) and (prefers-color-scheme: light)" />
+    <link rel="preload" as="image" href="/landing/poster-phone-dark@2x.webp" media="(max-width: 720px) and (prefers-color-scheme: dark)" />
+    <link rel="preload" as="image" imagesrcset="/landing/poster-desk-light@1x.webp 1x, /landing/poster-desk-light@2x.webp 2x" media="(min-width: 721px) and (prefers-color-scheme: light)" />
+    <link rel="preload" as="image" imagesrcset="/landing/poster-desk-dark@1x.webp 1x, /landing/poster-desk-dark@2x.webp 2x" media="(min-width: 721px) and (prefers-color-scheme: dark)" />
     <title>MeshNO · MeshCore repeater setup for Norway</title>
     <meta name="description" content="Set up a MeshCore repeater in Norway: place it on the map, and send its name, regions and radio settings over USB, or update it over the mesh." />
     <!-- tools/publish.sh builds with VITE_ROBOTS=index,follow; v1 at /v1/ is noindex -->
     <meta name="robots" content="index,follow" />
-    <script type="module" crossorigin src="/assets/index-D1IaxxMk.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-BZLcw_3K.css">
+    <script type="module" crossorigin src="/assets/index-DqFWzZUV.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-Cp-otiZ8.css">
   </head>
   <body>
     <div id="app"></div>
