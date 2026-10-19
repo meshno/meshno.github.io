@@ -2,11 +2,11 @@
 <!-- v2 at the root (2026-10-19). The pages are views reached by ?p=, as in v1,
      so these are query URLs; the page sets a matching rel=canonical per route
      (seo.ts). Home is listed once: ?lang=nb there canonicals to the root, as in
-     v1. v1's ?p=about is gone, and v1 itself (/v1/) is noindex. -->
+     v1. ?p=contact (gone 2026-10-19) opens About; v1 itself (/v1/) is noindex. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://meshno.github.io/</loc></url>
   <url><loc>https://meshno.github.io/?p=why</loc></url>
-  <url><loc>https://meshno.github.io/?p=contact</loc></url>
+  <url><loc>https://meshno.github.io/?p=about</loc></url>
   <url><loc>https://meshno.github.io/?p=why&amp;lang=nb</loc></url>
-  <url><loc>https://meshno.github.io/?p=contact&amp;lang=nb</loc></url>
+  <url><loc>https://meshno.github.io/?p=about&amp;lang=nb</loc></url>
 </urlset>
