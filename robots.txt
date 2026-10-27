@@ -1,4 +1,4 @@
-# MeshNO — MeshCore node configurator for Norway
+# MeshNO — MeshCore node configurator for the Nordics (NO for Norden)
 # https://meshno.github.io/
 
 User-agent: *
