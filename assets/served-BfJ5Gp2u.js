@@ -1,1 +1,0 @@
-import{g as e,l as t,s as n,u as r}from"./index-BzUeUs7H.js";import{x as i}from"./config-z8ryNdN-.js";var a=()=>i.map(e=>r(e.name.en,e.name.nb)),o=()=>n(a()),s=()=>t(a()),c={nb:`no`,sv:`se`},l=()=>i.find(t=>t.tag===c[e.lang])??i[0];export{o as n,s as r,l as t};
