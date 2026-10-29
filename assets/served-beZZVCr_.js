@@ -1,1 +1,0 @@
-import{i as e,o as t,p as n,s as r}from"./index-CAXJ6_ot.js";import{T as i}from"./config-CFo72eLo.js";var a=()=>i.map(e=>r(e.name.en,e.name.nb)),o=()=>e(a()),s=()=>t(a()),c={nb:`no`,sv:`se`,da:`dk`},l=()=>i.find(e=>e.tag===c[n.lang])??i[0];export{o as n,s as r,l as t};
